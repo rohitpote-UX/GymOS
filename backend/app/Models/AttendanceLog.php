@@ -1,0 +1,47 @@
+<?php
+
+namespace App\Models;
+
+use App\Models\Concerns\BelongsToGym;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class AttendanceLog extends Model
+{
+    use HasFactory, BelongsToGym;
+
+    protected $fillable = [
+        'gym_id',
+        'branch_id',
+        'member_id',
+        'client_uuid',
+        'check_in_at',
+        'check_out_at',
+        'method',
+        'verified_by_user_id',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'check_in_at' => 'datetime',
+            'check_out_at' => 'datetime',
+        ];
+    }
+
+    public function member(): BelongsTo
+    {
+        return $this->belongsTo(Member::class);
+    }
+
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class);
+    }
+
+    public function verifier(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'verified_by_user_id');
+    }
+}
