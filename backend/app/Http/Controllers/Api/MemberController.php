@@ -231,6 +231,7 @@ class MemberController extends Controller
             'ledger' => fn ($q) => $q->latest('id')->take(50),
             'ptSessions' => fn ($q) => $q->latest('scheduled_at')->take(20),
             'ptSessions.trainer:id,name',
+            'posOrders' => fn ($q) => $q->with(['items.product:id,name,brand,sku', 'refunds'])->latest('order_date')->take(20),
         ])->findOrFail($id);
 
         return response()->json($member);

@@ -93,6 +93,11 @@ class Member extends Model
         return $this->hasMany(PtSession::class);
     }
 
+    public function posOrders(): HasMany
+    {
+        return $this->hasMany(PosOrder::class);
+    }
+
     public function getFullNameAttribute(): string
     {
         return trim("{$this->first_name} {$this->last_name}");
@@ -117,11 +122,20 @@ class Member extends Model
             ->where('type', 'refund')
             ->sum('amount');
 
-        $netPaid = $totalPaid - $totalRefunds;
-        $outstanding = max(0, $totalBilled - $netPaid);
+        $posBilled = (float) $this->posOrders()
+            ->where('status', '!=', 'cancelled')
+            ->sum('total_amount');
+
+        $posPaid = (float) $this->posOrders()
+            ->where('status', '!=', 'cancelled')
+            ->sum('paid_amount');
+
+        $netPaid = ($totalPaid - $totalRefunds) + $posPaid;
+        $overallBilled = $totalBilled + $posBilled;
+        $outstanding = max(0, $overallBilled - $netPaid);
 
         $this->update([
-            'total_fees_billed' => $totalBilled,
+            'total_fees_billed' => $overallBilled,
             'total_fees_paid' => $netPaid,
             'outstanding_balance' => $outstanding,
         ]);

@@ -108,6 +108,23 @@ interface MemberDetail extends Member {
     credit: number;
     running_balance: number;
   }>;
+  pos_orders?: Array<{
+    id: number;
+    order_number: string;
+    order_date: string;
+    total_amount: number | string;
+    paid_amount: number | string;
+    balance_due: number | string;
+    payment_method: string;
+    status: string;
+    items?: Array<{
+      id: number;
+      product: { name: string; brand?: string };
+      quantity: number;
+      unit_price: number | string;
+      total_amount: number | string;
+    }>;
+  }>;
 }
 
 export default function Members() {
@@ -123,7 +140,7 @@ export default function Members() {
   // Detail Drawer State
   const [selectedMember, setSelectedMember] = useState<MemberDetail | null>(null);
   const [drawerLoading, setDrawerLoading] = useState(false);
-  const [drawerTab, setDrawerTab] = useState<'profile' | 'memberships' | 'ledger' | 'attendance' | 'qr'>('profile');
+  const [drawerTab, setDrawerTab] = useState<'profile' | 'memberships' | 'ledger' | 'attendance' | 'store' | 'qr'>('profile');
 
   // Member Action Modals
   const [freezeModalOpen, setFreezeModalOpen] = useState(false);
@@ -626,6 +643,14 @@ export default function Members() {
                 Attendance Log
               </button>
               <button
+                onClick={() => setDrawerTab('store')}
+                className={`py-3 border-b-2 transition-colors cursor-pointer ${
+                  drawerTab === 'store' ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-slate-400 hover:text-white'
+                }`}
+              >
+                Store Purchases
+              </button>
+              <button
                 onClick={() => setDrawerTab('qr')}
                 className={`py-3 border-b-2 transition-colors cursor-pointer flex items-center gap-1 ${
                   drawerTab === 'qr' ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-slate-400 hover:text-white'
@@ -819,6 +844,52 @@ export default function Members() {
                         ))}
                       </tbody>
                     </table>
+                  </div>
+                </div>
+              )}
+
+              {drawerTab === 'store' && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-bold text-white text-xs uppercase tracking-wider">
+                      Supplement & Store POS Orders
+                    </h4>
+                    <span className="text-xs text-emerald-400 font-bold">
+                      {selectedMember.pos_orders?.length || 0} Orders
+                    </span>
+                  </div>
+
+                  <div className="space-y-2">
+                    {(!selectedMember.pos_orders || selectedMember.pos_orders.length === 0) ? (
+                      <div className="text-center py-8 text-slate-500 text-xs bg-[#131b2e] border border-slate-800 rounded-xl">
+                        No supplement or gear purchases recorded for this member.
+                      </div>
+                    ) : (
+                      selectedMember.pos_orders.map((ord) => (
+                        <div key={ord.id} className="p-3 bg-[#131b2e] border border-slate-800 rounded-xl space-y-2 text-xs">
+                          <div className="flex items-center justify-between">
+                            <span className="font-mono font-bold text-emerald-400">{ord.order_number}</span>
+                            <span className="text-slate-500 text-[10px]">{ord.order_date}</span>
+                          </div>
+
+                          <div className="space-y-1">
+                            {ord.items?.map((item) => (
+                              <div key={item.id} className="flex justify-between text-slate-300 text-[11px]">
+                                <span>{item.quantity}x {item.product?.name}</span>
+                                <span className="font-medium text-white">₹{item.total_amount}</span>
+                              </div>
+                            ))}
+                          </div>
+
+                          <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[11px]">
+                            <span className="text-slate-400">Total: <strong className="text-white">₹{ord.total_amount}</strong> ({ord.payment_method.toUpperCase()})</span>
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${parseFloat(ord.balance_due as any) > 0 ? 'bg-amber-500/20 text-amber-300' : 'bg-emerald-500/20 text-emerald-300'}`}>
+                              {parseFloat(ord.balance_due as any) > 0 ? `Due: ₹${ord.balance_due}` : 'Paid'}
+                            </span>
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               )}

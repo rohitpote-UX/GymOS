@@ -8,6 +8,7 @@ use App\Models\Branch;
 use App\Models\DailyCashClosing;
 use App\Models\Expense;
 use App\Models\Gym;
+use App\Models\InventoryMovement;
 use App\Models\Lead;
 use App\Models\LeadFollowup;
 use App\Models\Member;
@@ -15,9 +16,19 @@ use App\Models\MemberLedger;
 use App\Models\MemberMembership;
 use App\Models\MembershipPlan;
 use App\Models\Payment;
+use App\Models\PosOrder;
+use App\Models\PosOrderItem;
+use App\Models\Product;
+use App\Models\ProductBatch;
+use App\Models\ProductBranchStock;
 use App\Models\PtSession;
+use App\Models\PurchaseInvoice;
+use App\Models\PurchaseInvoiceItem;
 use App\Models\SaasPlan;
 use App\Models\StaffLeave;
+use App\Models\Supplier;
+use App\Models\SupplierLedger;
+use App\Models\SupplierPayment;
 use App\Models\User;
 use App\Support\CurrentGym;
 use Illuminate\Database\Seeder;
@@ -540,6 +551,599 @@ class DatabaseSeeder extends Seeder
                 'closed_by_user_id' => $reception->id,
                 'closed_at' => now()->subDay()->setTime(22, 0),
                 'notes' => 'Shift cash balanced perfectly.',
+            ]);
+
+            // =========================================================================
+            // PROMPT 03: GYM INVENTORY, SUPPLEMENT POS & PROFITABILITY SEEDING
+            // =========================================================================
+
+            // 1. Suppliers
+            $supON = Supplier::create([
+                'gym_id' => $gym->id,
+                'name' => 'Optimum Nutrition India Dist',
+                'company_name' => 'Glanbia Performance Nutrition India Pvt Ltd',
+                'contact_person' => 'Rajesh Shah',
+                'phone' => '9811002233',
+                'email' => 'sales@on-india.com',
+                'gstin' => '27AABCG1234F1Z5',
+                'address' => 'Plot 45, MIDC Industrial Area, Andheri East',
+                'city' => 'Mumbai',
+                'bank_details' => 'HDFC Bank - A/C 50200012345678, IFSC: HDFC0000045',
+                'notes' => 'Primary distributor for Optimum Nutrition & BSN',
+                'is_active' => true,
+            ]);
+
+            $supMB = Supplier::create([
+                'gym_id' => $gym->id,
+                'name' => 'MuscleBlaze Direct',
+                'company_name' => 'Bright Performance Nutrition Pvt Ltd',
+                'contact_person' => 'Amit Kapoor',
+                'phone' => '9822113344',
+                'email' => 'partners@muscleblaze.in',
+                'gstin' => '27AABCB5678K1Z2',
+                'address' => 'Express Trade Towers, Sector 132',
+                'city' => 'Noida',
+                'bank_details' => 'ICICI Bank - A/C 001105001234, IFSC: ICIC0000011',
+                'notes' => 'Whey biozyme and creatine supplier with 5% gym franchise rebate',
+                'is_active' => true,
+            ]);
+
+            $supGear = Supplier::create([
+                'gym_id' => $gym->id,
+                'name' => 'Beast Gear & Apparel Supplies',
+                'company_name' => 'Beast Sports & Fitness Essentials LLP',
+                'contact_person' => 'Vikram Joshi',
+                'phone' => '9833224455',
+                'email' => 'orders@beastgear.in',
+                'gstin' => '27AABCB9012P1Z8',
+                'address' => '12 Commerce Centre, Tardeo Road',
+                'city' => 'Mumbai',
+                'bank_details' => 'Axis Bank - A/C 914020005678901, IFSC: UTIB0000142',
+                'notes' => 'Custom branded shakers, belts, and gym apparel',
+                'is_active' => true,
+            ]);
+
+            // 2. Products Master
+            $prodONWhey = Product::create([
+                'gym_id' => $gym->id,
+                'name' => 'Gold Standard 100% Whey 2kg',
+                'brand' => 'Optimum Nutrition',
+                'category' => 'whey_protein',
+                'sku' => 'ON-WHEY-2KG-CHO',
+                'barcode' => '8901234567801',
+                'size' => '2kg (4.4 lbs)',
+                'weight' => '2000g',
+                'flavour' => 'Double Rich Chocolate',
+                'cost_price' => 5200.00, // WAC
+                'selling_price' => 6499.00,
+                'mrp' => 7499.00,
+                'tax_percent' => 18.00,
+                'default_supplier_id' => $supON->id,
+                'min_stock_alert' => 4,
+                'is_active' => true,
+                'description' => 'World #1 selling whey protein isolate primary source.',
+            ]);
+
+            $prodMBCreatine = Product::create([
+                'gym_id' => $gym->id,
+                'name' => 'Creatine Monohydrate Creapure 250g',
+                'brand' => 'MuscleBlaze',
+                'category' => 'creatine',
+                'sku' => 'MB-CREA-250G',
+                'barcode' => '8901234567802',
+                'size' => '250g',
+                'weight' => '250g',
+                'flavour' => 'Unflavoured',
+                'cost_price' => 750.00,
+                'selling_price' => 1099.00,
+                'mrp' => 1299.00,
+                'tax_percent' => 18.00,
+                'default_supplier_id' => $supMB->id,
+                'min_stock_alert' => 6,
+                'is_active' => true,
+                'description' => 'Pure micronized creatine monohydrate for strength and ATP output.',
+            ]);
+
+            $prodC4 = Product::create([
+                'gym_id' => $gym->id,
+                'name' => 'C4 Original Pre-Workout 390g',
+                'brand' => 'Cellucor',
+                'category' => 'pre_workout',
+                'sku' => 'CEL-C4-390G-FP',
+                'barcode' => '8901234567803',
+                'size' => '60 Servings',
+                'weight' => '390g',
+                'flavour' => 'Fruit Punch',
+                'cost_price' => 2100.00,
+                'selling_price' => 2899.00,
+                'mrp' => 3299.00,
+                'tax_percent' => 18.00,
+                'default_supplier_id' => $supON->id,
+                'min_stock_alert' => 3,
+                'is_active' => true,
+                'description' => 'Explosive energy and laser focus pre-workout supplement.',
+            ]);
+
+            $prodProteinBar = Product::create([
+                'gym_id' => $gym->id,
+                'name' => 'Max Protein Daily Bar 20g (Pack of 6)',
+                'brand' => 'RiteBite',
+                'category' => 'protein_bars',
+                'sku' => 'RB-BAR-20G-6PK',
+                'barcode' => '8901234567804',
+                'size' => '6 x 50g',
+                'flavour' => 'Choco Slim',
+                'cost_price' => 420.00,
+                'selling_price' => 600.00,
+                'mrp' => 660.00,
+                'tax_percent' => 12.00,
+                'default_supplier_id' => $supMB->id,
+                'min_stock_alert' => 5,
+                'is_active' => true,
+                'description' => '20g protein per bar, zero added sugar high fiber snack.',
+            ]);
+
+            $prodShaker = Product::create([
+                'gym_id' => $gym->id,
+                'name' => 'IronCore Pro Stainless Steel Shaker 750ml',
+                'brand' => 'IronCore Essentials',
+                'category' => 'shakers',
+                'sku' => 'IC-SHAKE-750-BLK',
+                'barcode' => '8901234567805',
+                'size' => '750ml',
+                'flavour' => 'Matte Black',
+                'cost_price' => 380.00,
+                'selling_price' => 699.00,
+                'mrp' => 899.00,
+                'tax_percent' => 18.00,
+                'default_supplier_id' => $supGear->id,
+                'min_stock_alert' => 8,
+                'is_active' => true,
+                'description' => 'Insulated double-walled stainless steel shaker bottle with wire whisk.',
+            ]);
+
+            $prodStraps = Product::create([
+                'gym_id' => $gym->id,
+                'name' => 'Heavy Duty Neoprene Lifting Wrist Straps (Pair)',
+                'brand' => 'IronCore Essentials',
+                'category' => 'gym_accessories',
+                'sku' => 'IC-STRAP-NEO',
+                'barcode' => '8901234567806',
+                'size' => 'Standard',
+                'flavour' => 'Carbon Grey',
+                'cost_price' => 220.00,
+                'selling_price' => 499.00,
+                'mrp' => 599.00,
+                'tax_percent' => 18.00,
+                'default_supplier_id' => $supGear->id,
+                'min_stock_alert' => 5,
+                'is_active' => true,
+                'description' => 'Padded neoprene weightlifting straps for deadlifts and pull days.',
+            ]);
+
+            // 3. Branch Stocks (Downtown Flagship & Bandra Elite)
+            // Downtown Flagship
+            $stockON_Main = ProductBranchStock::create([
+                'gym_id' => $gym->id,
+                'branch_id' => $branchMain->id,
+                'product_id' => $prodONWhey->id,
+                'quantity' => 12,
+                'cost_price' => 5200.00,
+                'selling_price' => 6499.00,
+            ]);
+
+            $stockCrea_Main = ProductBranchStock::create([
+                'gym_id' => $gym->id,
+                'branch_id' => $branchMain->id,
+                'product_id' => $prodMBCreatine->id,
+                'quantity' => 18,
+                'cost_price' => 750.00,
+                'selling_price' => 1099.00,
+            ]);
+
+            $stockC4_Main = ProductBranchStock::create([
+                'gym_id' => $gym->id,
+                'branch_id' => $branchMain->id,
+                'product_id' => $prodC4->id,
+                'quantity' => 8,
+                'cost_price' => 2100.00,
+                'selling_price' => 2899.00,
+            ]);
+
+            $stockBars_Main = ProductBranchStock::create([
+                'gym_id' => $gym->id,
+                'branch_id' => $branchMain->id,
+                'product_id' => $prodProteinBar->id,
+                'quantity' => 15,
+                'cost_price' => 420.00,
+                'selling_price' => 600.00,
+            ]);
+
+            $stockShaker_Main = ProductBranchStock::create([
+                'gym_id' => $gym->id,
+                'branch_id' => $branchMain->id,
+                'product_id' => $prodShaker->id,
+                'quantity' => 20,
+                'cost_price' => 380.00,
+                'selling_price' => 699.00,
+            ]);
+
+            $stockStraps_Main = ProductBranchStock::create([
+                'gym_id' => $gym->id,
+                'branch_id' => $branchMain->id,
+                'product_id' => $prodStraps->id,
+                'quantity' => 14,
+                'cost_price' => 220.00,
+                'selling_price' => 499.00,
+            ]);
+
+            // Bandra Elite Branch Stocks
+            ProductBranchStock::create([
+                'gym_id' => $gym->id,
+                'branch_id' => $branchBandra->id,
+                'product_id' => $prodONWhey->id,
+                'quantity' => 6,
+                'cost_price' => 5200.00,
+                'selling_price' => 6499.00,
+            ]);
+
+            ProductBranchStock::create([
+                'gym_id' => $gym->id,
+                'branch_id' => $branchBandra->id,
+                'product_id' => $prodMBCreatine->id,
+                'quantity' => 10,
+                'cost_price' => 750.00,
+                'selling_price' => 1099.00,
+            ]);
+
+            ProductBranchStock::create([
+                'gym_id' => $gym->id,
+                'branch_id' => $branchBandra->id,
+                'product_id' => $prodShaker->id,
+                'quantity' => 12,
+                'cost_price' => 380.00,
+                'selling_price' => 699.00,
+            ]);
+
+            // 4. Batches & Expiry Dates (including 1 batch expiring in 25 days to demonstrate alerts)
+            $batchON1 = ProductBatch::create([
+                'gym_id' => $gym->id,
+                'branch_id' => $branchMain->id,
+                'product_id' => $prodONWhey->id,
+                'supplier_id' => $supON->id,
+                'batch_number' => 'ON-2026-B08',
+                'manufacturing_date' => now()->subMonths(3)->toDateString(),
+                'expiry_date' => now()->addMonths(15)->toDateString(),
+                'cost_price' => 5200.00,
+                'selling_price' => 6499.00,
+                'initial_quantity' => 12,
+                'current_quantity' => 12,
+            ]);
+
+            $batchCrea1 = ProductBatch::create([
+                'gym_id' => $gym->id,
+                'branch_id' => $branchMain->id,
+                'product_id' => $prodMBCreatine->id,
+                'supplier_id' => $supMB->id,
+                'batch_number' => 'MB-CR-9921',
+                'manufacturing_date' => now()->subMonths(2)->toDateString(),
+                'expiry_date' => now()->addMonths(18)->toDateString(),
+                'cost_price' => 750.00,
+                'selling_price' => 1099.00,
+                'initial_quantity' => 18,
+                'current_quantity' => 18,
+            ]);
+
+            // Expiring Batch alert demonstration (Protein Bar expiring in 22 days)
+            $batchBarsExpiring = ProductBatch::create([
+                'gym_id' => $gym->id,
+                'branch_id' => $branchMain->id,
+                'product_id' => $prodProteinBar->id,
+                'supplier_id' => $supMB->id,
+                'batch_number' => 'RB-EXP-2026',
+                'manufacturing_date' => now()->subMonths(5)->toDateString(),
+                'expiry_date' => now()->addDays(22)->toDateString(), // Triggers expiring alert!
+                'cost_price' => 420.00,
+                'selling_price' => 600.00,
+                'initial_quantity' => 15,
+                'current_quantity' => 15,
+            ]);
+
+            // 5. Initial Opening Stock Inventory Movements (Permanent Audit Trail)
+            $initialProducts = [
+                [$prodONWhey, 12, 5200.00, $batchON1->id],
+                [$prodMBCreatine, 18, 750.00, $batchCrea1->id],
+                [$prodC4, 8, 2100.00, null],
+                [$prodProteinBar, 15, 420.00, $batchBarsExpiring->id],
+                [$prodShaker, 20, 380.00, null],
+                [$prodStraps, 14, 220.00, null],
+            ];
+
+            foreach ($initialProducts as [$p, $qty, $cost, $bId]) {
+                InventoryMovement::create([
+                    'gym_id' => $gym->id,
+                    'branch_id' => $branchMain->id,
+                    'product_id' => $p->id,
+                    'product_batch_id' => $bId,
+                    'type' => 'opening_stock',
+                    'reference_type' => 'opening_stock',
+                    'reference_id' => $p->id,
+                    'quantity_change' => $qty,
+                    'quantity_before' => 0,
+                    'quantity_after' => $qty,
+                    'unit_cost' => $cost,
+                    'total_cost' => round($qty * $cost, 2),
+                    'notes' => 'Initial inventory opening balance',
+                    'user_id' => $owner->id,
+                ]);
+            }
+
+            // 6. Purchase Invoice from Optimum Nutrition India (Stock Purchase Workflow)
+            $purInvoice = PurchaseInvoice::create([
+                'gym_id' => $gym->id,
+                'branch_id' => $branchMain->id,
+                'supplier_id' => $supON->id,
+                'invoice_number' => 'PUR-2026-0001',
+                'invoice_date' => now()->subDays(5)->toDateString(),
+                'subtotal' => 62400.00, // 12 units @ 5200
+                'tax_amount' => 11232.00, // 18% GST
+                'discount_amount' => 1000.00,
+                'total_amount' => 72632.00,
+                'paid_amount' => 50000.00,
+                'status' => 'received',
+                'payment_status' => 'partial',
+                'notes' => 'Bimonthly whey protein restock. Advance 50k paid.',
+                'received_by_user_id' => $owner->id,
+            ]);
+
+            PurchaseInvoiceItem::create([
+                'gym_id' => $gym->id,
+                'purchase_invoice_id' => $purInvoice->id,
+                'product_id' => $prodONWhey->id,
+                'batch_number' => 'ON-2026-B08',
+                'manufacturing_date' => now()->subMonths(3)->toDateString(),
+                'expiry_date' => now()->addMonths(15)->toDateString(),
+                'quantity' => 12,
+                'unit_cost' => 5200.00,
+                'subtotal' => 62400.00,
+                'tax_percent' => 18.00,
+                'tax_amount' => 11232.00,
+                'total_amount' => 73632.00,
+            ]);
+
+            // Supplier ledger entries & partial payment
+            SupplierLedger::create([
+                'gym_id' => $gym->id,
+                'supplier_id' => $supON->id,
+                'branch_id' => $branchMain->id,
+                'transaction_type' => 'purchase_invoice',
+                'reference_id' => $purInvoice->id,
+                'reference_number' => 'PUR-2026-0001',
+                'debit' => 72632.00,
+                'credit' => 0,
+                'running_balance' => 72632.00,
+                'transaction_date' => now()->subDays(5)->toDateString(),
+                'notes' => 'Purchase Invoice #PUR-2026-0001',
+                'created_by_user_id' => $owner->id,
+            ]);
+
+            $supPayment = SupplierPayment::create([
+                'gym_id' => $gym->id,
+                'branch_id' => $branchMain->id,
+                'supplier_id' => $supON->id,
+                'payment_number' => 'SPAY-2026-0001',
+                'amount' => 50000.00,
+                'payment_mode' => 'bank_transfer',
+                'payment_date' => now()->subDays(5)->toDateString(),
+                'reference_id' => 'NEFT-ON-889911',
+                'notes' => 'Part payment for Invoice #PUR-2026-0001',
+                'paid_by_user_id' => $owner->id,
+            ]);
+
+            SupplierLedger::create([
+                'gym_id' => $gym->id,
+                'supplier_id' => $supON->id,
+                'branch_id' => $branchMain->id,
+                'transaction_type' => 'payment',
+                'reference_id' => $supPayment->id,
+                'reference_number' => 'SPAY-2026-0001',
+                'debit' => 0,
+                'credit' => 50000.00,
+                'running_balance' => 22632.00,
+                'transaction_date' => now()->subDays(5)->toDateString(),
+                'notes' => 'Bank Transfer Ref: NEFT-ON-889911',
+                'created_by_user_id' => $owner->id,
+            ]);
+
+            $supON->recalculateBalances();
+
+            // 7. POS Sale 1: First Member buys ON Whey + Shaker (Paid via UPI)
+            $member1 = Member::first();
+            $posOrder1 = PosOrder::create([
+                'gym_id' => $gym->id,
+                'branch_id' => $branchMain->id,
+                'order_number' => 'POS-2026-0001',
+                'member_id' => $member1?->id,
+                'customer_name' => $member1 ? $member1->full_name : 'Rahul Sharma',
+                'customer_phone' => $member1 ? $member1->phone : '9811122233',
+                'subtotal' => 7198.00, // 6499 + 699
+                'discount_amount' => 198.00,
+                'tax_amount' => 1260.00,
+                'total_amount' => 8260.00,
+                'paid_amount' => 8260.00,
+                'balance_due' => 0.00,
+                'payment_method' => 'upi',
+                'payment_status' => 'paid',
+                'status' => 'completed',
+                'order_date' => now()->subDays(2)->toDateString(),
+                'notes' => 'Reception POS checkout for ' . ($member1 ? $member1->full_name : 'Member'),
+                'billed_by_user_id' => $reception->id,
+            ]);
+
+            // Deduct stock for order 1
+            $stockON_Main->decrement('quantity', 1);
+            $stockShaker_Main->decrement('quantity', 1);
+
+            PosOrderItem::create([
+                'gym_id' => $gym->id,
+                'pos_order_id' => $posOrder1->id,
+                'product_id' => $prodONWhey->id,
+                'product_batch_id' => $batchON1->id,
+                'quantity' => 1,
+                'unit_cost_at_sale' => 5200.00, // Exact COGS
+                'unit_price' => 6499.00,
+                'discount_amount' => 198.00,
+                'tax_percent' => 18.00,
+                'tax_amount' => 1134.00,
+                'total_amount' => 7435.00,
+            ]);
+
+            PosOrderItem::create([
+                'gym_id' => $gym->id,
+                'pos_order_id' => $posOrder1->id,
+                'product_id' => $prodShaker->id,
+                'quantity' => 1,
+                'unit_cost_at_sale' => 380.00,
+                'unit_price' => 699.00,
+                'discount_amount' => 0,
+                'tax_percent' => 18.00,
+                'tax_amount' => 126.00,
+                'total_amount' => 825.00,
+            ]);
+
+            InventoryMovement::create([
+                'gym_id' => $gym->id,
+                'branch_id' => $branchMain->id,
+                'product_id' => $prodONWhey->id,
+                'product_batch_id' => $batchON1->id,
+                'type' => 'sale',
+                'reference_type' => 'pos_order',
+                'reference_id' => $posOrder1->id,
+                'quantity_change' => -1,
+                'quantity_before' => 12,
+                'quantity_after' => 11,
+                'unit_cost' => 5200.00,
+                'total_cost' => 5200.00,
+                'notes' => 'POS Order #POS-2026-0001',
+                'user_id' => $reception->id,
+            ]);
+
+            InventoryMovement::create([
+                'gym_id' => $gym->id,
+                'branch_id' => $branchMain->id,
+                'product_id' => $prodShaker->id,
+                'type' => 'sale',
+                'reference_type' => 'pos_order',
+                'reference_id' => $posOrder1->id,
+                'quantity_change' => -1,
+                'quantity_before' => 20,
+                'quantity_after' => 19,
+                'unit_cost' => 380.00,
+                'total_cost' => 380.00,
+                'notes' => 'POS Order #POS-2026-0001',
+                'user_id' => $reception->id,
+            ]);
+
+            // Member Ledger sync
+            MemberLedger::create([
+                'gym_id' => $gym->id,
+                'branch_id' => $branchMain->id,
+                'member_id' => $member1->id,
+                'type' => 'charge',
+                'reference_type' => 'pos_order',
+                'reference_id' => $posOrder1->id,
+                'description' => 'Store Supplement Purchase #POS-2026-0001',
+                'debit' => 8260.00,
+                'credit' => 0,
+                'running_balance' => (float) $member1->outstanding_balance + 8260.00,
+                'transaction_date' => $posOrder1->order_date,
+                'created_by_user_id' => $reception->id,
+            ]);
+
+            MemberLedger::create([
+                'gym_id' => $gym->id,
+                'branch_id' => $branchMain->id,
+                'member_id' => $member1->id,
+                'type' => 'payment',
+                'reference_type' => 'pos_order',
+                'reference_id' => $posOrder1->id,
+                'description' => 'POS Payment for #POS-2026-0001 via UPI',
+                'debit' => 0,
+                'credit' => 8260.00,
+                'running_balance' => (float) $member1->outstanding_balance,
+                'transaction_date' => $posOrder1->order_date,
+                'created_by_user_id' => $reception->id,
+            ]);
+
+            $member1->recalculateBalances();
+
+            // 8. POS Sale 2: Walk-in customer buys Protein Bar and Creatine (Cash)
+            $posOrder2 = PosOrder::create([
+                'gym_id' => $gym->id,
+                'branch_id' => $branchMain->id,
+                'order_number' => 'POS-2026-0002',
+                'customer_name' => 'Kunal Joshi (Walk-in)',
+                'customer_phone' => '9820055443',
+                'subtotal' => 1699.00, // 1099 + 600
+                'discount_amount' => 0,
+                'tax_amount' => 270.00,
+                'total_amount' => 1969.00,
+                'paid_amount' => 1969.00,
+                'balance_due' => 0.00,
+                'payment_method' => 'cash',
+                'payment_status' => 'paid',
+                'status' => 'completed',
+                'order_date' => now()->toDateString(),
+                'notes' => 'Walk-in cash counter sale',
+                'billed_by_user_id' => $reception->id,
+            ]);
+
+            $stockCrea_Main->decrement('quantity', 1);
+            $stockBars_Main->decrement('quantity', 1);
+
+            PosOrderItem::create([
+                'gym_id' => $gym->id,
+                'pos_order_id' => $posOrder2->id,
+                'product_id' => $prodMBCreatine->id,
+                'product_batch_id' => $batchCrea1->id,
+                'quantity' => 1,
+                'unit_cost_at_sale' => 750.00,
+                'unit_price' => 1099.00,
+                'discount_amount' => 0,
+                'tax_percent' => 18.00,
+                'tax_amount' => 198.00,
+                'total_amount' => 1297.00,
+            ]);
+
+            PosOrderItem::create([
+                'gym_id' => $gym->id,
+                'pos_order_id' => $posOrder2->id,
+                'product_id' => $prodProteinBar->id,
+                'product_batch_id' => $batchBarsExpiring->id,
+                'quantity' => 1,
+                'unit_cost_at_sale' => 420.00,
+                'unit_price' => 600.00,
+                'discount_amount' => 0,
+                'tax_percent' => 12.00,
+                'tax_amount' => 72.00,
+                'total_amount' => 672.00,
+            ]);
+
+            // 9. Stock Adjustment: 1 Shaker damaged in transit write-off
+            $stockShaker_Main->decrement('quantity', 1);
+            InventoryMovement::create([
+                'gym_id' => $gym->id,
+                'branch_id' => $branchMain->id,
+                'product_id' => $prodShaker->id,
+                'type' => 'damaged',
+                'reference_type' => 'stock_adjustment',
+                'quantity_change' => -1,
+                'quantity_before' => 19,
+                'quantity_after' => 18,
+                'unit_cost' => 380.00,
+                'total_cost' => 380.00,
+                'notes' => 'Cracked lid during delivery unboxing write-off',
+                'user_id' => $owner->id,
             ]);
 
             AuditLog::record('system.seeded', ['gym' => $gym->name]);

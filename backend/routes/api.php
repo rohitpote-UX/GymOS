@@ -11,14 +11,20 @@ use App\Http\Controllers\Api\BrandingController;
 use App\Http\Controllers\Api\CashClosingController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ExpenseController;
+use App\Http\Controllers\Api\InventoryController;
 use App\Http\Controllers\Api\LeadController;
 use App\Http\Controllers\Api\MemberController;
 use App\Http\Controllers\Api\MemberMembershipController;
 use App\Http\Controllers\Api\MembershipPlanController;
 use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\PosController;
+use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\ProfitabilityController;
+use App\Http\Controllers\Api\PurchaseInvoiceController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\SettingsController;
 use App\Http\Controllers\Api\StaffController;
+use App\Http\Controllers\Api\SupplierController;
 use App\Http\Controllers\Api\TrainerController;
 use Illuminate\Support\Facades\Route;
 
@@ -149,4 +155,41 @@ Route::middleware(['auth:sanctum', 'gym', 'branch'])->group(function () {
 
     // Tenant Audit Trail
     Route::get('/audit-logs', [AuditLogController::class, 'index']);
+
+    // =========================================================
+    // PROMPT 03: GYM INVENTORY, SUPPLEMENT POS & PROFITABILITY
+    // =========================================================
+
+    // 1. Products Master Catalog & Barcode Scanner Lookup
+    Route::get('/products/categories', [ProductController::class, 'categories']);
+    Route::get('/products/barcode/{code}', [ProductController::class, 'barcodeLookup']);
+    Route::apiResource('products', ProductController::class);
+
+    // 2. Inventory Movements, Stock Adjustments, Low Stock & Batches
+    Route::get('/inventory/movements', [InventoryController::class, 'movements']);
+    Route::post('/inventory/adjust', [InventoryController::class, 'adjustStock']);
+    Route::get('/inventory/low-stock', [InventoryController::class, 'lowStockAlerts']);
+    Route::get('/inventory/expiring', [InventoryController::class, 'expiringAlerts']);
+    Route::post('/inventory/transfers', [InventoryController::class, 'transferStock']);
+
+    // 3. Suppliers Management, Ledgers & Payments
+    Route::get('/suppliers/{id}/ledger', [SupplierController::class, 'ledger']);
+    Route::post('/suppliers/{id}/payments', [SupplierController::class, 'recordPayment']);
+    Route::apiResource('suppliers', SupplierController::class);
+
+    // 4. Purchase Invoices (Goods Inward & Weighted Average Costing)
+    Route::apiResource('purchase-invoices', PurchaseInvoiceController::class)->only(['index', 'store', 'show']);
+
+    // 5. Point of Sale (POS) Reception Checkout & Refunds
+    Route::post('/pos/checkout', [PosController::class, 'checkout']);
+    Route::get('/pos/orders', [PosController::class, 'orders']);
+    Route::get('/pos/orders/{id}', [PosController::class, 'show']);
+    Route::post('/pos/orders/{id}/refund', [PosController::class, 'refund']);
+
+    // 6. Profitability Engine, COGS, Margins & Valuation
+    Route::get('/profitability/overview', [ProfitabilityController::class, 'overview']);
+    Route::get('/profitability/product-performance', [ProfitabilityController::class, 'productPerformance']);
+    Route::get('/profitability/slow-moving', [ProfitabilityController::class, 'slowMoving']);
+    Route::get('/profitability/stock-loss', [ProfitabilityController::class, 'stockLoss']);
+    Route::get('/profitability/branch-matrix', [ProfitabilityController::class, 'branchMatrix']);
 });

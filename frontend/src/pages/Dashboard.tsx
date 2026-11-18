@@ -2,7 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Activity,
+  AlertTriangle,
   ArrowUpRight,
+  Boxes,
   Building2,
   CalendarCheck,
   CheckCircle2,
@@ -10,8 +12,10 @@ import {
   CreditCard,
   Dumbbell,
   MessageCircle,
+  Package,
   Plus,
   Receipt,
+  ShoppingCart,
   TrendingUp,
   UserCheck,
   Users,
@@ -68,6 +72,26 @@ interface DashboardData {
     members_count: number;
     staff_count: number;
   }>;
+  inventory?: {
+    stock_cost_valuation: number;
+    stock_retail_valuation: number;
+    low_stock_count: number;
+    expiring_batches_count: number;
+    today_sales: number;
+    monthly_sales: number;
+    monthly_cogs: number;
+    monthly_gross_profit: number;
+    monthly_gross_margin_percent: number;
+    supplier_dues: number;
+    best_sellers: Array<{
+      id: number;
+      name: string;
+      brand: string;
+      category: string;
+      units_sold: number;
+      total_sales: number;
+    }>;
+  };
 }
 
 export const Dashboard: React.FC = () => {
@@ -241,6 +265,118 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Inventory & Supplement POS Overview (Prompt 03) */}
+      {data?.inventory && (
+        <div className="bg-[#0f172a] border border-slate-800 rounded-2xl p-5 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+                <Package className="w-5 h-5 text-emerald-400" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  <span>Supplement Inventory & Reception POS</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold uppercase">
+                    WAC Engine
+                  </span>
+                </h3>
+                <p className="text-[11px] text-slate-400">
+                  Stock valuation, supplement gross profits, and best-selling nutrition
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 text-xs">
+              <Link
+                to="/pos"
+                className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-lg flex items-center gap-1.5 shadow-sm"
+              >
+                <ShoppingCart className="w-3.5 h-3.5" />
+                <span>Open POS Terminal</span>
+              </Link>
+              <Link
+                to="/inventory"
+                className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-lg border border-slate-700"
+              >
+                Stock Control
+              </Link>
+              <Link
+                to="/profitability"
+                className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-lg border border-slate-700"
+              >
+                COGS Analytics
+              </Link>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+            <div className="p-3 bg-slate-950/60 border border-slate-800/80 rounded-xl space-y-1">
+              <span className="text-[11px] text-slate-400">Stock Cost Value (WAC)</span>
+              <div className="text-lg font-bold text-white">
+                ₹{data.inventory.stock_cost_valuation?.toLocaleString('en-IN') || 0}
+              </div>
+              <span className="text-[10px] text-slate-500">
+                Retail: ₹{data.inventory.stock_retail_valuation?.toLocaleString('en-IN') || 0}
+              </span>
+            </div>
+
+            <div className="p-3 bg-slate-950/60 border border-slate-800/80 rounded-xl space-y-1">
+              <span className="text-[11px] text-slate-400">Monthly Supplement Sales</span>
+              <div className="text-lg font-bold text-emerald-400">
+                ₹{data.inventory.monthly_sales?.toLocaleString('en-IN') || 0}
+              </div>
+              <span className="text-[10px] text-emerald-400 font-medium">
+                Today: ₹{data.inventory.today_sales?.toLocaleString('en-IN') || 0}
+              </span>
+            </div>
+
+            <div className="p-3 bg-slate-950/60 border border-slate-800/80 rounded-xl space-y-1">
+              <span className="text-[11px] text-slate-400">Supplement Gross Profit</span>
+              <div className="text-lg font-bold text-emerald-400">
+                ₹{data.inventory.monthly_gross_profit?.toLocaleString('en-IN') || 0}
+              </div>
+              <span className="text-[10px] text-emerald-400 font-semibold">
+                Margin: {data.inventory.monthly_gross_margin_percent}%
+              </span>
+            </div>
+
+            <div className="p-3 bg-slate-950/60 border border-slate-800/80 rounded-xl space-y-1">
+              <span className="text-[11px] text-slate-400">Low Stock Alert</span>
+              <div className="text-lg font-bold text-amber-400">
+                {data.inventory.low_stock_count} Items
+              </div>
+              <span className="text-[10px] text-slate-500">At or below reorder level</span>
+            </div>
+
+            <div className="p-3 bg-slate-950/60 border border-slate-800/80 rounded-xl space-y-1">
+              <span className="text-[11px] text-slate-400">Expiring in 30 Days</span>
+              <div className="text-lg font-bold text-rose-400">
+                {data.inventory.expiring_batches_count} Batches
+              </div>
+              <span className="text-[10px] text-slate-500">Requires promotion/clearance</span>
+            </div>
+          </div>
+
+          {/* Top Selling Products Bar */}
+          {data.inventory.best_sellers && data.inventory.best_sellers.length > 0 && (
+            <div className="pt-2 border-t border-slate-800/80">
+              <div className="text-xs font-semibold text-slate-400 mb-2">🔥 Top Fast-Moving Supplements</div>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                {data.inventory.best_sellers.map((p) => (
+                  <div key={p.id} className="p-2 bg-slate-900/60 border border-slate-800 rounded-lg text-xs">
+                    <div className="font-semibold text-white truncate">{p.name}</div>
+                    <div className="text-[10px] text-slate-400 flex justify-between mt-1">
+                      <span>{p.units_sold} sold</span>
+                      <span className="font-bold text-emerald-400">₹{p.total_sales}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Lower Section: Expiring Memberships & Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

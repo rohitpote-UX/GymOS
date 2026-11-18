@@ -8,12 +8,16 @@ import Branches from './pages/Branches';
 import CashClosing from './pages/CashClosing';
 import Dashboard from './pages/Dashboard';
 import Expenses from './pages/Expenses';
+import Inventory from './pages/Inventory';
 import Leads from './pages/Leads';
 import Login from './pages/Login';
 import Members from './pages/Members';
 import MembershipPlans from './pages/MembershipPlans';
 import Payments from './pages/Payments';
 import PlanExpired from './pages/PlanExpired';
+import Pos from './pages/Pos';
+import Profitability from './pages/Profitability';
+import Purchases from './pages/Purchases';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 import Staff from './pages/Staff';
@@ -63,6 +67,10 @@ const AppRoutes: React.FC = () => {
         <Route index element={<Dashboard />} />
         <Route path="/attendance" element={<Attendance />} />
         <Route path="/members" element={<Members />} />
+        <Route path="/pos" element={<Pos />} />
+        <Route path="/inventory" element={<Inventory />} />
+        <Route path="/purchases" element={<Purchases />} />
+        <Route path="/profitability" element={<Profitability />} />
         <Route path="/leads" element={<Leads />} />
         <Route path="/payments" element={<Payments />} />
         <Route path="/cash-closing" element={<CashClosing />} />
