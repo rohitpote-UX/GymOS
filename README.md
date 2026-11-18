@@ -1,6 +1,6 @@
-# Gym Business OS — India's Premier Gym Management SaaS Platform
+# Gym Business OS (GymOS) — India's Premier Gym Management SaaS Platform
 
-A multi-tenant, offline-ready, multi-branch Gym Business Operating System built with **Laravel 12 REST API**, **MySQL 8 / SQLite**, **React 19 + TypeScript + Vite PWA**, **Tailwind CSS**, **Lucide Icons**, and **Razorpay**.
+A multi-tenant, offline-ready, multi-branch Gym Business Operating System built with **Laravel 12 REST API**, **MySQL 8 / SQLite**, **React 19 + TypeScript + Vite PWA**, **Tailwind CSS**, **Lucide Icons**, **i18next Multilingual Support (English, Marathi, Hindi)**, and **Razorpay**.
 
 ---
 
@@ -12,16 +12,28 @@ A multi-tenant, offline-ready, multi-branch Gym Business Operating System built 
 - **Location/Facility Level (`branches`)**: Hierarchical branch support (`Downtown Flagship`, `Bandra Studio`, etc.). Requests carry `X-Branch-ID`, verified against user permissions via `ResolveGymBranch` middleware.
 - **Never Trust Client Tenant ID**: `gym_id` is derived strictly from the authenticated Sanctum token (`$user->gym_id`), never from request headers or input payloads.
 
+### Production Multilingual System (EN + MR + HI)
+- **3 Supported Languages**: English (`en`), Marathi / मराठी (`mr`), Hindi / हिन्दी (`hi`).
+- **Global Native Switcher**: Available across Login, Navigation Sidebar, Settings, Member Pass, and Trainer Workspace.
+- **Independent User Preferences**: Per-user DB persistence (`PUT /api/me/language`), guest preference in `localStorage`, and zero-reload reactive updates.
+- **Regional Indian Formatters**: Indian currency numbering (`₹1,25,000.00`), localized dates, and Devanagari typography (`Noto Sans Devanagari`).
+- **Backend Localization**: Laravel 12 `SetLocale` middleware, language dictionaries (`lang/en`, `lang/mr`, `lang/hi`), multilingual WhatsApp templates, and UTF-8 BOM CSV exports.
+
 ### Offline Outbox & Idempotent Transactions
 - Gym front desk check-ins, fee collections, and member enrolments generate a persistent `client_uuid`.
 - In offline scenarios (Wi-Fi dropouts), actions queue safely in `localStorage` scoped per gym.
 - When reconnected, the browser fires auto-sync. The backend enforces unique `client_uuid` constraints, returning existing records without duplicate transactions or double billing.
 
-### WhatsApp Integration-Ready
-- One-click WhatsApp dispatch links (`wa.me`) for:
-  - **Instant Payment Receipts**: Formatted with receipt numbers, amounts, and validity dates.
-  - **Membership Renewal Alerts**: Automated reminder messages with days remaining.
-  - **New Member Welcome Cards**: Stamped with Member ID and assigned home branch.
+### Inventory, WAC Costing & Retail POS
+- Barcode scanning & quick lookup for supplements, merchandise, and gym gear.
+- Real-time stock movement ledger, batch expiry warnings, and Weighted Average Costing (WAC).
+- Sales counter with cash, UPI, card, and member ledger dues reconciliation.
+
+### Business Intelligence, Action Center & WhatsApp
+- Real-time Owner Dashboard with collections, expenses, and operating profit formula.
+- Operational Action Center radar for expiring memberships, overdue dues, and inactive members.
+- WhatsApp Business automation templates with token interpolation.
+- AI Gym Business Advisor for revenue intelligence and churn prevention.
 
 ### Razorpay Subscription Billing
 - Multi-tier SaaS plans: **Starter Studio** (1 branch), **Growth Club** (up to 3 branches), and **Enterprise Franchise** (unlimited branches).
@@ -100,13 +112,17 @@ php artisan serve
 cd backend
 php artisan test
 ```
-All 12 feature and unit tests (60 assertions) will execute, confirming:
+All 48 feature and unit tests (298 assertions) will execute, confirming:
 - Gym B cannot query or touch Gym A's data (returns 404 / empty set)
 - Gym B cannot write payments or attendance against Gym A's members
 - Fail-closed tenant isolation without context
 - Suspended and expired gym account lockdown
 - Staff branch permissions isolation
 - Outbox `client_uuid` idempotency
+- Inventory stock movements, WAC recalculations, and POS checkout
+- Business intelligence metrics and operating profit calculations
+- Multilingual user language persistence, middleware resolution, and localized validation
+- Security hardening (cross-tenant ID tampering, SQL injection, XSS)
 
 ### Frontend Setup
 ```bash

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Activity,
   AlertCircle,
@@ -20,6 +21,7 @@ import {
 import api, { errorMessage } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { submitWithOutbox } from '../lib/outbox';
+import { formatDate, formatDateTime, formatNumber } from '../lib/formatters';
 
 interface MemberSummary {
   id: number;
@@ -43,6 +45,7 @@ interface AttendanceItem {
 }
 
 export default function Attendance() {
+  const { t, i18n } = useTranslation();
   const { activeBranchId } = useAuth();
   const [logs, setLogs] = useState<AttendanceItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -149,23 +152,29 @@ export default function Attendance() {
     setCheckInLoading(true);
     setToastMessage(null);
     try {
-      const res = await api.post('/attendance/qr-check-in', {
-        qr_data: member.member_code,
+      const res = await submitWithOutbox('/attendance/check-in', {
+        member_id: member.id,
         branch_id: activeBranchId,
-      });
+        method: 'front_desk',
+      }, `Check-in: ${member.first_name} (${member.member_code})`);
 
-      setVerificationModal({
-        open: true,
-        member: res.data.member || res.data.log?.member || member,
-        plan_name: res.data.plan_name,
-        is_expired: res.data.is_expired,
-        is_frozen: res.data.is_frozen,
-        remaining_days: res.data.remaining_days,
-        outstanding_balance: res.data.outstanding_balance,
-        already_inside: res.data.already_inside,
-        action: res.data.action,
-        message: res.data.message,
-      });
+      if (res.queued) {
+        setToastMessage(`Check-in for ${member.first_name} queued offline in Outbox. (Pending server confirmation upon reconnection).`);
+      } else {
+        const data = (res.data as any) || {};
+        setVerificationModal({
+          open: true,
+          member: data.log?.member || member,
+          plan_name: data.plan_name || 'Standard Package',
+          is_expired: data.is_expired,
+          is_frozen: data.is_frozen,
+          remaining_days: data.remaining_days ?? 30,
+          outstanding_balance: data.outstanding_balance ?? 0,
+          already_inside: data.already_checked_in,
+          action: 'checked_in',
+          message: data.message || `Check-in recorded for ${member.first_name}`,
+        });
+      }
 
       setSearchQuery('');
       setSearchResults([]);
@@ -194,10 +203,10 @@ export default function Attendance() {
         <div>
           <h2 className="text-xl md:text-2xl font-black text-white tracking-tight flex items-center gap-2">
             <CalendarCheck className="w-6 h-6 text-emerald-400" />
-            <span>Attendance & Floor Access Control</span>
+            <span>{t('attendance.title', 'Attendance & Floor Access Control')}</span>
           </h2>
           <p className="text-xs text-slate-400 mt-0.5">
-            QR code scanner, member validity alerts, duplicate check-in prevention, and live occupancy
+            {t('attendance.subtitle', 'QR code scanner, manual search check-in and branch live occupancy')}
           </p>
         </div>
 
@@ -206,15 +215,23 @@ export default function Attendance() {
           <div className="bg-[#0f172a] border border-slate-800 px-4 py-2 rounded-xl flex items-center gap-3">
             <Activity className="w-5 h-5 text-sky-400 animate-pulse" />
             <div>
-              <span className="text-xs text-slate-400 uppercase tracking-wider block text-[10px]">On Floor</span>
-              <span className="text-lg font-black text-white">{stats.currently_inside} Members</span>
+              <span className="text-xs text-slate-400 uppercase tracking-wider block text-[10px]">
+                {t('attendance.inside_now', 'On Floor')}
+              </span>
+              <span className="text-lg font-black text-white">
+                {formatNumber(stats.currently_inside, i18n.language)}
+              </span>
             </div>
           </div>
           <div className="bg-[#0f172a] border border-slate-800 px-4 py-2 rounded-xl flex items-center gap-3">
             <Users className="w-5 h-5 text-emerald-400" />
             <div>
-              <span className="text-xs text-slate-400 uppercase tracking-wider block text-[10px]">Today's Check-ins</span>
-              <span className="text-lg font-black text-white">{stats.total_check_ins} Total</span>
+              <span className="text-xs text-slate-400 uppercase tracking-wider block text-[10px]">
+                {t('dashboard.today_attendance', "Today's Check-ins")}
+              </span>
+              <span className="text-lg font-black text-white">
+                {formatNumber(stats.total_check_ins, i18n.language)}
+              </span>
             </div>
           </div>
         </div>
@@ -234,14 +251,14 @@ export default function Attendance() {
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-white flex items-center gap-2">
               <QrCode className="w-5 h-5 text-emerald-400" />
-              <span>QR Code Scanner / ID Check-in</span>
+              <span>{t('attendance.qr_scan_tab', 'QR Code Check-in')}</span>
             </h3>
             <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
               FAST PASS
             </span>
           </div>
           <p className="text-xs text-slate-400">
-            Scan member QR pass with camera or type member code (e.g. <span className="font-mono text-emerald-400 font-bold">MEM-0001</span>, <span className="font-mono text-emerald-400 font-bold">ICF-0001</span>).
+            Scan member QR pass or type member code (e.g. <span className="font-mono text-emerald-400 font-bold">MEM-0001</span>).
           </p>
 
           <form onSubmit={handleQrCheckIn} className="flex gap-2">
@@ -256,21 +273,21 @@ export default function Attendance() {
             <button
               type="submit"
               disabled={checkInLoading || !qrInput.trim()}
-              className="bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-slate-950 font-bold px-4 py-2.5 rounded-xl text-xs cursor-pointer transition-colors shadow-lg shadow-emerald-500/20"
+              className="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
-              {checkInLoading ? 'Checking...' : 'Check-In'}
+              <span>{t('attendance.check_in', 'Check In')}</span>
             </button>
           </form>
         </div>
 
         {/* Box 2: Name / Phone Search Entry */}
-        <div className="bg-[#0f172a] border border-slate-800 p-5 rounded-2xl space-y-3">
+        <div className="bg-[#0f172a] border border-slate-800 p-5 rounded-2xl shadow-xl space-y-3">
           <h3 className="text-sm font-bold text-white flex items-center gap-2">
             <UserCheck className="w-5 h-5 text-sky-400" />
-            <span>Search Member by Name or Phone</span>
+            <span>{t('attendance.manual_tab', 'Manual Member Search Check-in')}</span>
           </h3>
           <p className="text-xs text-slate-400">
-            Front-desk manual check-in for members without their phone or QR card.
+            {t('attendance.search_member', 'Front-desk manual check-in for members without their phone or QR card.')}
           </p>
 
           <div className="relative">

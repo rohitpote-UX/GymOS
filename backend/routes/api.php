@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\Api\ActionCenterController;
 use App\Http\Controllers\Api\Admin\GymController as AdminGymController;
 use App\Http\Controllers\Api\Admin\PlanController as AdminPlanController;
+use App\Http\Controllers\Api\AiAdvisorController;
 use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\AuditLogController;
 use App\Http\Controllers\Api\AuthController;
@@ -15,7 +17,9 @@ use App\Http\Controllers\Api\InventoryController;
 use App\Http\Controllers\Api\LeadController;
 use App\Http\Controllers\Api\MemberController;
 use App\Http\Controllers\Api\MemberMembershipController;
+use App\Http\Controllers\Api\MemberPortalController;
 use App\Http\Controllers\Api\MembershipPlanController;
+use App\Http\Controllers\Api\OwnerDashboardController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\PosController;
 use App\Http\Controllers\Api\ProductController;
@@ -25,7 +29,10 @@ use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\SettingsController;
 use App\Http\Controllers\Api\StaffController;
 use App\Http\Controllers\Api\SupplierController;
+use App\Http\Controllers\Api\SupportTicketController;
 use App\Http\Controllers\Api\TrainerController;
+use App\Http\Controllers\Api\TrainerPortalController;
+use App\Http\Controllers\Api\WhatsAppController;
 use Illuminate\Support\Facades\Route;
 
 // -------------------------------------------------------------
@@ -34,6 +41,7 @@ use Illuminate\Support\Facades\Route;
 Route::post('/register', [AuthController::class, 'registerGym'])->middleware('throttle:15,1');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:20,1');
 Route::post('/billing/webhook', [BillingController::class, 'webhook']);
+Route::match(['get', 'post'], '/whatsapp/webhook', [WhatsAppController::class, 'webhook']);
 
 // Public branding & PWA manifest endpoints
 Route::get('/branding', [BrandingController::class, 'platform']);
@@ -49,6 +57,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::put('/me/password', [AuthController::class, 'changePassword']);
+    Route::put('/me/language', [AuthController::class, 'updateLanguage']);
 });
 
 // -------------------------------------------------------------
@@ -57,12 +66,20 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware(['auth:sanctum', 'super.admin'])->prefix('admin')->group(function () {
     Route::get('/overview', [AdminGymController::class, 'overview']);
     Route::get('/gyms', [AdminGymController::class, 'index']);
+    Route::post('/gyms', [AdminGymController::class, 'store']);
     Route::get('/gyms/{id}', [AdminGymController::class, 'show']);
+    Route::put('/gyms/{id}', [AdminGymController::class, 'update']);
     Route::post('/gyms/{id}/suspend', [AdminGymController::class, 'suspend']);
     Route::post('/gyms/{id}/activate', [AdminGymController::class, 'activate']);
     Route::post('/gyms/{id}/extend-subscription', [AdminGymController::class, 'extendSubscription']);
+    Route::post('/gyms/{id}/reset-owner-password', [AdminGymController::class, 'resetOwnerPassword']);
     Route::post('/gyms/{id}/impersonate', [AdminGymController::class, 'impersonate']);
     Route::get('/audit', [AdminGymController::class, 'auditLog']);
+
+    // Platform Support Tickets
+    Route::get('/support-tickets', [AdminGymController::class, 'supportTickets']);
+    Route::post('/support-tickets/{id}/reply', [AdminGymController::class, 'replySupportTicket']);
+    Route::put('/support-tickets/{id}/status', [AdminGymController::class, 'updateTicketStatus']);
 
     Route::apiResource('plans', AdminPlanController::class);
 });
@@ -192,4 +209,50 @@ Route::middleware(['auth:sanctum', 'gym', 'branch'])->group(function () {
     Route::get('/profitability/slow-moving', [ProfitabilityController::class, 'slowMoving']);
     Route::get('/profitability/stock-loss', [ProfitabilityController::class, 'stockLoss']);
     Route::get('/profitability/branch-matrix', [ProfitabilityController::class, 'branchMatrix']);
+
+    // =========================================================
+    // PROMPT 04: BUSINESS INTELLIGENCE, AUTOMATION & PREMIUM UX
+    // =========================================================
+
+    // 1. Owner Real-Time Executive Dashboard
+    Route::get('/owner-dashboard', OwnerDashboardController::class);
+
+    // 2. Action Center (Intelligent Notification & Triage)
+    Route::get('/action-center', [ActionCenterController::class, 'index']);
+    Route::post('/action-center', [ActionCenterController::class, 'store']);
+    Route::post('/action-center/{id}/assign', [ActionCenterController::class, 'assign']);
+    Route::post('/action-center/{id}/resolve', [ActionCenterController::class, 'resolve']);
+
+    // 3. WhatsApp Business Automation
+    Route::get('/whatsapp/templates', [WhatsAppController::class, 'templates']);
+    Route::put('/whatsapp/templates/{id}', [WhatsAppController::class, 'updateTemplate']);
+    Route::get('/whatsapp/logs', [WhatsAppController::class, 'logs']);
+    Route::post('/whatsapp/send', [WhatsAppController::class, 'send']);
+
+    // 4. AI Gym Business Advisor
+    Route::get('/ai-advisor/insights', [AiAdvisorController::class, 'insights']);
+    Route::post('/ai-advisor/ask', [AiAdvisorController::class, 'ask']);
+
+    // 5. Member Experience Portal
+    Route::get('/member-portal/profile', [MemberPortalController::class, 'profile']);
+    Route::get('/member-portal/attendance', [MemberPortalController::class, 'attendance']);
+    Route::get('/member-portal/payments', [MemberPortalController::class, 'payments']);
+    Route::get('/member-portal/workouts', [MemberPortalController::class, 'workouts']);
+    Route::get('/member-portal/pt-sessions', [MemberPortalController::class, 'ptSessions']);
+    Route::get('/member-portal/progress', [MemberPortalController::class, 'progress']);
+    Route::post('/member-portal/renew-request', [MemberPortalController::class, 'renewRequest']);
+    Route::put('/member-portal/profile', [MemberPortalController::class, 'updateProfile']);
+
+    // 6. Trainer Experience Portal
+    Route::get('/trainer-portal/dashboard', [TrainerPortalController::class, 'dashboard']);
+    Route::get('/trainer-portal/members', [TrainerPortalController::class, 'members']);
+    Route::get('/trainer-portal/sessions', [TrainerPortalController::class, 'sessions']);
+    Route::post('/trainer-portal/sessions/{id}/complete', [TrainerPortalController::class, 'completeSession']);
+    Route::post('/trainer-portal/assign-workout', [TrainerPortalController::class, 'assignWorkout']);
+    Route::post('/trainer-portal/log-progress', [TrainerPortalController::class, 'logProgress']);
+
+    // 7. Support Management (Gym-Member & SaaS Support)
+    Route::apiResource('support-tickets', SupportTicketController::class);
+    Route::post('/support-tickets/{id}/messages', [SupportTicketController::class, 'addMessage']);
+    Route::put('/support-tickets/{id}/status', [SupportTicketController::class, 'updateStatus']);
 });

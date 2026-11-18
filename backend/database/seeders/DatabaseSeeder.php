@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\ActionItem;
 use App\Models\AttendanceLog;
 use App\Models\AuditLog;
 use App\Models\Branch;
@@ -14,6 +15,8 @@ use App\Models\LeadFollowup;
 use App\Models\Member;
 use App\Models\MemberLedger;
 use App\Models\MemberMembership;
+use App\Models\MemberProgressLog;
+use App\Models\MemberWorkoutPlan;
 use App\Models\MembershipPlan;
 use App\Models\Payment;
 use App\Models\PosOrder;
@@ -29,7 +32,12 @@ use App\Models\StaffLeave;
 use App\Models\Supplier;
 use App\Models\SupplierLedger;
 use App\Models\SupplierPayment;
+use App\Models\SupportTicket;
+use App\Models\SupportTicketMessage;
 use App\Models\User;
+use App\Models\WhatsAppLog;
+use App\Models\WhatsAppTemplate;
+use App\Services\WhatsAppService;
 use App\Support\CurrentGym;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -1145,6 +1153,255 @@ class DatabaseSeeder extends Seeder
                 'notes' => 'Cracked lid during delivery unboxing write-off',
                 'user_id' => $owner->id,
             ]);
+
+            // =========================================================================
+            // PROMPT 04: BUSINESS INTELLIGENCE, AUTOMATION & PREMIUM UX SEEDING
+            // =========================================================================
+
+            // 1. Action Items (Action Center triage tasks)
+            ActionItem::create([
+                'gym_id' => $gym->id,
+                'branch_id' => $branchMain->id,
+                'type' => 'expiring_membership',
+                'severity' => 'critical',
+                'title' => 'Priya Nair: Annual Plan Expiring in 4 Days',
+                'description' => 'Member Priya Nair is set to expire on ' . now()->addDays(4)->toDateString() . '. Trigger renewal alert or call.',
+                'reference_type' => 'member',
+                'reference_id' => $member1 ? $member1->id : 1,
+                'assigned_to_user_id' => $reception->id,
+                'status' => 'pending',
+                'due_date' => now()->addDays(2)->toDateString(),
+            ]);
+
+            ActionItem::create([
+                'gym_id' => $gym->id,
+                'branch_id' => $branchMain->id,
+                'type' => 'overdue_payment',
+                'severity' => 'critical',
+                'title' => 'Follow up on Unsettled Balance',
+                'description' => 'Outstanding dues on POS Supplement order #POS-2026-0001.',
+                'reference_type' => 'pos_order',
+                'reference_id' => $posOrder1->id,
+                'assigned_to_user_id' => $reception->id,
+                'status' => 'in_progress',
+                'due_date' => now()->toDateString(),
+            ]);
+
+            ActionItem::create([
+                'gym_id' => $gym->id,
+                'branch_id' => $branchMain->id,
+                'type' => 'low_stock',
+                'severity' => 'warning',
+                'title' => 'Reorder C4 Original Pre-Workout',
+                'description' => 'Branch stock at 8 units approaching reorder threshold of 5 units.',
+                'reference_type' => 'product',
+                'reference_id' => $prodC4->id,
+                'status' => 'pending',
+                'due_date' => now()->addDays(3)->toDateString(),
+            ]);
+
+            ActionItem::create([
+                'gym_id' => $gym->id,
+                'branch_id' => $branchMain->id,
+                'type' => 'uncontacted_lead',
+                'severity' => 'warning',
+                'title' => 'Meera Sengupta: New Lead Follow-up',
+                'description' => 'Walk-in enquiry received yesterday. Schedule free fitness assessment.',
+                'reference_type' => 'lead',
+                'reference_id' => $lead2->id,
+                'assigned_to_user_id' => $reception->id,
+                'status' => 'pending',
+                'due_date' => now()->toDateString(),
+            ]);
+
+            // 2. WhatsApp Business Templates & Delivery Logs
+            $waDefaults = WhatsAppService::defaultTemplates();
+            foreach ($waDefaults as $cat => $tmpl) {
+                WhatsAppTemplate::create([
+                    'gym_id' => $gym->id,
+                    'template_name' => $tmpl['name'],
+                    'category' => $cat,
+                    'language' => 'en',
+                    'body_text' => $tmpl['body'],
+                    'variables' => $tmpl['variables'],
+                    'is_approved' => true,
+                    'status' => 'approved',
+                ]);
+            }
+
+            WhatsAppLog::create([
+                'gym_id' => $gym->id,
+                'branch_id' => $branchMain->id,
+                'recipient_phone' => '919811122233',
+                'recipient_name' => 'Rahul Sharma',
+                'category' => 'payment_receipt',
+                'message_body' => "Receipt #POS-2026-0001 from {$gym->name}: Received ₹8260.00 from Rahul Sharma via UPI. Remaining account balance: ₹0.00. Thank you for choosing us!",
+                'status' => 'delivered',
+                'provider_message_id' => 'wamid.HBgMOTE5ODExMTIyMjMzFQIAERgSMzExODQzNTU0OEFCNTZFOQA=',
+                'sent_at' => now()->subHours(5),
+                'delivered_at' => now()->subHours(5)->addSeconds(2),
+                'read_at' => now()->subHours(4),
+            ]);
+
+            WhatsAppLog::create([
+                'gym_id' => $gym->id,
+                'branch_id' => $branchMain->id,
+                'recipient_phone' => '919822233344',
+                'recipient_name' => 'Priya Nair',
+                'category' => 'renewal_reminder',
+                'message_body' => "Hi Priya Nair, your membership at {$gym->name} expires in 4 days on " . now()->addDays(4)->toDateString() . ". Renew today at reception or via your member portal to keep your fitness momentum going!",
+                'status' => 'sent',
+                'provider_message_id' => 'wamid.HBgMOTE5ODIyMjMzMzQ0FQIAERgSNDEyOTU2Nzg5QkNERjAxBQA=',
+                'sent_at' => now()->subHour(),
+                'delivered_at' => now()->subHour()->addSeconds(3),
+            ]);
+
+            // 3. Support Tickets (Separated Gym-Member and SaaS Platform Support)
+            $ticket1 = SupportTicket::create([
+                'gym_id' => $gym->id,
+                'branch_id' => $branchMain->id,
+                'ticket_number' => 'TKT-2026-0001',
+                'scope' => 'gym_member',
+                'member_id' => $member1 ? $member1->id : 1,
+                'category' => 'locker',
+                'priority' => 'medium',
+                'subject' => 'Locker #42 digital lock keypad glitch',
+                'description' => 'The digital lock on Locker #42 in the male changing room fails to engage after inputting pin.',
+                'status' => 'open',
+                'assigned_to_user_id' => $reception->id,
+                'created_by_user_id' => $reception->id,
+            ]);
+
+            SupportTicketMessage::create([
+                'support_ticket_id' => $ticket1->id,
+                'user_id' => $reception->id,
+                'message' => 'Locker #42 digital lock keypad glitch reported by member.',
+            ]);
+
+            $ticket2 = SupportTicket::create([
+                'gym_id' => $gym->id,
+                'branch_id' => $branchMain->id,
+                'ticket_number' => 'TKT-2026-0002',
+                'scope' => 'gym_member',
+                'member_id' => $member1 ? $member1->id : 1,
+                'category' => 'cleanliness',
+                'priority' => 'low',
+                'subject' => 'Steam room aromatherapy fragrance refill',
+                'description' => 'Request to refill the eucalyptus oil diffuser in the executive steam lounge.',
+                'status' => 'resolved',
+                'assigned_to_user_id' => $reception->id,
+                'created_by_user_id' => $reception->id,
+                'resolution_notes' => 'Aromatherapy reservoir refilled by housekeeping staff.',
+                'resolved_at' => now()->subDay(),
+            ]);
+
+            // SaaS Platform support ticket from Gym Owner to Super Admin
+            $superAdminUser = User::where('role', User::ROLE_SUPER_ADMIN)->first();
+            $saasTicket = SupportTicket::create([
+                'gym_id' => $gym->id,
+                'branch_id' => $branchMain->id,
+                'ticket_number' => 'SAAS-TKT-2026-0001',
+                'scope' => 'saas_platform',
+                'category' => 'saas_feature',
+                'priority' => 'high',
+                'subject' => 'Request Meta WhatsApp Business Official Green Badge Verification Assistance',
+                'description' => 'We are scaling to 3 branches and request platform architectural guidance on registering our Meta OBO (On-Behalf-Of) WABA account.',
+                'status' => 'in_progress',
+                'created_by_user_id' => $owner->id,
+            ]);
+
+            SupportTicketMessage::create([
+                'support_ticket_id' => $saasTicket->id,
+                'user_id' => $owner->id,
+                'message' => 'We are scaling to 3 branches and request guidance on our Meta WABA account.',
+            ]);
+
+            SupportTicketMessage::create([
+                'support_ticket_id' => $saasTicket->id,
+                'user_id' => $superAdminUser ? $superAdminUser->id : $owner->id,
+                'message' => 'Hello Vikram! Our SaaS API integration supports Meta Cloud API v19 direct webhooks. Please prepare your verified Facebook Business Manager ID.',
+            ]);
+
+            // 4. Member Workout Plans & Routines
+            if ($member1) {
+                MemberWorkoutPlan::create([
+                    'gym_id' => $gym->id,
+                    'member_id' => $member1->id,
+                    'trainer_id' => $trainer->id,
+                    'title' => 'Hypertrophy Strength Protocol (4-Day Split)',
+                    'goal' => 'muscle_hypertrophy',
+                    'difficulty' => 'intermediate',
+                    'days_per_week' => 4,
+                    'exercises' => [
+                        [
+                            'day' => 'Day 1: Chest & Triceps',
+                            'items' => [
+                                ['name' => 'Barbell Bench Press', 'sets' => 4, 'reps' => '8-10', 'rest' => '90s'],
+                                ['name' => 'Incline Dumbbell Press', 'sets' => 3, 'reps' => '10-12', 'rest' => '60s'],
+                                ['name' => 'Cable Pec Flyes', 'sets' => 3, 'reps' => '15', 'rest' => '45s'],
+                                ['name' => 'Rope Triceps Pushdowns', 'sets' => 4, 'reps' => '12', 'rest' => '45s'],
+                            ],
+                        ],
+                        [
+                            'day' => 'Day 2: Back & Biceps',
+                            'items' => [
+                                ['name' => 'Deadlifts', 'sets' => 4, 'reps' => '6-8', 'rest' => '120s'],
+                                ['name' => 'Lat Pulldowns', 'sets' => 4, 'reps' => '10-12', 'rest' => '60s'],
+                                ['name' => 'Seated Cable Rows', 'sets' => 3, 'reps' => '12', 'rest' => '60s'],
+                                ['name' => 'Incline Dumbbell Curls', 'sets' => 4, 'reps' => '12', 'rest' => '45s'],
+                            ],
+                        ],
+                        [
+                            'day' => 'Day 3: Shoulders & Abs',
+                            'items' => [
+                                ['name' => 'Overhead Barbell Press', 'sets' => 4, 'reps' => '8-10', 'rest' => '90s'],
+                                ['name' => 'Dumbbell Lateral Raises', 'sets' => 4, 'reps' => '15', 'rest' => '45s'],
+                                ['name' => 'Hanging Leg Raises', 'sets' => 3, 'reps' => '15', 'rest' => '45s'],
+                            ],
+                        ],
+                        [
+                            'day' => 'Day 4: Legs & Calves',
+                            'items' => [
+                                ['name' => 'Barbell Back Squats', 'sets' => 4, 'reps' => '8-10', 'rest' => '120s'],
+                                ['name' => 'Romanian Deadlifts', 'sets' => 3, 'reps' => '10-12', 'rest' => '90s'],
+                                ['name' => 'Leg Press', 'sets' => 4, 'reps' => '12', 'rest' => '60s'],
+                                ['name' => 'Standing Calf Raises', 'sets' => 4, 'reps' => '15', 'rest' => '45s'],
+                            ],
+                        ],
+                    ],
+                    'notes' => 'Progressive overload focus. Drink 3.5L water daily and consume 140g protein.',
+                    'start_date' => now()->subWeeks(2)->toDateString(),
+                    'end_date' => now()->addMonths(2)->toDateString(),
+                    'is_active' => true,
+                ]);
+
+                // 5. Member Progress Measurement Logs
+                MemberProgressLog::create([
+                    'gym_id' => $gym->id,
+                    'member_id' => $member1->id,
+                    'logged_by_user_id' => $trainer->id,
+                    'log_date' => now()->subMonth()->toDateString(),
+                    'weight_kg' => 78.50,
+                    'body_fat_percent' => 18.2,
+                    'chest_cm' => 102.0,
+                    'waist_cm' => 86.0,
+                    'arms_cm' => 36.5,
+                    'notes' => 'Baseline fitness assessment. Goal: Lean bulk to 80kg at 15% body fat.',
+                ]);
+
+                MemberProgressLog::create([
+                    'gym_id' => $gym->id,
+                    'member_id' => $member1->id,
+                    'logged_by_user_id' => $trainer->id,
+                    'log_date' => now()->toDateString(),
+                    'weight_kg' => 79.20,
+                    'body_fat_percent' => 17.4,
+                    'chest_cm' => 103.5,
+                    'waist_cm' => 84.5,
+                    'arms_cm' => 37.2,
+                    'notes' => 'Noticeable muscle definition improvement in chest and delts. Waist down 1.5cm.',
+                ]);
+            }
 
             AuditLog::record('system.seeded', ['gym' => $gym->name]);
         });

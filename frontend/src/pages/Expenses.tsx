@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
+import { formatCurrency, formatDate } from '../lib/formatters';
 
 interface Expense {
   id: number;
@@ -49,6 +51,7 @@ const CATEGORY_COLORS: Record<string, { bg: string; text: string; border: string
 };
 
 export default function Expenses() {
+  const { t } = useTranslation();
   const { activeBranchId } = useAuth();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [summary, setSummary] = useState<ExpenseSummary | null>(null);
@@ -154,10 +157,10 @@ export default function Expenses() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
             <TrendingDown className="w-6 h-6 text-rose-500" />
-            Expense Management
+            {t('common.expenses')}
           </h1>
           <p className="text-xs text-slate-400 mt-1">
-            Track operational gym overheads, salaries, rent, maintenance, and utilities.
+            {t('dashboard.monthly_expenses')} & overheads
           </p>
         </div>
         <button
@@ -189,7 +192,7 @@ export default function Expenses() {
             </div>
           </div>
           <div className="mt-3 text-2xl font-bold text-white">
-            ₹{Number(summary?.total_amount || 0).toLocaleString('en-IN')}
+            {formatCurrency(Number(summary?.total_amount || 0))}
           </div>
           <p className="text-[11px] text-slate-500 mt-1">Current filtered period</p>
         </div>
@@ -202,10 +205,10 @@ export default function Expenses() {
             </div>
           </div>
           <div className="mt-3 text-2xl font-bold text-white">
-            ₹{(
+            {formatCurrency(
               Number(summary?.by_category?.rent || 0) +
               Number(summary?.by_category?.electricity || 0)
-            ).toLocaleString('en-IN')}
+            )}
           </div>
           <p className="text-[11px] text-slate-500 mt-1">Premises overhead</p>
         </div>
@@ -218,10 +221,10 @@ export default function Expenses() {
             </div>
           </div>
           <div className="mt-3 text-2xl font-bold text-white">
-            ₹{(
+            {formatCurrency(
               Number(summary?.by_category?.maintenance || 0) +
               Number(summary?.by_category?.equipment || 0)
-            ).toLocaleString('en-IN')}
+            )}
           </div>
           <p className="text-[11px] text-slate-500 mt-1">Facility uptime</p>
         </div>
@@ -234,10 +237,10 @@ export default function Expenses() {
             </div>
           </div>
           <div className="mt-3 text-2xl font-bold text-white">
-            ₹{(
+            {formatCurrency(
               Number(summary?.by_category?.marketing || 0) +
               Number(summary?.by_category?.salaries || 0)
-            ).toLocaleString('en-IN')}
+            )}
           </div>
           <p className="text-[11px] text-slate-500 mt-1">Growth & payroll</p>
         </div>

@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Building2, Dumbbell, Lock, Mail, Phone, ShieldCheck, Sparkles, User, Zap } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { errorMessage, takeLogoutReason } from '../api/client';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
 
 export const Login: React.FC = () => {
+  const { t } = useTranslation();
   const { login, registerGym } = useAuth();
   const [tab, setTab] = useState<'login' | 'register'>('login');
 
@@ -74,13 +77,25 @@ export const Login: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#090d16] flex items-center justify-center p-4 md:p-8">
       <div className="w-full max-w-md bg-[#0f172a] border border-slate-800 rounded-2xl shadow-2xl p-6 md:p-8 backdrop-blur-xl">
+        {/* Top Language Switcher Bar */}
+        <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-800/80">
+          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+            {t('auth.switch_language', 'Language')}
+          </span>
+          <LanguageSwitcher variant="pill" />
+        </div>
+
         {/* Brand Header */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-700 text-white mb-3 shadow-lg shadow-emerald-900/40">
             <Dumbbell className="w-7 h-7" />
           </div>
-          <h1 className="text-2xl font-black text-white tracking-tight">Gym Business OS</h1>
-          <p className="text-xs text-slate-400 mt-1">Next-Generation Multi-Tenant Fitness SaaS</p>
+          <h1 className="text-2xl font-black text-white tracking-tight">
+            {t('common.app_title', 'Gym Business OS')}
+          </h1>
+          <p className="text-xs text-slate-400 mt-1">
+            {t('auth.login_subtitle', 'Multi-tenant Gym Management & Growth Engine')}
+          </p>
         </div>
 
         {/* Tab Switcher */}
@@ -91,13 +106,13 @@ export const Login: React.FC = () => {
               setTab('login');
               setError(null);
             }}
-            className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all ${
+            className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
               tab === 'login'
                 ? 'bg-emerald-500 text-slate-950 shadow-sm'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
-            Sign In
+            {t('auth.sign_in', 'Sign In')}
           </button>
           <button
             type="button"
@@ -105,13 +120,13 @@ export const Login: React.FC = () => {
               setTab('register');
               setError(null);
             }}
-            className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all ${
+            className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
               tab === 'register'
                 ? 'bg-emerald-500 text-slate-950 shadow-sm'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
-            Register Gym
+            {t('auth.register_gym', 'Register Gym')}
           </button>
         </div>
 
@@ -124,7 +139,9 @@ export const Login: React.FC = () => {
         {tab === 'login' ? (
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Email or Phone Number</label>
+              <label className="block text-xs font-medium text-slate-300 mb-1">
+                {t('auth.login_label', 'Email or 10-Digit Mobile Number')}
+              </label>
               <div className="relative">
                 <Mail className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
                 <input
@@ -132,14 +149,16 @@ export const Login: React.FC = () => {
                   required
                   value={loginId}
                   onChange={(e) => setLoginId(e.target.value)}
-                  placeholder="owner@ironcore.in or 9820011223"
+                  placeholder={t('auth.login_placeholder', 'owner@olympia.fit or 9820098200')}
                   className="w-full bg-[#131b2e] border border-slate-700 rounded-xl pl-9 pr-3 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Password</label>
+              <label className="block text-xs font-medium text-slate-300 mb-1">
+                {t('auth.password', 'Password')}
+              </label>
               <div className="relative">
                 <Lock className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
                 <input
@@ -147,7 +166,7 @@ export const Login: React.FC = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder={t('auth.password_placeholder', '••••••••')}
                   className="w-full bg-[#131b2e] border border-slate-700 rounded-xl pl-9 pr-3 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
                 />
               </div>
@@ -161,7 +180,7 @@ export const Login: React.FC = () => {
                   onChange={(e) => setRemember(e.target.checked)}
                   className="rounded border-slate-700 bg-slate-900 text-emerald-500 focus:ring-0"
                 />
-                Keep me signed in
+                {t('auth.remember_me', 'Remember this device')}
               </label>
             </div>
 
@@ -170,7 +189,7 @@ export const Login: React.FC = () => {
               disabled={loading}
               className="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-lg shadow-emerald-900/20"
             >
-              {loading ? 'Signing in...' : 'Sign In to Dashboard'}
+              {loading ? t('common.loading', 'Signing in...') : t('auth.sign_in', 'Sign In')}
             </button>
 
             {/* Quick Demo Credentials */}
@@ -217,7 +236,9 @@ export const Login: React.FC = () => {
         ) : (
           <form onSubmit={handleRegister} className="space-y-3.5">
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Gym Name</label>
+              <label className="block text-xs font-medium text-slate-300 mb-1">
+                {t('auth.gym_name', 'Gym / Brand Name')}
+              </label>
               <div className="relative">
                 <Dumbbell className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
                 <input
@@ -232,7 +253,9 @@ export const Login: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Owner Name</label>
+              <label className="block text-xs font-medium text-slate-300 mb-1">
+                {t('auth.owner_name', 'Owner Full Name')}
+              </label>
               <div className="relative">
                 <User className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
                 <input
@@ -248,7 +271,9 @@ export const Login: React.FC = () => {
 
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Email</label>
+                <label className="block text-xs font-medium text-slate-300 mb-1">
+                  {t('auth.email', 'Email Address')}
+                </label>
                 <input
                   type="email"
                   required
@@ -259,7 +284,9 @@ export const Login: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Phone</label>
+                <label className="block text-xs font-medium text-slate-300 mb-1">
+                  {t('auth.phone', 'Mobile Number')}
+                </label>
                 <input
                   type="text"
                   required
@@ -273,7 +300,9 @@ export const Login: React.FC = () => {
 
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">First Branch Name</label>
+                <label className="block text-xs font-medium text-slate-300 mb-1">
+                  {t('members.assigned_branch', 'First Branch Name')}
+                </label>
                 <input
                   type="text"
                   value={branchName}
@@ -283,7 +312,9 @@ export const Login: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">City</label>
+                <label className="block text-xs font-medium text-slate-300 mb-1">
+                  {t('auth.city', 'City')}
+                </label>
                 <input
                   type="text"
                   value={city}
@@ -296,7 +327,9 @@ export const Login: React.FC = () => {
 
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Password</label>
+                <label className="block text-xs font-medium text-slate-300 mb-1">
+                  {t('auth.password', 'Password')}
+                </label>
                 <input
                   type="password"
                   required
@@ -307,7 +340,9 @@ export const Login: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Confirm Password</label>
+                <label className="block text-xs font-medium text-slate-300 mb-1">
+                  {t('auth.password', 'Confirm Password')}
+                </label>
                 <input
                   type="password"
                   required
@@ -324,7 +359,7 @@ export const Login: React.FC = () => {
               disabled={loading}
               className="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-4 shadow-lg shadow-emerald-900/20"
             >
-              {loading ? 'Creating Gym OS...' : 'Start 14-Day Free Trial'}
+              {loading ? t('common.loading', 'Creating Gym OS...') : t('auth.create_account', 'Start 14-Day Free Trial')}
             </button>
           </form>
         )}

@@ -77,7 +77,7 @@ class AttendanceController extends Controller
 
         if ($alreadyCheckedIn) {
             return response()->json([
-                'message' => "Member {$member->full_name} is already checked in.",
+                'message' => __('messages.already_checked_in'),
                 'log' => $alreadyCheckedIn->load('member'),
                 'already_checked_in' => true,
             ], 200);
@@ -98,7 +98,7 @@ class AttendanceController extends Controller
         ]);
 
         return response()->json([
-            'message' => "Check-in successful for {$member->full_name}.",
+            'message' => __('messages.checkin_recorded'),
             'log' => $log->load('member'),
             'membership_status' => $activeMembership ? 'active' : 'expired_or_none',
             'is_expired' => $isExpired,
@@ -187,7 +187,7 @@ class AttendanceController extends Controller
             return response()->json([
                 'success' => true,
                 'already_inside' => true,
-                'message' => "{$member->full_name} is already checked in since " . $alreadyCheckedIn->check_in_at->format('h:i A'),
+                'message' => __('messages.already_checked_in'),
                 'log' => $alreadyCheckedIn->load('member'),
                 'member' => $member,
                 'is_expired' => $isExpired,
@@ -209,7 +209,7 @@ class AttendanceController extends Controller
         return response()->json([
             'success' => true,
             'action' => 'checked_in',
-            'message' => "Welcome {$member->full_name}! Check-in recorded.",
+            'message' => __('messages.checkin_recorded'),
             'log' => $log->load('member'),
             'member' => $member,
             'plan_name' => $activeMembership?->plan?->name ?? 'No Plan',

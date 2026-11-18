@@ -18,6 +18,8 @@ import {
 } from 'lucide-react';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
+import { formatCurrency, formatDateTime } from '../lib/formatters';
 
 interface Product {
   id: number;
@@ -90,6 +92,7 @@ const CATEGORIES = [
 ];
 
 export const Pos: React.FC = () => {
+  const { t } = useTranslation();
   const { user, activeBranchId } = useAuth();
   const [activeTab, setActiveTab] = useState<'terminal' | 'orders'>('terminal');
 
@@ -393,8 +396,8 @@ export const Pos: React.FC = () => {
             <ShoppingCart className="w-6 h-6 text-emerald-400" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-white tracking-tight">Supplement Point of Sale (POS)</h1>
-            <p className="text-xs text-slate-400">Rapid barcode counter checkout & automated stock deduction</p>
+            <h1 className="text-xl font-bold text-white tracking-tight">{t('pos.title')}</h1>
+            <p className="text-xs text-slate-400">{t('pos.subtitle')}</p>
           </div>
         </div>
 
@@ -407,7 +410,7 @@ export const Pos: React.FC = () => {
                 : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-white'
             }`}
           >
-            Sales Terminal
+            {t('pos.cart')}
           </button>
           <button
             onClick={() => setActiveTab('orders')}
@@ -417,7 +420,7 @@ export const Pos: React.FC = () => {
                 : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-white'
             }`}
           >
-            Recent Sales & Refunds
+            {t('common.actions')}
           </button>
         </div>
       </div>
@@ -543,7 +546,7 @@ export const Pos: React.FC = () => {
 
                       <div className="mt-3 pt-2 border-t border-slate-800/60 flex items-center justify-between">
                         <span className="text-xs font-bold text-emerald-400">
-                          ₹{parseFloat(p.selling_price as string).toFixed(0)}
+                          {formatCurrency(parseFloat(p.selling_price as string))}
                         </span>
                         <span className="text-[10px] text-slate-500">+{p.tax_percent}% GST</span>
                       </div>
@@ -733,8 +736,8 @@ export const Pos: React.FC = () => {
                 <span>+₹{totalTax.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm font-bold text-white border-t border-slate-800 pt-2">
-                <span>Grand Total</span>
-                <span className="text-emerald-400 text-base">₹{grandTotal}</span>
+                <span>{t('pos.total_payable')}</span>
+                <span className="text-emerald-400 text-base">{formatCurrency(grandTotal)}</span>
               </div>
             </div>
 

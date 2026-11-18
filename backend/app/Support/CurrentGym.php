@@ -36,6 +36,13 @@ class CurrentGym
         return self::id() ?? throw new RuntimeException('No gym tenant context.');
     }
 
+    public static function clear(): void
+    {
+        self::$overridden = false;
+        self::$override = null;
+        self::$cached = null;
+    }
+
     public static function get(): ?Gym
     {
         $id = self::id();

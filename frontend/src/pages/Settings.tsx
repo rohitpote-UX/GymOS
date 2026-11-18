@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Building, Image, Palette, Save, Settings as SettingsIcon, Upload } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Building, Globe, Image, Palette, Save, Settings as SettingsIcon, Upload } from 'lucide-react';
 import api, { errorMessage } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
+import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '../i18n';
 
 export const Settings: React.FC = () => {
-  const { user, refreshMe } = useAuth();
+  const { t, i18n } = useTranslation();
+  const { user, refreshMe, setLanguage } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -111,10 +115,10 @@ export const Settings: React.FC = () => {
       <div className="pb-2 border-b border-slate-800">
         <h2 className="text-xl md:text-2xl font-black text-white tracking-tight flex items-center gap-2">
           <SettingsIcon className="w-6 h-6 text-emerald-400" />
-          <span>Gym Settings & Branding</span>
+          <span>{t('settings.title', 'Gym Settings & Localization')}</span>
         </h2>
         <p className="text-xs text-slate-400 mt-0.5">
-          Configure business legal entity, GST invoicing, custom brand colors, and PWA manifest
+          {t('settings.subtitle', 'Gym branding, operating currency, tax/GST and user language preferences')}
         </p>
       </div>
 
@@ -124,6 +128,45 @@ export const Settings: React.FC = () => {
           <button onClick={() => setToast(null)} className="text-slate-400 hover:text-white">✕</button>
         </div>
       )}
+
+      {/* Language Preference Card */}
+      <div className="bg-[#0f172a] border border-slate-800 rounded-2xl p-5 space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-bold text-white flex items-center gap-2">
+            <Globe className="w-4 h-4 text-emerald-400" />
+            <span>{t('settings.language_preference', 'Language Preference')}</span>
+          </h3>
+          <span className="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+            {SUPPORTED_LANGUAGES.find((l) => l.code === (user?.language || i18n.language?.slice(0, 2)))?.nativeName}
+          </span>
+        </div>
+        <p className="text-xs text-slate-400">
+          {t('settings.language_help', 'Select your preferred display language. Each staff member can have an independent preference.')}
+        </p>
+
+        <div className="flex flex-wrap gap-3 pt-1">
+          {SUPPORTED_LANGUAGES.map((lang) => {
+            const isSelected = (user?.language || i18n.language?.slice(0, 2)) === lang.code;
+            return (
+              <button
+                key={lang.code}
+                type="button"
+                onClick={() => setLanguage(lang.code as SupportedLanguage)}
+                className={`px-4 py-2.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer flex items-center gap-2 ${
+                  isSelected
+                    ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-md shadow-emerald-950/30'
+                    : 'bg-[#131b2e] text-slate-300 border-slate-700 hover:border-slate-600 hover:text-white'
+                }`}
+              >
+                <span>{lang.nativeName}</span>
+                <span className={`text-[10px] ${isSelected ? 'text-slate-900 font-bold' : 'text-slate-500'}`}>
+                  ({lang.label})
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       <form onSubmit={handleSave} className="space-y-6">
         {/* Business Identity */}

@@ -2,6 +2,8 @@ import React from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import Layout from './components/Layout';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import ActionCenter from './pages/ActionCenter';
+import AiAdvisor from './pages/AiAdvisor';
 import Attendance from './pages/Attendance';
 import Billing from './pages/Billing';
 import Branches from './pages/Branches';
@@ -11,6 +13,7 @@ import Expenses from './pages/Expenses';
 import Inventory from './pages/Inventory';
 import Leads from './pages/Leads';
 import Login from './pages/Login';
+import MemberPortal from './pages/MemberPortal';
 import Members from './pages/Members';
 import MembershipPlans from './pages/MembershipPlans';
 import Payments from './pages/Payments';
@@ -21,7 +24,10 @@ import Purchases from './pages/Purchases';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 import Staff from './pages/Staff';
+import SupportTickets from './pages/SupportTickets';
+import TrainerPortal from './pages/TrainerPortal';
 import Trainers from './pages/Trainers';
+import WhatsAppAutomation from './pages/WhatsAppAutomation';
 import AdminDashboard from './pages/admin/AdminDashboard';
 
 const AppRoutes: React.FC = () => {
@@ -57,6 +63,34 @@ const AppRoutes: React.FC = () => {
     );
   }
 
+  // Member Portal Dedicated Role
+  if (user.role === 'member') {
+    return (
+      <Routes>
+        <Route element={<Layout />}>
+          <Route path="/portal" element={<MemberPortal />} />
+          <Route path="/support" element={<SupportTickets />} />
+          <Route path="*" element={<Navigate to="/portal" replace />} />
+        </Route>
+      </Routes>
+    );
+  }
+
+  // Trainer Dedicated Role
+  if (user.role === 'trainer') {
+    return (
+      <Routes>
+        <Route element={<Layout />}>
+          <Route path="/trainer-portal" element={<TrainerPortal />} />
+          <Route path="/attendance" element={<Attendance />} />
+          <Route path="/members" element={<Members />} />
+          <Route path="/support" element={<SupportTickets />} />
+          <Route path="*" element={<Navigate to="/trainer-portal" replace />} />
+        </Route>
+      </Routes>
+    );
+  }
+
   const isOwner = user.role === 'gym_owner';
   const isManager = user.role === 'branch_manager';
   const canManageBranches = isOwner || isManager;
@@ -64,7 +98,18 @@ const AppRoutes: React.FC = () => {
   return (
     <Routes>
       <Route element={<Layout />}>
+        {/* Core BI & Action Center */}
         <Route index element={<Dashboard />} />
+        <Route path="/action-center" element={<ActionCenter />} />
+        <Route path="/ai-advisor" element={<AiAdvisor />} />
+        <Route path="/whatsapp" element={<WhatsAppAutomation />} />
+        <Route path="/support" element={<SupportTickets />} />
+
+        {/* Portals (cross-accessible to owners & managers for testing/preview) */}
+        <Route path="/portal" element={<MemberPortal />} />
+        <Route path="/trainer-portal" element={<TrainerPortal />} />
+
+        {/* Operational Modules */}
         <Route path="/attendance" element={<Attendance />} />
         <Route path="/members" element={<Members />} />
         <Route path="/pos" element={<Pos />} />
@@ -78,10 +123,15 @@ const AppRoutes: React.FC = () => {
         <Route path="/plans" element={<MembershipPlans />} />
         <Route path="/trainers" element={<Trainers />} />
         <Route path="/reports" element={<Reports />} />
+
+        {/* Branch & Staff Admin */}
         {canManageBranches && <Route path="/branches" element={<Branches />} />}
         {canManageBranches && <Route path="/staff" element={<Staff />} />}
+
+        {/* Tenant Settings & Plan */}
         {isOwner && <Route path="/billing" element={<Billing />} />}
         {isOwner && <Route path="/settings" element={<Settings />} />}
+
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

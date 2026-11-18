@@ -20,6 +20,8 @@ import {
 } from 'lucide-react';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
+import { formatCurrency, formatNumber } from '../lib/formatters';
 
 interface Product {
   id: number;
@@ -66,6 +68,7 @@ const CATEGORIES = [
 ];
 
 export const Inventory: React.FC = () => {
+  const { t } = useTranslation();
   const { user, activeBranchId } = useAuth();
   const branches = user?.branches || [];
   const [products, setProducts] = useState<Product[]>([]);
@@ -282,10 +285,10 @@ export const Inventory: React.FC = () => {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
             <Package className="w-7 h-7 text-emerald-400" />
-            Inventory & Supplements Master
+            {t('inventory.title')}
           </h1>
           <p className="text-sm text-slate-400">
-            Real-time stock control, batch expiry tracking, and Weighted Average Costing (WAC).
+            {t('inventory.subtitle')}
           </p>
         </div>
 
@@ -348,15 +351,15 @@ export const Inventory: React.FC = () => {
 
           <div className="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
             <span className="text-xs text-slate-400">Cost Valuation (WAC)</span>
-            <div className="text-xl font-bold text-white mt-1">₹{summary.total_cost_valuation.toLocaleString('en-IN')}</div>
+            <div className="text-xl font-bold text-white mt-1">{formatCurrency(summary.total_cost_valuation)}</div>
             <span className="text-[11px] text-slate-500">Acquisition cost</span>
           </div>
 
           <div className="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
             <span className="text-xs text-slate-400">Retail Valuation (MRP)</span>
-            <div className="text-xl font-bold text-amber-400 mt-1">₹{summary.total_retail_valuation.toLocaleString('en-IN')}</div>
+            <div className="text-xl font-bold text-amber-400 mt-1">{formatCurrency(summary.total_retail_valuation)}</div>
             <span className="text-[11px] text-emerald-400 font-medium">
-              +₹{(summary.total_retail_valuation - summary.total_cost_valuation).toLocaleString('en-IN')} profit
+              +{formatCurrency(summary.total_retail_valuation - summary.total_cost_valuation)} profit
             </span>
           </div>
         </div>

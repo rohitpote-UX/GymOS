@@ -125,7 +125,7 @@ class AuthController extends Controller
             $token = $owner->createToken('gym-pwa', ['*'], now()->addDays(90))->plainTextToken;
 
             return response()->json([
-                'message' => 'Gym registered successfully.',
+                'message' => __('messages.gym_registered'),
                 'token' => $token,
                 'user' => self::presentUser($owner),
             ], 201);
@@ -153,7 +153,7 @@ class AuthController extends Controller
 
         if (!$user || !Hash::check($request->input('password'), $user->password)) {
             throw ValidationException::withMessages([
-                'login' => ['The provided credentials do not match our records.'],
+                'login' => [__('messages.auth_invalid_credentials')],
             ]);
         }
 
@@ -187,7 +187,8 @@ class AuthController extends Controller
     {
         /** @var User $user */
         $user = $request->user();
-        $impersonating = str_starts_with((string) $user->currentAccessToken()?->name, 'impersonate:');
+        $token = $user->currentAccessToken();
+        $impersonating = ($token && isset($token->name)) ? str_starts_with((string) $token->name, 'impersonate:') : false;
 
         return response()->json([
             'user' => self::presentUser($user, $impersonating),
@@ -222,6 +223,25 @@ class AuthController extends Controller
     }
 
     /**
+     * Update user language preference (en, mr, hi).
+     */
+    public function updateLanguage(Request $request)
+    {
+        $validated = $request->validate([
+            'language' => ['required', 'string', 'in:en,mr,hi'],
+        ]);
+
+        $user = $request->user();
+        $user->update(['language' => $validated['language']]);
+
+        return response()->json([
+            'message' => __('messages.language_updated'),
+            'language' => $user->language,
+            'user' => self::presentUser($user->fresh()),
+        ]);
+    }
+
+    /**
      * Format user payload with Gym, Branches, Role, and Permissions.
      */
     public static function presentUser(User $user, bool $impersonating = false): array
@@ -247,6 +267,7 @@ class AuthController extends Controller
             'email' => $user->email,
             'phone' => $user->phone,
             'role' => $user->role,
+            'language' => $user->language ?: 'en',
             'avatar_url' => $user->avatar_url,
             'primary_branch_id' => $user->primary_branch_id,
             'branches' => $branches,

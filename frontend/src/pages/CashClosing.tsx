@@ -18,6 +18,8 @@ import {
 } from 'lucide-react';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
+import { formatCurrency } from '../lib/formatters';
 
 interface ClosingSummary {
   branch_id: number;
@@ -51,6 +53,7 @@ interface ClosingRecord {
 }
 
 export default function CashClosing() {
+  const { t } = useTranslation();
   const { activeBranchId } = useAuth();
   const [summary, setSummary] = useState<ClosingSummary | null>(null);
   const [existingClosing, setExistingClosing] = useState<ClosingRecord | null>(null);
@@ -130,10 +133,10 @@ export default function CashClosing() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
             <Coins className="w-6 h-6 text-emerald-400" />
-            Daily Cash Register & Shift Closing
+            {t('finance.cash_closing')}
           </h1>
           <p className="text-xs text-slate-400 mt-1">
-            Real-time shift drawer reconciliation: audit physical cash against collections and expenses.
+            {t('finance.subtitle')}
           </p>
         </div>
         <button

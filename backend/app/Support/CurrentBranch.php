@@ -32,6 +32,20 @@ class CurrentBranch
         return $user->primary_branch_id ? (int) $user->primary_branch_id : null;
     }
 
+    public static function require(): int
+    {
+        $id = self::id();
+        if (!$id) {
+            $branch = Branch::where('is_primary', true)->first() ?? Branch::first();
+            if ($branch) {
+                return $branch->id;
+            }
+            abort(403, 'A branch context is required to complete this action.');
+        }
+
+        return $id;
+    }
+
     public static function get(): ?Branch
     {
         $id = self::id();

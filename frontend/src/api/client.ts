@@ -82,6 +82,10 @@ api.interceptors.request.use((config) => {
     config.headers['X-Branch-ID'] = branchId;
   }
 
+  const currentLang = localStorage.getItem('gym_user_language') || 'en';
+  config.headers['X-Locale'] = currentLang;
+  config.headers['Accept-Language'] = `${currentLang},en;q=0.8`;
+
   return config;
 });
 

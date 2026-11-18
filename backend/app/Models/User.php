@@ -20,6 +20,9 @@ class User extends Authenticatable
     public const ROLE_BRANCH_MANAGER = 'branch_manager';
     public const ROLE_TRAINER = 'trainer';
     public const ROLE_FRONT_DESK = 'front_desk';
+    public const ROLE_ACCOUNTANT = 'accountant';
+    public const ROLE_INVENTORY_MANAGER = 'inventory_manager';
+    public const ROLE_MEMBER = 'member';
 
     protected $fillable = [
         'gym_id',
@@ -29,6 +32,7 @@ class User extends Authenticatable
         'phone',
         'password',
         'role',
+        'language',
         'permissions',
         'is_active',
         'avatar_url',
@@ -161,7 +165,25 @@ class User extends Authenticatable
                 'branches.view',
                 'members.view',
                 'attendance.record', 'attendance.view',
-                'trainers.view'
+                'trainers.view', 'workouts.manage'
+            ],
+            self::ROLE_ACCOUNTANT => [
+                'branches.view',
+                'payments.record', 'payments.view',
+                'expenses.manage', 'expenses.view',
+                'cash.manage', 'cash.view',
+                'suppliers.view', 'suppliers.manage',
+                'reports.financial', 'profitability.view'
+            ],
+            self::ROLE_INVENTORY_MANAGER => [
+                'branches.view',
+                'inventory.manage', 'inventory.view',
+                'products.manage', 'products.view',
+                'suppliers.manage', 'suppliers.view',
+                'pos.view', 'profitability.view'
+            ],
+            self::ROLE_MEMBER => [
+                'portal.view'
             ],
             default => [],
         };

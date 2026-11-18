@@ -22,8 +22,11 @@ import {
 } from 'lucide-react';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
+import { formatCurrency, formatNumber } from '../lib/formatters';
 
 export default function Reports() {
+  const { t, i18n } = useTranslation();
   const { activeBranchId } = useAuth();
   const [activeTab, setActiveTab] = useState<'daily' | 'monthly' | 'memberships' | 'attendance' | 'dues' | 'branches' | 'export'>('daily');
 
@@ -67,11 +70,15 @@ export default function Reports() {
   }, [activeBranchId]);
 
   const handleDownloadCsv = (type: string) => {
-    const token = localStorage.getItem('token');
-    const branchQuery = activeBranchId ? `?branch_id=${activeBranchId}` : '';
+    const currentLang = i18n.language || 'en';
+    const params = new URLSearchParams();
+    if (activeBranchId) params.append('branch_id', activeBranchId.toString());
+    params.append('lang', currentLang);
+    const queryString = `?${params.toString()}`;
+
     // Download via direct anchor or blob
     api
-      .get(`/reports/export/${type}${branchQuery}`, { responseType: 'blob' })
+      .get(`/reports/export/${type}${queryString}`, { responseType: 'blob' })
       .then((response: any) => {
         const url = window.URL.createObjectURL(new Blob([response.data]));
         const link = document.createElement('a');

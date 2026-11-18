@@ -1,4 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import i18n from '../i18n';
 import api, {
   branchStore,
   setExpiredHandler,
@@ -39,8 +40,18 @@ export interface UserInfo {
   name: string;
   email: string;
   phone?: string;
-  role: 'super_admin' | 'gym_owner' | 'branch_manager' | 'trainer' | 'front_desk';
+  role:
+    | 'super_admin'
+    | 'gym_owner'
+    | 'branch_manager'
+    | 'trainer'
+    | 'receptionist'
+    | 'front_desk'
+    | 'accountant'
+    | 'inventory_manager'
+    | 'member';
   avatar_url?: string;
+  language?: string;
   primary_branch_id?: number;
   branches?: BranchInfo[];
   permissions?: string[];
@@ -56,6 +67,7 @@ interface AuthContextType {
   login: (loginId: string, password: string, remember?: boolean) => Promise<void>;
   registerGym: (data: Record<string, unknown>) => Promise<void>;
   logout: () => Promise<void>;
+  setLanguage: (lang: 'en' | 'mr' | 'hi') => Promise<void>;
   impersonate: (gymId: number) => Promise<void>;
   stopImpersonating: () => Promise<void>;
   refreshMe: () => Promise<void>;
@@ -140,6 +152,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       persistUser(data.user, remember);
       setUser(data.user);
 
+      if (data.user.language && ['en', 'mr', 'hi'].includes(data.user.language)) {
+        i18n.changeLanguage(data.user.language);
+        localStorage.setItem('gym_user_language', data.user.language);
+      }
+
       // Auto-select primary branch if active branch not set or invalid
       const currentStored = branchStore.get();
       const validBranches = data.user.branches || [];
@@ -173,6 +190,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     persistUser(data.user, remember);
     setUser(data.user);
 
+    if (data.user.language && ['en', 'mr', 'hi'].includes(data.user.language)) {
+      i18n.changeLanguage(data.user.language);
+      localStorage.setItem('gym_user_language', data.user.language);
+    }
+
     if (data.user.branches && data.user.branches.length > 0) {
       const primary = data.user.branches.find((b) => b.is_primary) || data.user.branches[0];
       setActiveBranchId(primary.id);
@@ -185,10 +207,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     persistUser(data.user, true);
     setUser(data.user);
 
+    if (data.user.language && ['en', 'mr', 'hi'].includes(data.user.language)) {
+      i18n.changeLanguage(data.user.language);
+      localStorage.setItem('gym_user_language', data.user.language);
+    }
+
     if (data.user.branches && data.user.branches.length > 0) {
       setActiveBranchId(data.user.branches[0].id);
     }
   };
+
+  const setLanguage = useCallback(async (lang: 'en' | 'mr' | 'hi') => {
+    i18n.changeLanguage(lang);
+    localStorage.setItem('gym_user_language', lang);
+    if (user) {
+      const updatedUser: UserInfo = { ...user, language: lang };
+      setUser(updatedUser);
+      const remember = Boolean(localStorage.getItem(USER_KEY));
+      persistUser(updatedUser, remember);
+      try {
+        await api.put('/me/language', { language: lang });
+      } catch {
+        // offline or transient error; client state already updated
+      }
+    }
+  }, [user]);
 
   const logout = async () => {
     const backupAdmin = sessionStorage.getItem(ADMIN_BACKUP_KEY);
@@ -252,6 +295,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         login,
         registerGym,
         logout,
+        setLanguage,
         impersonate,
         stopImpersonating,
         refreshMe,

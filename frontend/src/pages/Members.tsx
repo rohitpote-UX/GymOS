@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   AlertCircle,
   AlertTriangle,
@@ -29,6 +30,7 @@ import {
 import api, { errorMessage } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { openWhatsApp, WhatsAppTemplates } from '../lib/whatsapp';
+import { formatCurrency, formatDate, formatNumber } from '../lib/formatters';
 
 interface MembershipPlan {
   id: number;
@@ -128,6 +130,7 @@ interface MemberDetail extends Member {
 }
 
 export default function Members() {
+  const { t, i18n } = useTranslation();
   const { user, activeBranch, activeBranchId } = useAuth();
   const [members, setMembers] = useState<Member[]>([]);
   const [plans, setPlans] = useState<MembershipPlan[]>([]);
@@ -365,10 +368,10 @@ export default function Members() {
         <div>
           <h2 className="text-xl md:text-2xl font-black text-white tracking-tight flex items-center gap-2">
             <Users className="w-6 h-6 text-emerald-400" />
-            <span>Gym Members Directory</span>
+            <span>{t('members.title', 'Gym Members Directory')}</span>
           </h2>
           <p className="text-xs text-slate-400 mt-0.5">
-            Profiles, assigned trainers, outstanding dues, subscription freezing/extension & ledger audit
+            {t('members.subtitle', 'Profiles, assigned trainers, outstanding dues, subscription freezing/extension & ledger audit')}
           </p>
         </div>
 
@@ -380,7 +383,7 @@ export default function Members() {
           className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold flex items-center gap-1.5 transition-colors shadow-lg shadow-emerald-950/40 cursor-pointer self-start sm:self-auto"
         >
           <Plus className="w-4 h-4" />
-          <span>Register Member</span>
+          <span>{t('members.add_member', 'Register Member')}</span>
         </button>
       </div>
 
@@ -399,7 +402,7 @@ export default function Members() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name, phone, or MEM-xxxx..."
+            placeholder={t('members.search_placeholder', 'Search by name, phone, or MEM-xxxx...')}
             className="w-full bg-[#131b2e] border border-slate-700 text-xs rounded-xl pl-9 pr-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
           />
         </form>
@@ -410,11 +413,11 @@ export default function Members() {
             onChange={(e) => setStatusFilter(e.target.value)}
             className="bg-[#131b2e] border border-slate-700 text-xs rounded-xl px-3 py-2 text-slate-300 focus:outline-none focus:border-emerald-500"
           >
-            <option value="">All Statuses</option>
-            <option value="active">Active Members</option>
-            <option value="frozen">Frozen Subscriptions</option>
-            <option value="expired">Expired Plans</option>
-            <option value="inactive">Inactive</option>
+            <option value="">{t('common.all', 'All Statuses')}</option>
+            <option value="active">{t('common.active', 'Active Members')}</option>
+            <option value="frozen">{t('common.frozen', 'Frozen Subscriptions')}</option>
+            <option value="expired">{t('common.expired', 'Expired Plans')}</option>
+            <option value="inactive">{t('common.inactive', 'Inactive')}</option>
           </select>
 
           <button
@@ -426,7 +429,7 @@ export default function Members() {
             }`}
           >
             <Coins className="w-3.5 h-3.5" />
-            <span>Pending Dues Only</span>
+            <span>{t('action_center.tab_dues', 'Pending Dues Only')}</span>
           </button>
         </div>
       </div>
@@ -438,14 +441,14 @@ export default function Members() {
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-900/60 text-slate-400 uppercase tracking-wider text-[10px] border-b border-slate-800">
                 <tr>
-                  <th className="py-3.5 px-4">Member</th>
-                  <th className="py-3.5 px-4">Contact</th>
-                  <th className="py-3.5 px-4">Trainer</th>
-                  <th className="py-3.5 px-4">Active Plan</th>
-                  <th className="py-3.5 px-4">Expiry Date</th>
-                  <th className="py-3.5 px-4">Outstanding Due</th>
-                  <th className="py-3.5 px-4">Status</th>
-                  <th className="py-3.5 px-4 text-right">Actions</th>
+                  <th className="py-3.5 px-4">{t('members.full_name', 'Member')}</th>
+                  <th className="py-3.5 px-4">{t('auth.phone', 'Contact')}</th>
+                  <th className="py-3.5 px-4">{t('members.assigned_trainer', 'Trainer')}</th>
+                  <th className="py-3.5 px-4">{t('members.plan', 'Active Plan')}</th>
+                  <th className="py-3.5 px-4">{t('members.expires_on', 'Expiry Date')}</th>
+                  <th className="py-3.5 px-4">{t('members.balance', 'Outstanding Due')}</th>
+                  <th className="py-3.5 px-4">{t('common.status', 'Status')}</th>
+                  <th className="py-3.5 px-4 text-right">{t('common.actions', 'Actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60 text-slate-200">
@@ -485,7 +488,7 @@ export default function Members() {
                             {m.trainer.name}
                           </span>
                         ) : (
-                          <span className="text-slate-500 italic">None</span>
+                          <span className="text-slate-500 italic">—</span>
                         )}
                       </td>
                       <td className="py-3.5 px-4">
@@ -494,16 +497,16 @@ export default function Members() {
                             {m.active_membership?.plan.name}
                           </span>
                         ) : (
-                          <span className="text-slate-500 italic">No Active Plan</span>
+                          <span className="text-slate-500 italic">—</span>
                         )}
                       </td>
                       <td className="py-3.5 px-4 text-slate-300 font-mono">
-                        {m.active_membership?.end_date || '—'}
+                        {m.active_membership?.end_date ? formatDate(m.active_membership.end_date, i18n.language) : '—'}
                       </td>
                       <td className="py-3.5 px-4">
                         {due > 0 ? (
                           <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/30 font-mono">
-                            Due: ₹{due.toLocaleString('en-IN')}
+                            {t('dashboard.outstanding_dues', 'Due')}: {formatCurrency(due, i18n.language)}
                           </span>
                         ) : (
                           <span className="text-slate-500 text-[10px] font-medium">Cleared</span>

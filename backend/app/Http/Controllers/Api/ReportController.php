@@ -418,28 +418,58 @@ class ReportController extends Controller
     }
 
     /**
-     * Stream CSV export for Excel & Sheets
+     * Stream CSV export for Excel & Sheets with multilingual column header support.
      */
     public function exportCsv(Request $request, string $type)
     {
-        $fileName = "gym_{$type}_" . date('Y-m-d_His') . ".csv";
+        $locale = $request->query('lang') ?: app()->getLocale() ?: 'en';
+        $fileName = "gym_{$type}_{$locale}_" . date('Y-m-d_His') . ".csv";
 
         $headers = [
-            'Content-Type' => 'text/csv',
+            'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
             'Pragma' => 'no-cache',
             'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
             'Expires' => '0',
         ];
 
-        return new StreamedResponse(function () use ($type) {
+        return new StreamedResponse(function () use ($type, $locale) {
             $handle = fopen('php://output', 'w');
 
             // Add UTF-8 BOM so Excel opens it with proper encoding
             fputs($handle, "\xEF\xBB\xBF");
 
+            $columnHeaders = [
+                'members' => [
+                    'en' => ['Member Code', 'First Name', 'Last Name', 'Phone', 'Email', 'Status', 'Branch', 'Joined Date', 'Billed', 'Paid', 'Outstanding Balance'],
+                    'mr' => ['सदस्य कोड', 'पहिले नाव', 'आडनाव', 'मोबाईल नंबर', 'ईमेल', 'स्थिती', 'शाखा', 'सामील तारीख', 'एकूण फी', 'भरलेली फी', 'शिल्लक थकबाकी'],
+                    'hi' => ['सदस्य कोड', 'प्रथम नाम', 'अंतिम नाम', 'फोन नंबर', 'ईमेल', 'स्थिति', 'शाखा', 'शामिल तिथि', 'कुल शुल्क', 'जमा शुल्क', 'बकाया राशि'],
+                ],
+                'payments' => [
+                    'en' => ['Receipt Number', 'Date', 'Member Code', 'Member Name', 'Type', 'Amount', 'Method', 'Reference ID', 'Branch'],
+                    'mr' => ['पावती क्रमांक', 'दिनांक', 'सदस्य कोड', 'सदस्य नाव', 'प्रकार', 'रक्कम', 'पद्धत', 'संदर्भ आयडी', 'शाखा'],
+                    'hi' => ['रसीद संख्या', 'दिनांक', 'सदस्य कोड', 'सदस्य नाम', 'प्रकार', 'राशि', 'माध्यम', 'संदर्भ आईडी', 'शाखा'],
+                ],
+                'expenses' => [
+                    'en' => ['Title', 'Category', 'Date', 'Amount', 'Payment Mode', 'Vendor / Paid To', 'Branch'],
+                    'mr' => ['शीर्षक', 'श्रेणी', 'दिनांक', 'रक्कम', 'पेमेंट पद्धत', 'विक्रेता / कोणास दिले', 'शाखा'],
+                    'hi' => ['शीर्षक', 'श्रेणी', 'दिनांक', 'राशि', 'भुगतान माध्यम', 'विक्रेता / प्राप्तकर्ता', 'शाखा'],
+                ],
+                'leads' => [
+                    'en' => ['Name', 'Phone', 'Source', 'Status', 'Follow-up Date', 'Assigned To', 'Branch'],
+                    'mr' => ['नाव', 'मोबाईल', 'स्रोत', 'स्थिती', 'पुढील पाठपुरावा तारीख', 'नियुक्त कर्मचारी', 'शाखा'],
+                    'hi' => ['नाम', 'फोन', 'स्रोत', 'स्थिति', 'फॉलो-अप तिथि', 'आवंटित कर्मचारी', 'शाखा'],
+                ],
+                'dues' => [
+                    'en' => ['Member Code', 'Name', 'Phone', 'Branch', 'Billed', 'Paid', 'Outstanding Due'],
+                    'mr' => ['सदस्य कोड', 'नाव', 'मोबाईल', 'शाखा', 'एकूण फी', 'भरलेली रक्कम', 'शिल्लक थकबाकी'],
+                    'hi' => ['सदस्य कोड', 'नाम', 'फोन', 'शाखा', 'कुल शुल्क', 'भुगतान राशि', 'बकाया शुल्क'],
+                ],
+            ];
+
             if ($type === 'members') {
-                fputcsv($handle, ['Member Code', 'First Name', 'Last Name', 'Phone', 'Email', 'Status', 'Branch', 'Joined Date', 'Billed', 'Paid', 'Outstanding Balance']);
+                $cols = $columnHeaders['members'][$locale] ?? $columnHeaders['members']['en'];
+                fputcsv($handle, $cols);
                 Member::with('primaryBranch')->chunk(200, function ($members) use ($handle) {
                     foreach ($members as $m) {
                         fputcsv($handle, [
@@ -458,7 +488,8 @@ class ReportController extends Controller
                     }
                 });
             } elseif ($type === 'payments') {
-                fputcsv($handle, ['Receipt Number', 'Date', 'Member Code', 'Member Name', 'Type', 'Amount', 'Method', 'Reference ID', 'Branch']);
+                $cols = $columnHeaders['payments'][$locale] ?? $columnHeaders['payments']['en'];
+                fputcsv($handle, $cols);
                 Payment::with(['member', 'branch'])->chunk(200, function ($payments) use ($handle) {
                     foreach ($payments as $p) {
                         fputcsv($handle, [
@@ -475,7 +506,8 @@ class ReportController extends Controller
                     }
                 });
             } elseif ($type === 'expenses') {
-                fputcsv($handle, ['Title', 'Category', 'Date', 'Amount', 'Payment Mode', 'Vendor / Paid To', 'Branch']);
+                $cols = $columnHeaders['expenses'][$locale] ?? $columnHeaders['expenses']['en'];
+                fputcsv($handle, $cols);
                 Expense::with('branch')->chunk(200, function ($expenses) use ($handle) {
                     foreach ($expenses as $e) {
                         fputcsv($handle, [
@@ -490,7 +522,8 @@ class ReportController extends Controller
                     }
                 });
             } elseif ($type === 'leads') {
-                fputcsv($handle, ['Name', 'Phone', 'Source', 'Status', 'Follow-up Date', 'Assigned To', 'Branch']);
+                $cols = $columnHeaders['leads'][$locale] ?? $columnHeaders['leads']['en'];
+                fputcsv($handle, $cols);
                 Lead::with(['branch', 'assignedUser'])->chunk(200, function ($leads) use ($handle) {
                     foreach ($leads as $l) {
                         fputcsv($handle, [
@@ -505,7 +538,8 @@ class ReportController extends Controller
                     }
                 });
             } elseif ($type === 'dues') {
-                fputcsv($handle, ['Member Code', 'Name', 'Phone', 'Branch', 'Billed', 'Paid', 'Outstanding Due']);
+                $cols = $columnHeaders['dues'][$locale] ?? $columnHeaders['dues']['en'];
+                fputcsv($handle, $cols);
                 Member::where('outstanding_balance', '>', 0)->with('primaryBranch')->chunk(200, function ($members) use ($handle) {
                     foreach ($members as $m) {
                         fputcsv($handle, [

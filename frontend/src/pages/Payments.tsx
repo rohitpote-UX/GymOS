@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Calendar,
   CreditCard,
@@ -18,6 +19,7 @@ import api, { errorMessage } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { submitWithOutbox } from '../lib/outbox';
 import { openWhatsApp, WhatsAppTemplates } from '../lib/whatsapp';
+import { formatCurrency, formatDate, formatNumber } from '../lib/formatters';
 
 interface PaymentItem {
   id: number;
@@ -65,6 +67,7 @@ interface MembershipPlan {
 }
 
 export default function Payments() {
+  const { t, i18n } = useTranslation();
   const { user, activeBranchId } = useAuth();
   const [payments, setPayments] = useState<PaymentItem[]>([]);
   const [summary, setSummary] = useState({ total_amount: 0, total_refunded: 0, net_amount: 0 });
@@ -150,7 +153,7 @@ export default function Payments() {
       const res = await submitWithOutbox('/payments', payload, desc);
 
       if (res.queued) {
-        setToastMessage(`Payment of ₹${amount} queued offline.`);
+        setToastMessage(`Payment of ₹${amount} queued offline in Outbox. (Pending server confirmation upon reconnection).`);
       } else {
         setToastMessage(`Success: Payment of ₹${amount} collected! Receipt generated.`);
       }
@@ -246,25 +249,31 @@ export default function Payments() {
       {/* Summary KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-[#0f172a] border border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Gross Collections</span>
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+            {t('finance.total_collected', 'Gross Collections')}
+          </span>
           <div className="mt-2 text-2xl font-black text-emerald-400 font-mono">
-            ₹{Number(summary.total_amount || 0).toLocaleString('en-IN')}
+            {formatCurrency(summary.total_amount, i18n.language)}
           </div>
           <span className="text-[11px] text-slate-500 mt-1">Total completed payments</span>
         </div>
 
         <div className="bg-[#0f172a] border border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Total Refunded</span>
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+            {t('finance.total_expenses', 'Total Refunded')}
+          </span>
           <div className="mt-2 text-2xl font-black text-rose-400 font-mono">
-            ₹{Number(summary.total_refunded || 0).toLocaleString('en-IN')}
+            {formatCurrency(summary.total_refunded, i18n.language)}
           </div>
           <span className="text-[11px] text-slate-500 mt-1">Cancellations & adjustments</span>
         </div>
 
         <div className="bg-[#0f172a] border border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Net Revenue</span>
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+            {t('finance.net_cash_flow', 'Net Revenue')}
+          </span>
           <div className="mt-2 text-2xl font-black text-white font-mono">
-            ₹{Number(summary.net_amount || 0).toLocaleString('en-IN')}
+            {formatCurrency(summary.net_amount, i18n.language)}
           </div>
           <span className="text-[11px] text-slate-500 mt-1">Net cash retained</span>
         </div>
