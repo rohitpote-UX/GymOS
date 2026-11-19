@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\GymAsset;
 use App\Support\CurrentGym;
+use App\Support\ModuleRegistry;
 use Illuminate\Http\Request;
 
 class SettingsController extends Controller
@@ -108,5 +109,78 @@ class SettingsController extends Controller
         AuditLog::record('branding.logo_removed');
 
         return response()->json(['message' => 'Logo removed successfully.']);
+    }
+
+    public function modules()
+    {
+        $gym = CurrentGym::get();
+        $allModules = ModuleRegistry::all();
+        $entitled = $gym->getPlanEntitledModules();
+        $active = $gym->getActiveModules();
+
+        return response()->json([
+            'all_modules' => $allModules,
+            'entitled_modules' => $entitled,
+            'active_modules' => $active,
+            'plan' => $gym->plan ? [
+                'id' => $gym->plan->id,
+                'name' => $gym->plan->name,
+                'code' => $gym->plan->code,
+            ] : null,
+        ]);
+    }
+
+    public function updateModules(Request $request)
+    {
+        $gym = CurrentGym::get();
+
+        $validated = $request->validate([
+            'modules' => ['required', 'array'],
+            'modules.*' => ['string'],
+        ]);
+
+        $entitled = $gym->getPlanEntitledModules();
+        $requested = $validated['modules'];
+
+        // Core modules are always active
+        $core = [ModuleRegistry::MODULE_OVERVIEW, ModuleRegistry::MODULE_MEMBERS];
+
+        // Ensure user cannot activate modules not entitled by plan
+        $invalid = array_diff($requested, $entitled);
+        if (!empty($invalid)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Your subscription plan does not permit activating the following module(s): ' . implode(', ', $invalid) . '. Please upgrade your plan.',
+                'invalid_modules' => array_values($invalid),
+            ], 422);
+        }
+
+        // Validate dependencies
+        $allDefs = ModuleRegistry::all();
+        foreach ($requested as $modKey) {
+            if (isset($allDefs[$modKey]['dependencies'])) {
+                foreach ($allDefs[$modKey]['dependencies'] as $dep) {
+                    if (!in_array($dep, $requested, true)) {
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => "Module '{$allDefs[$modKey]['name']}' requires module '{$allDefs[$dep]['name']}' to be active.",
+                        ], 422);
+                    }
+                }
+            }
+        }
+
+        $finalModules = array_values(array_unique(array_merge($core, $requested)));
+        $gym->modules = $finalModules;
+        $gym->save();
+        CurrentGym::clear();
+
+        AuditLog::record('settings.modules_updated', ['modules' => $finalModules]);
+
+        return response()->json([
+            'message' => 'Gym feature modules updated successfully.',
+            'active_modules' => $gym->getActiveModules(),
+            'entitled_modules' => $gym->getPlanEntitledModules(),
+        ]);
     }
 }

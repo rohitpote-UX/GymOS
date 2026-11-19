@@ -32,6 +32,8 @@ export interface GymInfo {
     tagline?: string;
   };
   settings?: Record<string, unknown>;
+  modules?: string[];
+  entitled_modules?: string[];
   assets_version?: number;
 }
 

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   AlertCircle,
@@ -131,14 +132,15 @@ interface MemberDetail extends Member {
 
 export default function Members() {
   const { t, i18n } = useTranslation();
+  const [searchParams] = useSearchParams();
   const { user, activeBranch, activeBranchId } = useAuth();
   const [members, setMembers] = useState<Member[]>([]);
   const [plans, setPlans] = useState<MembershipPlan[]>([]);
   const [trainers, setTrainers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [hasDueFilter, setHasDueFilter] = useState(false);
+  const [search, setSearch] = useState(searchParams.get('search') || '');
+  const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || '');
+  const [hasDueFilter, setHasDueFilter] = useState(searchParams.get('has_due') === '1');
 
   // Detail Drawer State
   const [selectedMember, setSelectedMember] = useState<MemberDetail | null>(null);
@@ -207,6 +209,12 @@ export default function Members() {
       // ignore
     }
   };
+
+  useEffect(() => {
+    if (searchParams.get('action') === 'new') {
+      setModalOpen(true);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     fetchMembers();

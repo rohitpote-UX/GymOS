@@ -285,6 +285,8 @@ class AuthController extends Controller
                 'expired' => $gym->isExpired(),
                 'branding' => $gym->branding,
                 'settings' => $gym->settings,
+                'modules' => $gym->getActiveModules(),
+                'entitled_modules' => $gym->getPlanEntitledModules(),
                 'assets_version' => $gym->assets_version,
             ] : null,
         ];

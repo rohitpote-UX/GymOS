@@ -50,6 +50,10 @@ class CurrentGym
             return null;
         }
 
+        if (app()->runningUnitTests()) {
+            return Gym::find($id);
+        }
+
         if (self::$cached?->id !== $id) {
             self::$cached = Gym::find($id);
         }

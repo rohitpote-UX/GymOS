@@ -29,6 +29,7 @@ class Gym extends Model
         'subscription_expires_at',
         'billing_cycle',
         'settings',
+        'modules',
         'branding',
         'assets_version',
     ];
@@ -39,6 +40,7 @@ class Gym extends Model
             'trial_ends_at' => 'datetime',
             'subscription_expires_at' => 'datetime',
             'settings' => 'array',
+            'modules' => 'array',
             'branding' => 'array',
             'assets_version' => 'integer',
         ];
@@ -86,5 +88,36 @@ class Gym extends Model
     public function isUsable(): bool
     {
         return $this->status !== self::STATUS_SUSPENDED && !$this->isExpired() && !$this->trashed();
+    }
+
+    public function getPlanEntitledModules(): array
+    {
+        if ($this->plan) {
+            return $this->plan->getEffectiveModules();
+        }
+
+        return \App\Support\ModuleRegistry::defaultPlanModules('enterprise');
+    }
+
+    public function getActiveModules(): array
+    {
+        if ($this->modules !== null) {
+            return array_values(array_unique(array_merge(
+                [\App\Support\ModuleRegistry::MODULE_OVERVIEW, \App\Support\ModuleRegistry::MODULE_MEMBERS],
+                $this->modules
+            )));
+        }
+
+        return $this->getPlanEntitledModules();
+    }
+
+    public function hasModule(string $moduleKey): bool
+    {
+        return in_array($moduleKey, $this->getActiveModules(), true);
+    }
+
+    public function canActivateModule(string $moduleKey): bool
+    {
+        return in_array($moduleKey, $this->getPlanEntitledModules(), true);
     }
 }

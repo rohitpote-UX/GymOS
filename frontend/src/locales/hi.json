@@ -65,6 +65,16 @@
     "custom_range": "कस्टम तिथि सीमा"
   },
   "nav": {
+    "group_overview": "अवलोकन (डैशबोर्ड)",
+    "group_members": "सदस्य",
+    "group_attendance": "उपस्थिति",
+    "group_finance": "वित्त एवं लेखा",
+    "group_pos_inventory": "बिक्री और स्टॉक",
+    "group_growth_leads": "लीड्स एवं विकास",
+    "group_ai_advisor": "एआई व्यापार सलाहकार",
+    "group_more_settings": "अधिक और सेटिंग्स",
+    "quick_actions": "त्वरित कार्य",
+    "global_search": "खोजें (Ctrl+K)",
     "dashboard": "मुख्य डैशबोर्ड",
     "members": "सदस्य प्रबंधन",
     "attendance": "उपस्थिति व हाजिरी",

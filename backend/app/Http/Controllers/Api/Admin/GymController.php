@@ -173,6 +173,37 @@ class GymController extends Controller
     }
 
     /**
+     * Super Admin module override for individual Gym.
+     */
+    public function updateModules(int $id, Request $request)
+    {
+        $gym = Gym::findOrFail($id);
+
+        $validated = $request->validate([
+            'modules' => ['nullable', 'array'],
+            'modules.*' => ['string'],
+        ]);
+
+        $gym->modules = $validated['modules'];
+        $gym->save();
+        \App\Support\CurrentGym::clear();
+
+        AuditLog::withoutGlobalScope('gym')->create([
+            'gym_id' => $gym->id,
+            'user_id' => $request->user()->id,
+            'event' => 'admin.gym_modules_updated',
+            'ip_address' => $request->ip(),
+            'payload' => ['modules' => $gym->modules],
+        ]);
+
+        return response()->json([
+            'message' => "Modules updated for gym '{$gym->name}'.",
+            'gym' => $gym->fresh(),
+            'active_modules' => $gym->getActiveModules(),
+        ]);
+    }
+
+    /**
      * Impersonate a Gym Owner for customer support.
      */
     public function impersonate(int $id, Request $request)

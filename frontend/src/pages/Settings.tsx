@@ -1,6 +1,20 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Building, Globe, Image, Palette, Save, Settings as SettingsIcon, Upload } from 'lucide-react';
+import {
+  Building,
+  Check,
+  CheckCircle2,
+  Globe,
+  Image,
+  Layers,
+  Lock,
+  Palette,
+  Save,
+  Settings as SettingsIcon,
+  SlidersHorizontal,
+  Upload,
+} from 'lucide-react';
 import api, { errorMessage } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
@@ -24,6 +38,52 @@ export const Settings: React.FC = () => {
   const [tagline, setTagline] = useState('');
   const [primaryColor, setPrimaryColor] = useState('#0f172a');
   const [accentColor, setAccentColor] = useState('#10b981');
+
+  // Module Configuration State
+  const [modulesLoading, setModulesLoading] = useState(false);
+  const [allModules, setAllModules] = useState<
+    Record<string, { key: string; name: string; description: string; is_core: boolean; dependencies: string[] }>
+  >({});
+  const [entitledModules, setEntitledModules] = useState<string[]>([]);
+  const [activeModules, setActiveModules] = useState<string[]>([]);
+  const [modulesSaving, setModulesSaving] = useState(false);
+
+  const fetchModules = async () => {
+    try {
+      setModulesLoading(true);
+      const res = await api.get('/settings/modules');
+      setAllModules(res.data.all_modules || {});
+      setEntitledModules(res.data.entitled_modules || []);
+      setActiveModules(res.data.active_modules || []);
+    } catch {
+      // ignore
+    } finally {
+      setModulesLoading(false);
+    }
+  };
+
+  const handleToggleModule = (key: string) => {
+    if (activeModules.includes(key)) {
+      setActiveModules(activeModules.filter((m) => m !== key));
+    } else {
+      setActiveModules([...activeModules, key]);
+    }
+  };
+
+  const handleSaveModules = async () => {
+    try {
+      setModulesSaving(true);
+      setToast(null);
+      const res = await api.put('/settings/modules', { modules: activeModules });
+      setToast(res.data.message || 'Feature modules updated successfully.');
+      setActiveModules(res.data.active_modules);
+      refreshMe();
+    } catch (err) {
+      setToast(errorMessage(err));
+    } finally {
+      setModulesSaving(false);
+    }
+  };
 
   const fetchSettings = async () => {
     try {
@@ -60,7 +120,10 @@ export const Settings: React.FC = () => {
 
   useEffect(() => {
     fetchSettings();
-  }, []);
+    if (user?.role === 'gym_owner') {
+      fetchModules();
+    }
+  }, [user?.role]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -318,6 +381,123 @@ export const Settings: React.FC = () => {
             </label>
           </div>
         </div>
+
+        {/* Module Configuration (Only for Gym Owner) */}
+        {user?.role === 'gym_owner' && (
+          <div className="bg-[#0f172a] border border-slate-800 rounded-2xl p-5 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-800">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+                  <SlidersHorizontal className="w-5 h-5 text-emerald-400" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white">
+                    Gym Feature Modules & Navigation Customization
+                  </h3>
+                  <p className="text-[11px] text-slate-400">
+                    Activate or deactivate modules to streamline staff navigation. Historical data is always preserved.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSaveModules}
+                disabled={modulesSaving}
+                className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-all shadow-md shadow-emerald-950/30 cursor-pointer disabled:opacity-50 self-start sm:self-auto"
+              >
+                <Save className="w-3.5 h-3.5" />
+                <span>{modulesSaving ? 'Saving...' : 'Apply Module Changes'}</span>
+              </button>
+            </div>
+
+            {modulesLoading ? (
+              <div className="py-6 text-center text-xs text-slate-500">Loading module status...</div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+                {Object.values(allModules).map((mod) => {
+                  const isCore = mod.is_core;
+                  const isEntitled = entitledModules.includes(mod.key);
+                  const isActive = activeModules.includes(mod.key);
+
+                  return (
+                    <div
+                      key={mod.key}
+                      className={`p-3.5 rounded-xl border transition-all flex items-start justify-between gap-3 ${
+                        isActive
+                          ? 'bg-slate-900/60 border-slate-700/80 shadow-sm'
+                          : 'bg-slate-950/40 border-slate-800/60 opacity-80'
+                      }`}
+                    >
+                      <div className="space-y-1 min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-bold text-white truncate">{mod.name}</span>
+                          {isCore ? (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
+                              Core
+                            </span>
+                          ) : !isEntitled ? (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center gap-1">
+                              <Lock className="w-2.5 h-2.5" />
+                              Upgrade
+                            </span>
+                          ) : isActive ? (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                              Active
+                            </span>
+                          ) : (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-500 border border-slate-700">
+                              Disabled
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-slate-400 leading-relaxed">
+                          {mod.description}
+                        </p>
+                        {!isEntitled && (
+                          <Link
+                            to="/billing"
+                            className="inline-block text-[11px] text-amber-400 hover:text-amber-300 font-semibold underline mt-1"
+                          >
+                            Upgrade subscription to unlock →
+                          </Link>
+                        )}
+                      </div>
+
+                      <div className="shrink-0 pt-0.5">
+                        {isCore ? (
+                          <div
+                            className="w-9 h-5 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-end px-1 cursor-not-allowed"
+                            title="Core module cannot be deactivated"
+                          >
+                            <div className="w-3.5 h-3.5 rounded-full bg-emerald-500" />
+                          </div>
+                        ) : !isEntitled ? (
+                          <div
+                            className="w-9 h-5 rounded-full bg-slate-950 border border-slate-800 flex items-center px-1 opacity-50 cursor-not-allowed"
+                            title="Upgrade plan to activate"
+                          >
+                            <div className="w-3.5 h-3.5 rounded-full bg-slate-600" />
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleToggleModule(mod.key)}
+                            className={`w-9 h-5 rounded-full transition-colors flex items-center px-1 cursor-pointer ${
+                              isActive ? 'bg-emerald-500 justify-end' : 'bg-slate-800 justify-start'
+                            }`}
+                          >
+                            <div className="w-3.5 h-3.5 rounded-full bg-white shadow-sm" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="flex justify-end">
           <button

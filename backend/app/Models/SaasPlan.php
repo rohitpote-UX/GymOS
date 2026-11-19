@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\ModuleRegistry;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -19,6 +20,7 @@ class SaasPlan extends Model
         'branch_limit',
         'member_limit',
         'features',
+        'modules',
         'is_active',
         'sort_order',
         'razorpay_plan_id',
@@ -31,9 +33,15 @@ class SaasPlan extends Model
             'branch_limit' => 'integer',
             'member_limit' => 'integer',
             'features' => 'array',
+            'modules' => 'array',
             'is_active' => 'boolean',
             'sort_order' => 'integer',
         ];
+    }
+
+    public function getEffectiveModules(): array
+    {
+        return !empty($this->modules) ? $this->modules : ModuleRegistry::defaultPlanModules($this->code);
     }
 
     public function gyms(): HasMany

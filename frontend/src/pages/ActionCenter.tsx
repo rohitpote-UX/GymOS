@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   AlertCircle,
   AlertTriangle,
@@ -72,15 +73,16 @@ interface StaffMember {
 
 export default function ActionCenter() {
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
   const { user, activeBranch } = useAuth();
   const [items, setItems] = useState<ActionItem[]>([]);
   const [radar, setRadar] = useState<TriageRadar | null>(null);
   const [staffList, setStaffList] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [severityFilter, setSeverityFilter] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>(searchParams.get('status') || 'all');
+  const [severityFilter, setSeverityFilter] = useState<string>(searchParams.get('severity') || 'all');
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || searchParams.get('search') || '');
 
   // Modals state
   const [assignModalItem, setAssignModalItem] = useState<ActionItem | null>(null);
@@ -247,77 +249,117 @@ export default function ActionCenter() {
       {/* Operational Triage Radar Grid */}
       {radar && (
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
-          <div className="bg-[#0f172a] border border-amber-500/30 p-3 rounded-2xl flex flex-col justify-between hover:border-amber-500/50 transition-colors">
+          <button
+            onClick={() => setSearchQuery(searchQuery === 'expiring' ? '' : 'expiring')}
+            className={`text-left bg-[#0f172a] border p-3 rounded-2xl flex flex-col justify-between transition-all cursor-pointer ${
+              searchQuery === 'expiring' ? 'border-amber-400 bg-amber-500/10 ring-2 ring-amber-500/30' : 'border-amber-500/30 hover:border-amber-500/50'
+            }`}
+          >
             <div className="flex items-center justify-between text-amber-400">
               <span className="text-[10px] uppercase font-bold tracking-wider">Expiring 7d</span>
               <Clock className="w-3.5 h-3.5" />
             </div>
             <div className="mt-2 text-2xl font-black text-white">{radar.expiring_memberships}</div>
             <span className="text-[10px] text-slate-400 mt-0.5">Need renewals</span>
-          </div>
+          </button>
 
-          <div className="bg-[#0f172a] border border-rose-500/30 p-3 rounded-2xl flex flex-col justify-between hover:border-rose-500/50 transition-colors">
+          <button
+            onClick={() => setSearchQuery(searchQuery === 'due' ? '' : 'due')}
+            className={`text-left bg-[#0f172a] border p-3 rounded-2xl flex flex-col justify-between transition-all cursor-pointer ${
+              searchQuery === 'due' ? 'border-rose-400 bg-rose-500/10 ring-2 ring-rose-500/30' : 'border-rose-500/30 hover:border-rose-500/50'
+            }`}
+          >
             <div className="flex items-center justify-between text-rose-400">
               <span className="text-[10px] uppercase font-bold tracking-wider">Overdue Dues</span>
               <AlertTriangle className="w-3.5 h-3.5" />
             </div>
             <div className="mt-2 text-2xl font-black text-rose-400">{radar.overdue_payments}</div>
             <span className="text-[10px] text-slate-400 mt-0.5">Members owing</span>
-          </div>
+          </button>
 
-          <div className="bg-[#0f172a] border border-indigo-500/30 p-3 rounded-2xl flex flex-col justify-between hover:border-indigo-500/50 transition-colors">
+          <button
+            onClick={() => setSearchQuery(searchQuery === 'inactive' ? '' : 'inactive')}
+            className={`text-left bg-[#0f172a] border p-3 rounded-2xl flex flex-col justify-between transition-all cursor-pointer ${
+              searchQuery === 'inactive' ? 'border-indigo-400 bg-indigo-500/10 ring-2 ring-indigo-500/30' : 'border-indigo-500/30 hover:border-indigo-500/50'
+            }`}
+          >
             <div className="flex items-center justify-between text-indigo-400">
               <span className="text-[10px] uppercase font-bold tracking-wider">Inactive 10d</span>
               <UserMinus className="w-3.5 h-3.5" />
             </div>
             <div className="mt-2 text-2xl font-black text-white">{radar.inactive_members_10d}</div>
             <span className="text-[10px] text-slate-400 mt-0.5">Churn danger</span>
-          </div>
+          </button>
 
-          <div className="bg-[#0f172a] border border-orange-500/30 p-3 rounded-2xl flex flex-col justify-between hover:border-orange-500/50 transition-colors">
+          <button
+            onClick={() => setSearchQuery(searchQuery === 'stock' ? '' : 'stock')}
+            className={`text-left bg-[#0f172a] border p-3 rounded-2xl flex flex-col justify-between transition-all cursor-pointer ${
+              searchQuery === 'stock' ? 'border-orange-400 bg-orange-500/10 ring-2 ring-orange-500/30' : 'border-orange-500/30 hover:border-orange-500/50'
+            }`}
+          >
             <div className="flex items-center justify-between text-orange-400">
               <span className="text-[10px] uppercase font-bold tracking-wider">Low Stock</span>
               <Package className="w-3.5 h-3.5" />
             </div>
             <div className="mt-2 text-2xl font-black text-white">{radar.low_stock_items}</div>
             <span className="text-[10px] text-slate-400 mt-0.5">Below threshold</span>
-          </div>
+          </button>
 
-          <div className="bg-[#0f172a] border border-amber-500/30 p-3 rounded-2xl flex flex-col justify-between hover:border-amber-500/50 transition-colors">
+          <button
+            onClick={() => setSearchQuery(searchQuery === 'batch' ? '' : 'batch')}
+            className={`text-left bg-[#0f172a] border p-3 rounded-2xl flex flex-col justify-between transition-all cursor-pointer ${
+              searchQuery === 'batch' ? 'border-amber-400 bg-amber-500/10 ring-2 ring-amber-500/30' : 'border-amber-500/30 hover:border-amber-500/50'
+            }`}
+          >
             <div className="flex items-center justify-between text-amber-400">
               <span className="text-[10px] uppercase font-bold tracking-wider">Expiring Batches</span>
               <Flame className="w-3.5 h-3.5" />
             </div>
             <div className="mt-2 text-2xl font-black text-white">{radar.expiring_products_30d}</div>
             <span className="text-[10px] text-slate-400 mt-0.5">Next 30 days</span>
-          </div>
+          </button>
 
-          <div className="bg-[#0f172a] border border-sky-500/30 p-3 rounded-2xl flex flex-col justify-between hover:border-sky-500/50 transition-colors">
+          <button
+            onClick={() => setSearchQuery(searchQuery === 'lead' ? '' : 'lead')}
+            className={`text-left bg-[#0f172a] border p-3 rounded-2xl flex flex-col justify-between transition-all cursor-pointer ${
+              searchQuery === 'lead' ? 'border-sky-400 bg-sky-500/10 ring-2 ring-sky-500/30' : 'border-sky-500/30 hover:border-sky-500/50'
+            }`}
+          >
             <div className="flex items-center justify-between text-sky-400">
               <span className="text-[10px] uppercase font-bold tracking-wider">Cold Leads</span>
               <Users className="w-3.5 h-3.5" />
             </div>
             <div className="mt-2 text-2xl font-black text-white">{radar.uncontacted_leads_24h}</div>
             <span className="text-[10px] text-slate-400 mt-0.5">&gt;24h uncalled</span>
-          </div>
+          </button>
 
-          <div className="bg-[#0f172a] border border-rose-500/30 p-3 rounded-2xl flex flex-col justify-between hover:border-rose-500/50 transition-colors">
+          <button
+            onClick={() => setSearchQuery(searchQuery === 'ticket' ? '' : 'ticket')}
+            className={`text-left bg-[#0f172a] border p-3 rounded-2xl flex flex-col justify-between transition-all cursor-pointer ${
+              searchQuery === 'ticket' ? 'border-rose-400 bg-rose-500/10 ring-2 ring-rose-500/30' : 'border-rose-500/30 hover:border-rose-500/50'
+            }`}
+          >
             <div className="flex items-center justify-between text-rose-400">
               <span className="text-[10px] uppercase font-bold tracking-wider">Open Tickets</span>
               <MessageSquare className="w-3.5 h-3.5" />
             </div>
             <div className="mt-2 text-2xl font-black text-rose-400">{radar.unresolved_tickets}</div>
             <span className="text-[10px] text-slate-400 mt-0.5">Need resolution</span>
-          </div>
+          </button>
 
-          <div className="bg-[#0f172a] border border-emerald-500/30 p-3 rounded-2xl flex flex-col justify-between hover:border-emerald-500/50 transition-colors">
+          <button
+            onClick={() => setSearchQuery(searchQuery === 'pt' ? '' : 'pt')}
+            className={`text-left bg-[#0f172a] border p-3 rounded-2xl flex flex-col justify-between transition-all cursor-pointer ${
+              searchQuery === 'pt' ? 'border-emerald-400 bg-emerald-500/10 ring-2 ring-emerald-500/30' : 'border-emerald-500/30 hover:border-emerald-500/50'
+            }`}
+          >
             <div className="flex items-center justify-between text-emerald-400">
               <span className="text-[10px] uppercase font-bold tracking-wider">Pending PT</span>
               <UserCheck className="w-3.5 h-3.5" />
             </div>
             <div className="mt-2 text-2xl font-black text-white">{radar.pending_pt_sessions}</div>
             <span className="text-[10px] text-slate-400 mt-0.5">Unlogged workouts</span>
-          </div>
+          </button>
         </div>
       )}
 

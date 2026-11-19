@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   Calendar,
@@ -68,13 +69,14 @@ interface MembershipPlan {
 
 export default function Payments() {
   const { t, i18n } = useTranslation();
+  const [searchParams] = useSearchParams();
   const { user, activeBranchId } = useAuth();
   const [payments, setPayments] = useState<PaymentItem[]>([]);
   const [summary, setSummary] = useState({ total_amount: 0, total_refunded: 0, net_amount: 0 });
   const [loading, setLoading] = useState(true);
 
   // Modal State
-  const [collectModalOpen, setCollectModalOpen] = useState(false);
+  const [collectModalOpen, setCollectModalOpen] = useState(searchParams.get('action') === 'new');
   const [refundModalPayment, setRefundModalPayment] = useState<PaymentItem | null>(null);
   const [refundAmount, setRefundAmount] = useState('');
   const [refundNotes, setRefundNotes] = useState('');
@@ -86,7 +88,7 @@ export default function Payments() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Form Fields
-  const [selectedMemberId, setSelectedMemberId] = useState('');
+  const [selectedMemberId, setSelectedMemberId] = useState(searchParams.get('member_id') || '');
   const [selectedPlanId, setSelectedPlanId] = useState('');
   const [amount, setAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('upi');

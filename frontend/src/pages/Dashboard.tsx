@@ -236,6 +236,47 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Action Center Operational Radar Ribbon */}
+      <div className="bg-gradient-to-r from-slate-900 via-slate-900/90 to-slate-950 border border-slate-800 rounded-2xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 shrink-0">
+            <ShieldAlert className="w-4 h-4" />
+          </div>
+          <div className="text-xs">
+            <div className="font-bold text-white flex items-center gap-2">
+              <span>{t('nav.action_center', 'Action Center Radar')}</span>
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            </div>
+            <p className="text-[11px] text-slate-400 mt-0.5">
+              Live operational alerts requiring staff triage & automated customer follow-ups
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 flex-wrap">
+          <Link
+            to="/action-center?search=expiring"
+            className="px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-semibold hover:bg-amber-500/20 transition-colors flex items-center gap-1.5"
+          >
+            <span>{formatNumber(kpis?.expiring_memberships ?? 0, i18n.language)} {t('dashboard.expiring_memberships', 'Expiring')}</span>
+          </Link>
+
+          <Link
+            to="/members?has_due=1"
+            className="px-2.5 py-1 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-semibold hover:bg-rose-500/20 transition-colors flex items-center gap-1.5"
+          >
+            <span>{t('dashboard.outstanding_dues', 'Overdue Dues')}</span>
+          </Link>
+
+          <Link
+            to="/action-center"
+            className="px-3 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition-all shadow-md shadow-emerald-950/20 flex items-center gap-1"
+          >
+            <span>Triage All →</span>
+          </Link>
+        </div>
+      </div>
+
       {/* Primary KPI Grid (Top 4 Big Cards) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {/* Active Members */}

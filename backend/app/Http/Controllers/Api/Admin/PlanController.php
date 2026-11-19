@@ -25,6 +25,7 @@ class PlanController extends Controller
             'branch_limit' => ['required', 'integer', 'min:1'],
             'member_limit' => ['required', 'integer', 'min:1'],
             'features' => ['nullable', 'array'],
+            'modules' => ['nullable', 'array'],
             'is_active' => ['nullable', 'boolean'],
             'sort_order' => ['nullable', 'integer'],
         ]);
@@ -44,6 +45,7 @@ class PlanController extends Controller
             'branch_limit' => ['sometimes', 'integer', 'min:1'],
             'member_limit' => ['sometimes', 'integer', 'min:1'],
             'features' => ['nullable', 'array'],
+            'modules' => ['nullable', 'array'],
             'is_active' => ['sometimes', 'boolean'],
             'sort_order' => ['sometimes', 'integer'],
         ]);

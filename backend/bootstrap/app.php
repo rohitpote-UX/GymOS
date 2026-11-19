@@ -30,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'gym' => EnsureGymAccess::class,
             'super.admin' => EnsureSuperAdmin::class,
             'branch' => ResolveGymBranch::class,
+            'module' => \App\Http\Middleware\CheckGymModule::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

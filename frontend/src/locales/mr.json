@@ -65,6 +65,16 @@
     "custom_range": "सानुकूल कालावधी"
   },
   "nav": {
+    "group_overview": "अवलोकन (डॅशबोर्ड)",
+    "group_members": "सदस्य",
+    "group_attendance": "उपस्थिती",
+    "group_finance": "आर्थिक व्यवस्थापन",
+    "group_pos_inventory": "विक्री व इन्व्हेंटरी",
+    "group_growth_leads": "ग्राहक व वाढ",
+    "group_ai_advisor": "एआय व्यवसाय सल्लागार",
+    "group_more_settings": "अधिक व सेटिंग्ज",
+    "quick_actions": "जलद कृती",
+    "global_search": "शोधा (Ctrl+K)",
     "dashboard": "मुख्य डॅशबोर्ड",
     "members": "सदस्य व्यवस्थापन",
     "attendance": "उपस्थिती व हजेरी",

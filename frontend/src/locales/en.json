@@ -65,6 +65,16 @@
     "custom_range": "Custom Range"
   },
   "nav": {
+    "group_overview": "Overview",
+    "group_members": "Members",
+    "group_attendance": "Attendance",
+    "group_finance": "Finance",
+    "group_pos_inventory": "Sales & Inventory",
+    "group_growth_leads": "Growth & Leads",
+    "group_ai_advisor": "AI Business Advisor",
+    "group_more_settings": "More & Settings",
+    "quick_actions": "Quick Actions",
+    "global_search": "Search anything (Ctrl+K)",
     "dashboard": "Dashboard",
     "members": "Members",
     "attendance": "Attendance",
