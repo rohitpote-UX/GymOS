@@ -77,6 +77,8 @@ Route::middleware(['auth:sanctum', 'super.admin'])->prefix('admin')->group(funct
     Route::get('/overview', [AdminGymController::class, 'overview']);
     Route::get('/gyms', [AdminGymController::class, 'index']);
     Route::post('/gyms', [AdminGymController::class, 'store']);
+    Route::get('/check-slug', [AdminGymController::class, 'checkSlug']);
+    Route::get('/payments', [AdminGymController::class, 'payments']);
     Route::get('/gyms/{id}', [AdminGymController::class, 'show']);
     Route::put('/gyms/{id}', [AdminGymController::class, 'update']);
     Route::put('/gyms/{id}/modules', [AdminGymController::class, 'updateModules']);

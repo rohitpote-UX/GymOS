@@ -45,8 +45,9 @@ const AppRoutes: React.FC = () => {
         <Route path="*" element={<Login />} />
       ) : user.role === 'super_admin' ? (
         <>
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="*" element={<Navigate to="/admin" replace />} />
+          <Route path="/super-admin" element={<AdminDashboard />} />
+          <Route path="/admin" element={<Navigate to="/super-admin" replace />} />
+          <Route path="*" element={<Navigate to="/super-admin" replace />} />
         </>
       ) : user.gym?.expired ? (
         <Route element={<Layout />}>
