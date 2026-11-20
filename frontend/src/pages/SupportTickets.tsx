@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   AlertCircle,
   AlertTriangle,
@@ -61,6 +62,7 @@ interface SupportTicket {
 }
 
 export default function SupportTickets() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [activeScope, setActiveScope] = useState<'gym_member' | 'saas_platform'>('gym_member');
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
@@ -215,11 +217,11 @@ export default function SupportTickets() {
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
               <LifeBuoy className="w-6 h-6 text-emerald-400" />
-              <span>Support & Helpdesk Management</span>
+              <span>{t('support.title', 'Support & Helpdesk Management')}</span>
             </h1>
           </div>
           <p className="text-xs text-slate-400 mt-1">
-            Unified ticketing separating member facility requests from SaaS platform enterprise support.
+            {t('support.subtitle', 'Unified ticketing separating member facility requests from SaaS platform enterprise support.')}
           </p>
         </div>
 
@@ -229,14 +231,14 @@ export default function SupportTickets() {
             className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold flex items-center gap-1.5 transition-colors border border-slate-700 cursor-pointer"
           >
             <RefreshCw className="w-3.5 h-3.5" />
-            <span>Refresh</span>
+            <span>{t('common.refresh', 'Refresh')}</span>
           </button>
           <button
             onClick={() => setCreateModalOpen(true)}
             className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold flex items-center gap-1.5 transition-colors shadow-lg shadow-emerald-950/40 cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>Open New Ticket</span>
+            <span>{t('support.new_ticket', 'Open New Ticket')}</span>
           </button>
         </div>
       </div>

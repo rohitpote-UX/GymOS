@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Mail, Phone, Plus, ShieldCheck, User, Users, X } from 'lucide-react';
 import api, { errorMessage } from '../api/client';
 import { useAuth } from '../context/AuthContext';
@@ -26,6 +27,7 @@ interface BranchItem {
 }
 
 export const Staff: React.FC = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [staff, setStaff] = useState<StaffUser[]>([]);
   const [branches, setBranches] = useState<BranchItem[]>([]);
@@ -102,10 +104,10 @@ export const Staff: React.FC = () => {
         <div>
           <h2 className="text-xl md:text-2xl font-black text-white tracking-tight flex items-center gap-2">
             <ShieldCheck className="w-6 h-6 text-emerald-400" />
-            <span>Staff & Access Permissions</span>
+            <span>{t('staff.title', 'Staff & Access Permissions')}</span>
           </h2>
           <p className="text-xs text-slate-400 mt-0.5">
-            Manage managers, front-desk personnel, trainers, and location assignments
+            {t('staff.subtitle', 'Manage managers, front-desk personnel, trainers, and location assignments')}
           </p>
         </div>
 
@@ -117,7 +119,7 @@ export const Staff: React.FC = () => {
           className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold flex items-center gap-1.5 transition-colors shadow-lg shadow-emerald-950/40 cursor-pointer self-start sm:self-auto"
         >
           <Plus className="w-4 h-4" />
-          <span>Add Staff Member</span>
+          <span>{t('staff.add_staff', 'Add Staff Member')}</span>
         </button>
       </div>
 
@@ -125,12 +127,12 @@ export const Staff: React.FC = () => {
         <table className="w-full text-left text-xs">
           <thead className="bg-slate-900/60 text-slate-400 uppercase tracking-wider text-[10px] border-b border-slate-800">
             <tr>
-              <th className="py-3.5 px-4">Name</th>
-              <th className="py-3.5 px-4">Email</th>
-              <th className="py-3.5 px-4">Phone</th>
-              <th className="py-3.5 px-4">Role</th>
-              <th className="py-3.5 px-4">Home Branch</th>
-              <th className="py-3.5 px-4">Status</th>
+              <th className="py-3.5 px-4">{t('staff.full_name', 'Name')}</th>
+              <th className="py-3.5 px-4">{t('common.email', 'Email')}</th>
+              <th className="py-3.5 px-4">{t('common.phone', 'Phone')}</th>
+              <th className="py-3.5 px-4">{t('staff.role', 'Role')}</th>
+              <th className="py-3.5 px-4">{t('staff.assigned_branches', 'Home Branch')}</th>
+              <th className="py-3.5 px-4">{t('staff.active_status', 'Status')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800/60 text-slate-200">

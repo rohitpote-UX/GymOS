@@ -415,15 +415,15 @@ export const Inventory: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-950/60 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-800">
               <tr>
-                <th className="p-3">Product</th>
-                <th className="p-3">SKU / Barcode</th>
-                <th className="p-3">Category</th>
-                <th className="p-3 text-center">Branch Stock</th>
-                <th className="p-3 text-right">Cost (WAC)</th>
-                <th className="p-3 text-right">Selling Price</th>
-                <th className="p-3 text-right">GST %</th>
-                <th className="p-3">Supplier</th>
-                <th className="p-3 text-center">Action</th>
+                <th className="p-3">{t('inventory.col_product', 'Product')}</th>
+                <th className="p-3">{t('inventory.col_sku_barcode', 'SKU / Barcode')}</th>
+                <th className="p-3">{t('inventory.col_category', 'Category')}</th>
+                <th className="p-3 text-center">{t('inventory.col_branch_stock', 'Branch Stock')}</th>
+                <th className="p-3 text-right">{t('inventory.col_wac_cost', 'Cost (WAC)')}</th>
+                <th className="p-3 text-right">{t('inventory.col_selling_price', 'Selling Price')}</th>
+                <th className="p-3 text-right">{t('inventory.col_gst', 'GST %')}</th>
+                <th className="p-3">{t('inventory.col_supplier', 'Supplier')}</th>
+                <th className="p-3 text-center">{t('inventory.col_action', 'Action')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60 text-slate-300">

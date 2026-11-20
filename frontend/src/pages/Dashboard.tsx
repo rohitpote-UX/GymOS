@@ -185,7 +185,7 @@ export default function Dashboard() {
       {/* Period Selection Bar */}
       <div className="bg-[#0f172a] border border-slate-800 p-3.5 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-3">
         <div className="flex items-center gap-1.5 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
-          <span className="text-[11px] text-slate-400 uppercase font-bold px-2 shrink-0">Timeframe:</span>
+          <span className="text-[11px] text-slate-400 uppercase font-bold px-2 shrink-0">{t('common.timeframe', 'Timeframe')}:</span>
           {[
             { id: 'today', label: t('common.today', 'Today') },
             { id: 'yesterday', label: t('common.yesterday', 'Yesterday') },
@@ -215,7 +215,7 @@ export default function Dashboard() {
               onChange={(e) => setCustomFrom(e.target.value)}
               className="px-2.5 py-1 bg-slate-900 border border-slate-700 rounded-lg text-white"
             />
-            <span className="text-slate-500">to</span>
+            <span className="text-slate-500">{t('common.to', 'to')}</span>
             <input
               type="date"
               value={customTo}
@@ -226,7 +226,7 @@ export default function Dashboard() {
               onClick={fetchDashboard}
               className="px-3 py-1 bg-emerald-500 text-slate-950 font-bold rounded-lg text-xs cursor-pointer"
             >
-              {t('common.submit', 'Apply')}
+              {t('common.apply', 'Apply')}
             </button>
           </div>
         )}
@@ -244,11 +244,11 @@ export default function Dashboard() {
           </div>
           <div className="text-xs">
             <div className="font-bold text-white flex items-center gap-2">
-              <span>{t('nav.action_center', 'Action Center Radar')}</span>
+              <span>{t('dashboard.radar_title', 'Action Center Radar')}</span>
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             </div>
             <p className="text-[11px] text-slate-400 mt-0.5">
-              Live operational alerts requiring staff triage & automated customer follow-ups
+              {t('dashboard.radar_desc', 'Live operational alerts requiring staff triage & automated customer follow-ups')}
             </p>
           </div>
         </div>
@@ -272,7 +272,7 @@ export default function Dashboard() {
             to="/action-center"
             className="px-3 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition-all shadow-md shadow-emerald-950/20 flex items-center gap-1"
           >
-            <span>Triage All →</span>
+            <span>{t('dashboard.triage_all', 'Triage All →')}</span>
           </Link>
         </div>
       </div>

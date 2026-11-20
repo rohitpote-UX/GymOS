@@ -620,55 +620,55 @@ export default function Members() {
             </div>
 
             {/* Drawer Tabs */}
-            <div className="flex border-b border-slate-800 px-5 gap-5 text-xs font-semibold bg-slate-900/30">
+            <div className="flex border-b border-slate-800 px-5 gap-5 text-xs font-semibold bg-slate-900/30 overflow-x-auto">
               <button
                 onClick={() => setDrawerTab('profile')}
-                className={`py-3 border-b-2 transition-colors cursor-pointer ${
+                className={`py-3 border-b-2 transition-colors cursor-pointer shrink-0 ${
                   drawerTab === 'profile' ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-slate-400 hover:text-white'
                 }`}
               >
-                Profile & Trainer
+                {t('members.tab_profile', 'Profile & Trainer')}
               </button>
               <button
                 onClick={() => setDrawerTab('memberships')}
-                className={`py-3 border-b-2 transition-colors cursor-pointer ${
+                className={`py-3 border-b-2 transition-colors cursor-pointer shrink-0 ${
                   drawerTab === 'memberships' ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-slate-400 hover:text-white'
                 }`}
               >
-                Memberships Lifecycle
+                {t('members.tab_memberships', 'Memberships Lifecycle')}
               </button>
               <button
                 onClick={() => setDrawerTab('ledger')}
-                className={`py-3 border-b-2 transition-colors cursor-pointer ${
+                className={`py-3 border-b-2 transition-colors cursor-pointer shrink-0 ${
                   drawerTab === 'ledger' ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-slate-400 hover:text-white'
                 }`}
               >
-                Financial Ledger
+                {t('members.tab_ledger', 'Financial Ledger')}
               </button>
               <button
                 onClick={() => setDrawerTab('attendance')}
-                className={`py-3 border-b-2 transition-colors cursor-pointer ${
+                className={`py-3 border-b-2 transition-colors cursor-pointer shrink-0 ${
                   drawerTab === 'attendance' ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-slate-400 hover:text-white'
                 }`}
               >
-                Attendance Log
+                {t('members.tab_attendance', 'Attendance Log')}
               </button>
               <button
                 onClick={() => setDrawerTab('store')}
-                className={`py-3 border-b-2 transition-colors cursor-pointer ${
+                className={`py-3 border-b-2 transition-colors cursor-pointer shrink-0 ${
                   drawerTab === 'store' ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-slate-400 hover:text-white'
                 }`}
               >
-                Store Purchases
+                {t('members.tab_store', 'Store Purchases')}
               </button>
               <button
                 onClick={() => setDrawerTab('qr')}
-                className={`py-3 border-b-2 transition-colors cursor-pointer flex items-center gap-1 ${
+                className={`py-3 border-b-2 transition-colors cursor-pointer shrink-0 flex items-center gap-1 ${
                   drawerTab === 'qr' ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-slate-400 hover:text-white'
                 }`}
               >
                 <QrCode className="w-3.5 h-3.5" />
-                QR Pass
+                {t('members.tab_qr', 'QR Pass')}
               </button>
             </div>
 
@@ -802,11 +802,11 @@ export default function Members() {
                     <table className="w-full text-left text-xs">
                       <thead className="bg-slate-900/60 text-slate-400 uppercase text-[10px] border-b border-slate-800">
                         <tr>
-                          <th className="py-2.5 px-3">Date</th>
-                          <th className="py-2.5 px-3">Description</th>
-                          <th className="py-2.5 px-3">Debit</th>
-                          <th className="py-2.5 px-3">Credit</th>
-                          <th className="py-2.5 px-3 text-right">Balance</th>
+                          <th className="py-2.5 px-3">{t('members.col_date', 'Date')}</th>
+                          <th className="py-2.5 px-3">{t('members.col_description', 'Description')}</th>
+                          <th className="py-2.5 px-3">{t('members.col_debit', 'Debit')}</th>
+                          <th className="py-2.5 px-3">{t('members.col_credit', 'Credit')}</th>
+                          <th className="py-2.5 px-3 text-right">{t('members.col_balance', 'Balance')}</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-800/60 font-mono">
@@ -840,9 +840,9 @@ export default function Members() {
                     <table className="w-full text-left text-xs">
                       <thead className="bg-slate-900/60 text-slate-400 uppercase text-[10px] border-b border-slate-800">
                         <tr>
-                          <th className="py-2.5 px-3">Check-in Time</th>
-                          <th className="py-2.5 px-3">Method</th>
-                          <th className="py-2.5 px-3 text-right">Check-out Time</th>
+                          <th className="py-2.5 px-3">{t('members.col_check_in', 'Check-in Time')}</th>
+                          <th className="py-2.5 px-3">{t('members.col_method', 'Method')}</th>
+                          <th className="py-2.5 px-3 text-right">{t('members.col_check_out', 'Check-out Time')}</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-800/60 font-mono">

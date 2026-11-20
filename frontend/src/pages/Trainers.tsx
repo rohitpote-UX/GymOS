@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Award,
   Calendar,
@@ -66,6 +67,7 @@ interface PayoutReportRow {
 }
 
 export default function Trainers() {
+  const { t } = useTranslation();
   const { user, activeBranchId } = useAuth();
   const [activeTab, setActiveTab] = useState<'roster' | 'sessions' | 'leaves' | 'payouts'>('roster');
 
@@ -224,10 +226,10 @@ export default function Trainers() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
             <Dumbbell className="w-6 h-6 text-emerald-400" />
-            Staff & Personal Trainers
+            {t('trainers.title', 'Staff & Personal Trainers')}
           </h1>
           <p className="text-xs text-slate-400 mt-1">
-            Manage fitness coaches, 1-on-1 PT sessions, compensation payouts, and staff leaves.
+            {t('trainers.subtitle', 'Manage fitness coaches, 1-on-1 PT sessions, compensation payouts, and staff leaves.')}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -239,7 +241,7 @@ export default function Trainers() {
             className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold px-4 py-2 rounded-xl text-xs flex items-center gap-2 shadow-lg shadow-emerald-500/20 cursor-pointer transition-colors"
           >
             <Plus className="w-4 h-4" />
-            Schedule PT Session
+            {t('trainers.log_session', 'Schedule PT Session')}
           </button>
           <button
             onClick={() => {
@@ -249,7 +251,7 @@ export default function Trainers() {
             className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
           >
             <Calendar className="w-3.5 h-3.5" />
-            Request Leave
+            {t('common.details', 'Request Leave')}
           </button>
         </div>
       </div>

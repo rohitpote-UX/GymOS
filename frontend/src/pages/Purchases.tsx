@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   AlertCircle,
   Building,
@@ -60,6 +61,7 @@ interface Product {
 }
 
 export const Purchases: React.FC = () => {
+  const { t } = useTranslation();
   const { user, activeBranchId } = useAuth();
   const branches = user?.branches || [];
   const [activeTab, setActiveTab] = useState<'invoices' | 'suppliers'>('invoices');
@@ -328,10 +330,10 @@ export const Purchases: React.FC = () => {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
             <Truck className="w-7 h-7 text-emerald-400" />
-            Purchases & Supplier Ledger
+            {t('inventory.purchases', 'Purchases & Supplier Ledger')}
           </h1>
           <p className="text-sm text-slate-400">
-            Goods inward, supplier accounting, and automated Weighted Average Costing (WAC).
+            {t('inventory.subtitle', 'Goods inward, supplier accounting, and automated Weighted Average Costing (WAC).')}
           </p>
         </div>
 
@@ -341,7 +343,7 @@ export const Purchases: React.FC = () => {
             className="flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg border border-slate-700 cursor-pointer"
           >
             <Building className="w-4 h-4 text-emerald-400" />
-            New Supplier
+            {t('common.add', 'New')} {t('inventory.supplier', 'Supplier')}
           </button>
 
           <button
@@ -349,7 +351,7 @@ export const Purchases: React.FC = () => {
             className="flex items-center gap-1.5 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 text-xs font-bold rounded-lg shadow-lg shadow-emerald-500/20 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            Record Stock Purchase
+            {t('inventory.add_stock', 'Record Stock Purchase')}
           </button>
         </div>
       </div>

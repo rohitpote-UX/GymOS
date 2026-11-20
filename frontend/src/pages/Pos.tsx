@@ -818,15 +818,15 @@ export const Pos: React.FC = () => {
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-950/60 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-800">
                 <tr>
-                  <th className="p-3">Order #</th>
-                  <th className="p-3">Date</th>
-                  <th className="p-3">Customer / Member</th>
-                  <th className="p-3">Payment Mode</th>
-                  <th className="p-3 text-right">Total</th>
-                  <th className="p-3 text-right">Paid</th>
-                  <th className="p-3 text-right">Balance Due</th>
-                  <th className="p-3 text-center">Status</th>
-                  <th className="p-3 text-center">Actions</th>
+                  <th className="p-3">{t('pos.col_order_no', 'Order #')}</th>
+                  <th className="p-3">{t('common.date', 'Date')}</th>
+                  <th className="p-3">{t('pos.col_customer', 'Customer / Member')}</th>
+                  <th className="p-3">{t('common.payment_mode', 'Payment Mode')}</th>
+                  <th className="p-3 text-right">{t('pos.col_total', 'Total')}</th>
+                  <th className="p-3 text-right">{t('pos.col_paid', 'Paid')}</th>
+                  <th className="p-3 text-right">{t('pos.col_balance_due', 'Balance Due')}</th>
+                  <th className="p-3 text-center">{t('common.status', 'Status')}</th>
+                  <th className="p-3 text-center">{t('common.actions', 'Actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60 text-slate-300">

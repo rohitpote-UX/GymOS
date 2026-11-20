@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Calendar,
   Check,
@@ -32,6 +33,7 @@ interface MembershipPlan {
 }
 
 export default function MembershipPlans() {
+  const { t } = useTranslation();
   const { activeBranchId } = useAuth();
   const [plans, setPlans] = useState<MembershipPlan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -121,10 +123,10 @@ export default function MembershipPlans() {
         <div>
           <h2 className="text-xl md:text-2xl font-black text-white tracking-tight flex items-center gap-2">
             <Dumbbell className="w-6 h-6 text-emerald-400" />
-            <span>Membership Packages & Pricing</span>
+            <span>{t('memberships.title', 'Membership Packages & Pricing')}</span>
           </h2>
           <p className="text-xs text-slate-400 mt-0.5">
-            Monthly, Quarterly, Annual, PT Packages, Trials, Day Passes, and Freeze policies
+            {t('memberships.subtitle', 'Monthly, Quarterly, Annual, PT Packages, Trials, Day Passes, and Freeze policies')}
           </p>
         </div>
 
@@ -136,7 +138,7 @@ export default function MembershipPlans() {
           className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold flex items-center gap-1.5 transition-colors shadow-lg shadow-emerald-950/40 cursor-pointer self-start sm:self-auto"
         >
           <Plus className="w-4 h-4" />
-          <span>Create Package</span>
+          <span>{t('memberships.add_plan', 'Create Package')}</span>
         </button>
       </div>
 

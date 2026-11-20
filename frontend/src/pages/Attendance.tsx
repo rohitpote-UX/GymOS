@@ -443,13 +443,13 @@ export default function Attendance() {
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-900/60 text-slate-400 uppercase tracking-wider text-[10px] border-b border-slate-800">
                 <tr>
-                  <th className="py-3 px-4">Member Name</th>
-                  <th className="py-3 px-4">Member Code</th>
-                  <th className="py-3 px-4">Phone</th>
-                  <th className="py-3 px-4">Check-in Time</th>
-                  <th className="py-3 px-4">Method</th>
-                  <th className="py-3 px-4">Check-out Time</th>
-                  <th className="py-3 px-4 text-right">Floor Status</th>
+                  <th className="py-3 px-4">{t('attendance.col_member_name', 'Member Name')}</th>
+                  <th className="py-3 px-4">{t('attendance.col_member_code', 'Member Code')}</th>
+                  <th className="py-3 px-4">{t('common.phone', 'Phone')}</th>
+                  <th className="py-3 px-4">{t('attendance.time_in', 'Check-in Time')}</th>
+                  <th className="py-3 px-4">{t('common.type', 'Method')}</th>
+                  <th className="py-3 px-4">{t('attendance.time_out', 'Check-out Time')}</th>
+                  <th className="py-3 px-4 text-right">{t('attendance.col_floor_status', 'Floor Status')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60 text-slate-200">

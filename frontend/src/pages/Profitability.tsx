@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   AlertTriangle,
   ArrowUpRight,
@@ -69,6 +70,7 @@ interface BranchMetric {
 }
 
 export const Profitability: React.FC = () => {
+  const { t } = useTranslation();
   const { activeBranchId } = useAuth();
   const [loading, setLoading] = useState(true);
 
@@ -151,10 +153,10 @@ export const Profitability: React.FC = () => {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
             <TrendingUp className="w-7 h-7 text-emerald-400" />
-            Supplement Profitability & COGS Engine
+            {t('inventory.profitability', 'Supplement Profitability & COGS Engine')}
           </h1>
           <p className="text-sm text-slate-400">
-            Real-time gross margin, Cost of Goods Sold (COGS), inventory valuation, and dead-stock alerts.
+            {t('inventory.subtitle', 'Real-time gross margin, Cost of Goods Sold (COGS), inventory valuation, and dead-stock alerts.')}
           </p>
         </div>
 
@@ -164,18 +166,18 @@ export const Profitability: React.FC = () => {
             onClick={() => handleQuickPeriod('this_month')}
             className="px-3 py-1.5 bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 text-xs rounded-lg cursor-pointer"
           >
-            This Month
+            {t('dashboard.this_month', 'This Month')}
           </button>
           <button
             onClick={() => handleQuickPeriod('last_30')}
             className="px-3 py-1.5 bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 text-xs rounded-lg cursor-pointer"
           >
-            Last 30 Days
+            {t('dashboard.last_30_days', 'Last 30 Days')}
           </button>
           <button
             onClick={fetchProfitabilityData}
             className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg cursor-pointer"
-            title="Refresh analytics"
+            title={t('common.refresh', 'Refresh')}
           >
             <RefreshCw className="w-4 h-4" />
           </button>

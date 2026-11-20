@@ -26,40 +26,40 @@ export const QuickActionsModal: React.FC<QuickActionsModalProps> = ({ isOpen, on
   const actions = [
     {
       id: 'add_member',
-      title: t('dashboard.new_member', 'Add New Member'),
-      description: 'Register athlete profile, assign plan and issue ID',
+      title: t('quickActions.add_member', 'Add New Member'),
+      description: t('quickActions.add_member_desc', 'Register athlete profile, assign plan and issue ID'),
       icon: UserPlus,
       to: '/members?action=new',
       color: 'emerald',
     },
     {
       id: 'mark_attendance',
-      title: t('dashboard.mark_attendance', 'Mark / Scan Attendance'),
-      description: 'Front desk QR code scanner and quick manual lookup',
+      title: t('quickActions.mark_attendance', 'Mark / Scan Attendance'),
+      description: t('quickActions.mark_attendance_desc', 'Front desk QR code scanner and quick manual lookup'),
       icon: CalendarCheck,
       to: '/attendance',
       color: 'blue',
     },
     {
       id: 'collect_payment',
-      title: t('dashboard.record_payment', 'Collect Payment / Due'),
-      description: 'Receive cash, UPI, card or adjust outstanding ledger',
+      title: t('quickActions.collect_payment', 'Collect Payment / Due'),
+      description: t('quickActions.collect_payment_desc', 'Receive cash, UPI, card or adjust outstanding ledger'),
       icon: Receipt,
       to: '/payments?action=new',
       color: 'amber',
     },
     {
       id: 'new_pos_sale',
-      title: t('dashboard.open_pos', 'Record Retail POS Sale'),
-      description: 'Barcode checkout for protein, shakers and gym gear',
+      title: t('quickActions.new_pos_sale', 'Record Retail POS Sale'),
+      description: t('quickActions.new_pos_sale_desc', 'Barcode checkout for protein, shakers and gym gear'),
       icon: ShoppingCart,
       to: '/pos',
       color: 'purple',
     },
     {
       id: 'add_expense',
-      title: t('common.expenses', 'Log Gym Expense'),
-      description: 'Record facility overheads, utilities, salaries & maintenance',
+      title: t('quickActions.add_expense', 'Log Gym Expense'),
+      description: t('quickActions.add_expense_desc', 'Record facility overheads, utilities, salaries & maintenance'),
       icon: TrendingDown,
       to: '/expenses',
       color: 'rose',
@@ -85,10 +85,10 @@ export const QuickActionsModal: React.FC<QuickActionsModalProps> = ({ isOpen, on
             </div>
             <div>
               <h2 className="text-sm font-bold text-white">
-                {t('common.quick_actions', 'Quick Actions')}
+                {t('quickActions.title', 'Quick Actions')}
               </h2>
               <p className="text-[11px] text-slate-400">
-                Instant shortcuts for everyday reception and gym workflows
+                {t('quickActions.subtitle', 'Instant shortcuts for everyday reception and gym workflows')}
               </p>
             </div>
           </div>

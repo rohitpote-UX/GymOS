@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   AlertCircle,
   Calendar,
@@ -55,6 +56,7 @@ interface PipelineStats {
 }
 
 export default function Leads() {
+  const { t } = useTranslation();
   const { activeBranchId } = useAuth();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [stats, setStats] = useState<PipelineStats>({});
@@ -285,10 +287,10 @@ export default function Leads() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
             <Target className="w-6 h-6 text-emerald-400" />
-            Leads & Enquiries CRM
+            {t('leads.title', 'Leads & Enquiries CRM')}
           </h1>
           <p className="text-xs text-slate-400 mt-1">
-            Capture prospective gym enquiries, schedule trial sessions, and convert into paying members.
+            {t('leads.subtitle', 'Capture prospective gym enquiries, schedule trial sessions, and convert into paying members.')}
           </p>
         </div>
         <button
@@ -299,7 +301,7 @@ export default function Leads() {
           className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold px-4 py-2 rounded-xl text-xs flex items-center gap-2 shadow-lg shadow-emerald-500/20 cursor-pointer transition-colors"
         >
           <UserPlus className="w-4 h-4" />
-          Capture Enquiry
+          {t('leads.add_lead', 'Capture Enquiry')}
         </button>
       </div>
 

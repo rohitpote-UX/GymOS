@@ -331,7 +331,7 @@ export const Layout: React.FC = () => {
             </div>
             <button
               onClick={() => logout()}
-              title="Logout"
+              title={t('common.logout', 'Logout')}
               className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer shrink-0"
             >
               <LogOut className="w-4 h-4" />
@@ -364,7 +364,7 @@ export const Layout: React.FC = () => {
           <button
             onClick={() => setSearchModalOpen(true)}
             className="p-2 rounded-lg bg-slate-800/80 text-slate-300 hover:text-white"
-            title="Search"
+            title={t('common.search', 'Search')}
           >
             <Search className="w-4 h-4" />
           </button>
@@ -372,7 +372,7 @@ export const Layout: React.FC = () => {
           <button
             onClick={() => setQuickActionsOpen(true)}
             className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-            title="Quick Actions"
+            title={t('common.quick_actions', 'Quick Actions')}
           >
             <Zap className="w-4 h-4" />
           </button>

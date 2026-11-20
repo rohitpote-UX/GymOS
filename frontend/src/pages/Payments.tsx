@@ -288,14 +288,14 @@ export default function Payments() {
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-900/60 text-slate-400 uppercase tracking-wider text-[10px] border-b border-slate-800">
                 <tr>
-                  <th className="py-3.5 px-4">Receipt #</th>
-                  <th className="py-3.5 px-4">Member</th>
-                  <th className="py-3.5 px-4">Type</th>
-                  <th className="py-3.5 px-4">Plan / Package</th>
-                  <th className="py-3.5 px-4">Amount</th>
-                  <th className="py-3.5 px-4">Method</th>
-                  <th className="py-3.5 px-4">Date</th>
-                  <th className="py-3.5 px-4 text-right">Actions</th>
+                  <th className="py-3.5 px-4">{t('payments.col_receipt_no', 'Receipt #')}</th>
+                  <th className="py-3.5 px-4">{t('payments.col_member', 'Member')}</th>
+                  <th className="py-3.5 px-4">{t('payments.col_type', 'Type')}</th>
+                  <th className="py-3.5 px-4">{t('payments.col_plan', 'Plan / Package')}</th>
+                  <th className="py-3.5 px-4">{t('payments.col_amount', 'Amount')}</th>
+                  <th className="py-3.5 px-4">{t('payments.col_method', 'Method')}</th>
+                  <th className="py-3.5 px-4">{t('payments.col_date', 'Date')}</th>
+                  <th className="py-3.5 px-4 text-right">{t('payments.col_actions', 'Actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60 text-slate-200">
@@ -381,7 +381,7 @@ export default function Payments() {
             <div className="flex justify-between items-center pb-3 border-b border-slate-800">
               <h3 className="font-bold text-white text-base flex items-center gap-2">
                 <Receipt className="w-5 h-5 text-emerald-400" />
-                <span>Collect Member Payment</span>
+                <span>{t('payments.collect_modal_title', 'Collect Fee / Due Payment')}</span>
               </h3>
               <button onClick={() => setCollectModalOpen(false)} className="text-slate-400 hover:text-white cursor-pointer">
                 <X className="w-5 h-5" />
@@ -390,14 +390,14 @@ export default function Payments() {
 
             <form onSubmit={handleCollectPayment} className="space-y-3.5 text-xs">
               <div>
-                <label className="block text-slate-300 font-medium mb-1">Select Member *</label>
+                <label className="block text-slate-300 font-medium mb-1">{t('payments.select_member', 'Select Member *')}</label>
                 <select
                   required
                   value={selectedMemberId}
                   onChange={(e) => setSelectedMemberId(e.target.value)}
                   className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
                 >
-                  <option value="">Select member...</option>
+                  <option value="">{t('payments.select_member', 'Select member...')}</option>
                   {members.map((m) => (
                     <option key={m.id} value={m.id}>
                       {m.first_name} {m.last_name} ({m.member_code}) - {m.phone}
@@ -407,7 +407,7 @@ export default function Payments() {
               </div>
 
               <div>
-                <label className="block text-slate-300 font-medium mb-1">Renew Package (Optional)</label>
+                <label className="block text-slate-300 font-medium mb-1">{t('payments.renew_package', 'Renew Package (Optional)')}</label>
                 <select
                   value={selectedPlanId}
                   onChange={(e) => {
@@ -418,7 +418,7 @@ export default function Payments() {
                   }}
                   className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
                 >
-                  <option value="">No Plan (Partial Payment / Dues Clear)</option>
+                  <option value="">{t('payments.no_plan_option', 'No Plan (Partial Payment / Dues Clear)')}</option>
                   {plans.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.name} (₹{p.price})
@@ -428,7 +428,7 @@ export default function Payments() {
               </div>
 
               <div>
-                <label className="block text-slate-300 font-medium mb-1">Payment Amount (₹) *</label>
+                <label className="block text-slate-300 font-medium mb-1">{t('payments.payment_amount', 'Payment Amount (₹) *')}</label>
                 <input
                   type="number"
                   required
@@ -443,21 +443,21 @@ export default function Payments() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-300 font-medium mb-1">Payment Method</label>
+                  <label className="block text-slate-300 font-medium mb-1">{t('payments.col_method', 'Payment Method')}</label>
                   <select
                     value={paymentMethod}
                     onChange={(e) => setPaymentMethod(e.target.value)}
                     className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
                   >
                     <option value="upi">UPI / GPay / QR</option>
-                    <option value="cash">Cash (Updates Drawer)</option>
+                    <option value="cash">{t('common.cash', 'Cash (Updates Drawer)')}</option>
                     <option value="card">Card / POS</option>
-                    <option value="bank_transfer">Bank Transfer / NEFT</option>
+                    <option value="bank_transfer">{t('common.net_banking', 'Bank Transfer / NEFT')}</option>
                     <option value="cheque">Cheque</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-slate-300 font-medium mb-1">Reference / UTR #</label>
+                  <label className="block text-slate-300 font-medium mb-1">{t('payments.reference_no', 'Reference / UTR #')}</label>
                   <input
                     type="text"
                     placeholder="UPI-123456"
@@ -469,10 +469,10 @@ export default function Payments() {
               </div>
 
               <div>
-                <label className="block text-slate-300 font-medium mb-1">Notes / Remarks</label>
+                <label className="block text-slate-300 font-medium mb-1">{t('payments.notes_remarks', 'Notes / Remarks')}</label>
                 <textarea
                   rows={2}
-                  placeholder="Payment remarks..."
+                  placeholder={t('payments.notes_remarks', 'Payment remarks...')}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
@@ -507,7 +507,7 @@ export default function Payments() {
             <div className="flex justify-between items-center pb-3 border-b border-slate-800">
               <h3 className="font-bold text-white text-base flex items-center gap-2">
                 <Undo2 className="w-5 h-5 text-rose-500" />
-                <span>Process Refund: {refundModalPayment.receipt_number}</span>
+                <span>{t('payments.refund_modal_title', 'Process Refund')}: {refundModalPayment.receipt_number}</span>
               </h3>
               <button onClick={() => setRefundModalPayment(null)} className="text-slate-400 hover:text-white cursor-pointer">
                 ✕
@@ -516,12 +516,12 @@ export default function Payments() {
 
             <form onSubmit={handleProcessRefund} className="space-y-3.5 text-xs">
               <div className="p-3 bg-slate-900 border border-slate-800 rounded-xl space-y-1">
-                <div className="text-slate-400">Member: <strong className="text-white">{refundModalPayment.member.first_name} {refundModalPayment.member.last_name}</strong></div>
-                <div className="text-slate-400">Original Amount: <strong className="text-emerald-400">₹{refundModalPayment.amount}</strong></div>
+                <div className="text-slate-400">{t('common.members', 'Member')}: <strong className="text-white">{refundModalPayment.member.first_name} {refundModalPayment.member.last_name}</strong></div>
+                <div className="text-slate-400">{t('common.amount', 'Original Amount')}: <strong className="text-emerald-400">₹{refundModalPayment.amount}</strong></div>
               </div>
 
               <div>
-                <label className="block text-slate-300 font-medium mb-1">Refund Amount (₹) *</label>
+                <label className="block text-slate-300 font-medium mb-1">{t('payments.refund_amount', 'Refund Amount (₹) *')}</label>
                 <input
                   type="number"
                   required
@@ -535,24 +535,24 @@ export default function Payments() {
               </div>
 
               <div>
-                <label className="block text-slate-300 font-medium mb-1">Refund Mode *</label>
+                <label className="block text-slate-300 font-medium mb-1">{t('payments.refund_mode', 'Refund Mode *')}</label>
                 <select
                   value={refundMethod}
                   onChange={(e) => setRefundMethod(e.target.value)}
                   className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
                 >
-                  <option value="cash">Cash (Deducts from Drawer)</option>
+                  <option value="cash">{t('common.cash', 'Cash (Deducts from Drawer)')}</option>
                   <option value="upi">UPI / GPay</option>
-                  <option value="bank_transfer">Bank Transfer</option>
+                  <option value="bank_transfer">{t('common.net_banking', 'Bank Transfer')}</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-slate-300 font-medium mb-1">Reason / Notes *</label>
+                <label className="block text-slate-300 font-medium mb-1">{t('payments.refund_reason', 'Reason / Notes *')}</label>
                 <textarea
                   rows={2}
                   required
-                  placeholder="Reason for refund..."
+                  placeholder={t('payments.refund_reason', 'Reason for refund...')}
                   value={refundNotes}
                   onChange={(e) => setRefundNotes(e.target.value)}
                   className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
@@ -565,7 +565,7 @@ export default function Payments() {
                   onClick={() => setRefundModalPayment(null)}
                   className="px-4 py-2 rounded-xl text-slate-400 hover:text-white cursor-pointer"
                 >
-                  Cancel
+                  {t('common.cancel', 'Cancel')}
                 </button>
                 <button
                   type="submit"

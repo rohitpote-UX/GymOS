@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Building2, MapPin, Phone, Plus, Users, X } from 'lucide-react';
 import api, { errorMessage } from '../api/client';
 import { useAuth } from '../context/AuthContext';
@@ -19,6 +20,7 @@ interface BranchItem {
 }
 
 export const Branches: React.FC = () => {
+  const { t } = useTranslation();
   const { refreshMe } = useAuth();
   const [branches, setBranches] = useState<BranchItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -89,10 +91,10 @@ export const Branches: React.FC = () => {
         <div>
           <h2 className="text-xl md:text-2xl font-black text-white tracking-tight flex items-center gap-2">
             <Building2 className="w-6 h-6 text-emerald-400" />
-            <span>Multi-Branch Management</span>
+            <span>{t('settings.branches', 'Multi-Branch Management')}</span>
           </h2>
           <p className="text-xs text-slate-400 mt-0.5">
-            Configure gym locations, studio capacity, and facility details
+            {t('settings.subtitle', 'Configure gym locations, studio capacity, and facility details')}
           </p>
         </div>
 
@@ -104,7 +106,7 @@ export const Branches: React.FC = () => {
           className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold flex items-center gap-1.5 transition-colors shadow-lg shadow-emerald-950/40 cursor-pointer self-start sm:self-auto"
         >
           <Plus className="w-4 h-4" />
-          <span>Add Location</span>
+          <span>{t('common.add', 'Add')} {t('common.branch', 'Location')}</span>
         </button>
       </div>
 

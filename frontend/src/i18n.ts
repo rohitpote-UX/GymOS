@@ -31,6 +31,12 @@ i18n
     interpolation: {
       escapeValue: false, // React already escapes values
     },
+    missingKeyHandler: (lngs, ns, key) => {
+      if (import.meta.env?.DEV) {
+        console.warn(`[i18n missing key] "${key}" for languages:`, lngs);
+      }
+    },
+    saveMissing: false,
     detection: {
       order: ['localStorage', 'navigator'],
       lookupLocalStorage: 'gym_user_language',

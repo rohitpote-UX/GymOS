@@ -210,14 +210,14 @@ export default function ActionCenter() {
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
-              <span>{t('action_center.title')}</span>
+              <span>{t('actionCenter.title', 'Action Center')}</span>
               <span className="text-xs px-2.5 py-0.5 rounded-full bg-rose-500/10 text-rose-400 font-bold border border-rose-500/20">
-                Live Radar
+                {t('actionCenter.live_radar', 'Live Radar')}
               </span>
             </h1>
           </div>
           <p className="text-xs text-slate-400 mt-1">
-            {t('action_center.subtitle')}
+            {t('actionCenter.subtitle', 'Central operations radar: triage expiring plans, dues and inactive members')}
           </p>
         </div>
 
@@ -227,14 +227,14 @@ export default function ActionCenter() {
             className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold flex items-center gap-1.5 transition-colors border border-slate-700 cursor-pointer"
           >
             <RefreshCw className="w-3.5 h-3.5" />
-            <span>Refresh</span>
+            <span>{t('actionCenter.refresh', 'Refresh')}</span>
           </button>
           <button
             onClick={() => setCreateModalOpen(true)}
             className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold flex items-center gap-1.5 transition-colors shadow-lg shadow-emerald-950/40 cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>Create Action</span>
+            <span>{t('actionCenter.create_action', 'Create Action')}</span>
           </button>
         </div>
       </div>
@@ -256,11 +256,11 @@ export default function ActionCenter() {
             }`}
           >
             <div className="flex items-center justify-between text-amber-400">
-              <span className="text-[10px] uppercase font-bold tracking-wider">Expiring 7d</span>
+              <span className="text-[10px] uppercase font-bold tracking-wider">{t('actionCenter.expiring_7d', 'Expiring 7D')}</span>
               <Clock className="w-3.5 h-3.5" />
             </div>
             <div className="mt-2 text-2xl font-black text-white">{radar.expiring_memberships}</div>
-            <span className="text-[10px] text-slate-400 mt-0.5">Need renewals</span>
+            <span className="text-[10px] text-slate-400 mt-0.5">{t('actionCenter.need_renewals', 'Need renewals')}</span>
           </button>
 
           <button
@@ -270,11 +270,11 @@ export default function ActionCenter() {
             }`}
           >
             <div className="flex items-center justify-between text-rose-400">
-              <span className="text-[10px] uppercase font-bold tracking-wider">Overdue Dues</span>
+              <span className="text-[10px] uppercase font-bold tracking-wider">{t('actionCenter.overdue_dues', 'Overdue Dues')}</span>
               <AlertTriangle className="w-3.5 h-3.5" />
             </div>
             <div className="mt-2 text-2xl font-black text-rose-400">{radar.overdue_payments}</div>
-            <span className="text-[10px] text-slate-400 mt-0.5">Members owing</span>
+            <span className="text-[10px] text-slate-400 mt-0.5">{t('actionCenter.members_owing', 'Members owing')}</span>
           </button>
 
           <button
@@ -284,11 +284,11 @@ export default function ActionCenter() {
             }`}
           >
             <div className="flex items-center justify-between text-indigo-400">
-              <span className="text-[10px] uppercase font-bold tracking-wider">Inactive 10d</span>
+              <span className="text-[10px] uppercase font-bold tracking-wider">{t('actionCenter.inactive_10d', 'Inactive 10D')}</span>
               <UserMinus className="w-3.5 h-3.5" />
             </div>
             <div className="mt-2 text-2xl font-black text-white">{radar.inactive_members_10d}</div>
-            <span className="text-[10px] text-slate-400 mt-0.5">Churn danger</span>
+            <span className="text-[10px] text-slate-400 mt-0.5">{t('actionCenter.churn_danger', 'Churn danger')}</span>
           </button>
 
           <button
@@ -298,11 +298,11 @@ export default function ActionCenter() {
             }`}
           >
             <div className="flex items-center justify-between text-orange-400">
-              <span className="text-[10px] uppercase font-bold tracking-wider">Low Stock</span>
+              <span className="text-[10px] uppercase font-bold tracking-wider">{t('actionCenter.low_stock', 'Low Stock')}</span>
               <Package className="w-3.5 h-3.5" />
             </div>
             <div className="mt-2 text-2xl font-black text-white">{radar.low_stock_items}</div>
-            <span className="text-[10px] text-slate-400 mt-0.5">Below threshold</span>
+            <span className="text-[10px] text-slate-400 mt-0.5">{t('actionCenter.below_threshold', 'Below threshold')}</span>
           </button>
 
           <button
@@ -312,11 +312,11 @@ export default function ActionCenter() {
             }`}
           >
             <div className="flex items-center justify-between text-amber-400">
-              <span className="text-[10px] uppercase font-bold tracking-wider">Expiring Batches</span>
+              <span className="text-[10px] uppercase font-bold tracking-wider">{t('actionCenter.expiring_batches', 'Expiring Batches')}</span>
               <Flame className="w-3.5 h-3.5" />
             </div>
             <div className="mt-2 text-2xl font-black text-white">{radar.expiring_products_30d}</div>
-            <span className="text-[10px] text-slate-400 mt-0.5">Next 30 days</span>
+            <span className="text-[10px] text-slate-400 mt-0.5">{t('actionCenter.next_30_days', 'Next 30 days')}</span>
           </button>
 
           <button
@@ -326,11 +326,11 @@ export default function ActionCenter() {
             }`}
           >
             <div className="flex items-center justify-between text-sky-400">
-              <span className="text-[10px] uppercase font-bold tracking-wider">Cold Leads</span>
+              <span className="text-[10px] uppercase font-bold tracking-wider">{t('actionCenter.cold_leads', 'Cold Leads')}</span>
               <Users className="w-3.5 h-3.5" />
             </div>
             <div className="mt-2 text-2xl font-black text-white">{radar.uncontacted_leads_24h}</div>
-            <span className="text-[10px] text-slate-400 mt-0.5">&gt;24h uncalled</span>
+            <span className="text-[10px] text-slate-400 mt-0.5">{t('actionCenter.uncalled_24h', '>24h uncalled')}</span>
           </button>
 
           <button
@@ -340,11 +340,11 @@ export default function ActionCenter() {
             }`}
           >
             <div className="flex items-center justify-between text-rose-400">
-              <span className="text-[10px] uppercase font-bold tracking-wider">Open Tickets</span>
+              <span className="text-[10px] uppercase font-bold tracking-wider">{t('actionCenter.open_tickets', 'Open Tickets')}</span>
               <MessageSquare className="w-3.5 h-3.5" />
             </div>
             <div className="mt-2 text-2xl font-black text-rose-400">{radar.unresolved_tickets}</div>
-            <span className="text-[10px] text-slate-400 mt-0.5">Need resolution</span>
+            <span className="text-[10px] text-slate-400 mt-0.5">{t('actionCenter.need_resolution', 'Need resolution')}</span>
           </button>
 
           <button
@@ -354,11 +354,11 @@ export default function ActionCenter() {
             }`}
           >
             <div className="flex items-center justify-between text-emerald-400">
-              <span className="text-[10px] uppercase font-bold tracking-wider">Pending PT</span>
+              <span className="text-[10px] uppercase font-bold tracking-wider">{t('actionCenter.pending_pt', 'Pending PT')}</span>
               <UserCheck className="w-3.5 h-3.5" />
             </div>
             <div className="mt-2 text-2xl font-black text-white">{radar.pending_pt_sessions}</div>
-            <span className="text-[10px] text-slate-400 mt-0.5">Unlogged workouts</span>
+            <span className="text-[10px] text-slate-400 mt-0.5">{t('actionCenter.unlogged_workouts', 'Unlogged workouts')}</span>
           </button>
         </div>
       )}
@@ -371,7 +371,7 @@ export default function ActionCenter() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search action items or assignees..."
+            placeholder={t('actionCenter.search_placeholder', 'Search action items or assignees...')}
             className="w-full pl-9 pr-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
           />
         </div>
@@ -379,34 +379,44 @@ export default function ActionCenter() {
         <div className="flex items-center gap-3 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
           {/* Status Filter */}
           <div className="flex items-center gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800 text-xs">
-            {['all', 'pending', 'in_progress', 'resolved'].map((st) => (
+            {[
+              { id: 'all', label: t('actionCenter.status_all', 'All') },
+              { id: 'pending', label: t('actionCenter.status_pending', 'Pending') },
+              { id: 'in_progress', label: t('actionCenter.status_in_progress', 'In Progress') },
+              { id: 'resolved', label: t('actionCenter.status_resolved', 'Resolved') },
+            ].map((st) => (
               <button
-                key={st}
-                onClick={() => setStatusFilter(st)}
-                className={`px-3 py-1 rounded-lg capitalize font-medium transition-colors ${
-                  statusFilter === st
+                key={st.id}
+                onClick={() => setStatusFilter(st.id)}
+                className={`px-3 py-1 rounded-lg capitalize font-medium transition-colors cursor-pointer ${
+                  statusFilter === st.id
                     ? 'bg-emerald-500 text-slate-950 font-bold'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
-                {st.replace('_', ' ')}
+                {st.label}
               </button>
             ))}
           </div>
 
           {/* Severity Filter */}
           <div className="flex items-center gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800 text-xs">
-            {['all', 'critical', 'warning', 'info'].map((sev) => (
+            {[
+              { id: 'all', label: t('actionCenter.severity_all', 'All') },
+              { id: 'critical', label: t('actionCenter.severity_critical', 'Critical') },
+              { id: 'warning', label: t('actionCenter.severity_warning', 'Warning') },
+              { id: 'info', label: t('actionCenter.severity_info', 'Info') },
+            ].map((sev) => (
               <button
-                key={sev}
-                onClick={() => setSeverityFilter(sev)}
-                className={`px-2.5 py-1 rounded-lg capitalize font-medium transition-colors ${
-                  severityFilter === sev
+                key={sev.id}
+                onClick={() => setSeverityFilter(sev.id)}
+                className={`px-2.5 py-1 rounded-lg capitalize font-medium transition-colors cursor-pointer ${
+                  severityFilter === sev.id
                     ? 'bg-slate-700 text-white font-bold'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
-                {sev}
+                {sev.label}
               </button>
             ))}
           </div>
@@ -418,25 +428,25 @@ export default function ActionCenter() {
         {loading ? (
           <div className="p-12 text-center text-slate-400 text-xs flex flex-col items-center gap-2">
             <RefreshCw className="w-5 h-5 animate-spin text-emerald-400" />
-            <span>Scanning operational registers...</span>
+            <span>{t('actionCenter.scanning_registers', 'Scanning operational registers...')}</span>
           </div>
         ) : filteredItems.length === 0 ? (
           <div className="p-12 text-center text-slate-400 text-xs flex flex-col items-center gap-2">
             <CheckCircle2 className="w-8 h-8 text-emerald-400" />
-            <span className="font-semibold text-slate-200 text-sm">All operations in order</span>
-            <span className="text-slate-500">No pending operational triage items match current criteria.</span>
+            <span className="font-semibold text-slate-200 text-sm">{t('actionCenter.all_in_order', 'All operations in order')}</span>
+            <span className="text-slate-500">{t('actionCenter.no_items_match', 'No pending operational triage items match current criteria.')}</span>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-900/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
                 <tr>
-                  <th className="py-3 px-4">Severity & Status</th>
-                  <th className="py-3 px-4">Action Item & Context</th>
-                  <th className="py-3 px-4">Category</th>
-                  <th className="py-3 px-4">Assigned Staff</th>
-                  <th className="py-3 px-4">Due Date</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
+                  <th className="py-3 px-4">{t('actionCenter.col_severity_status', 'Severity & Status')}</th>
+                  <th className="py-3 px-4">{t('actionCenter.col_action_context', 'Action Item & Context')}</th>
+                  <th className="py-3 px-4">{t('actionCenter.col_category', 'Category')}</th>
+                  <th className="py-3 px-4">{t('actionCenter.col_assigned_staff', 'Assigned Staff')}</th>
+                  <th className="py-3 px-4">{t('actionCenter.col_due_date', 'Due Date')}</th>
+                  <th className="py-3 px-4 text-right">{t('actionCenter.col_actions', 'Actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60 text-slate-300">
@@ -506,7 +516,7 @@ export default function ActionCenter() {
                           <span className="text-[10px] text-slate-500 capitalize">({item.assignee.role})</span>
                         </div>
                       ) : (
-                        <span className="text-slate-500 italic">Unassigned</span>
+                        <span className="text-slate-500 italic">{t('actionCenter.unassigned', 'Unassigned')}</span>
                       )}
                     </td>
 
@@ -529,7 +539,7 @@ export default function ActionCenter() {
                               }}
                               className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-semibold border border-slate-700 cursor-pointer"
                             >
-                              Assign
+                              {t('actionCenter.btn_assign', 'Assign')}
                             </button>
                             <button
                               onClick={() => {
@@ -538,13 +548,13 @@ export default function ActionCenter() {
                               }}
                               className="px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[11px] font-bold cursor-pointer"
                             >
-                              Resolve
+                              {t('actionCenter.btn_resolve', 'Resolve')}
                             </button>
                           </>
                         )}
                         {item.status === 'resolved' && (
                           <span className="text-emerald-400 flex items-center gap-1 font-semibold text-[11px]">
-                            <CheckCircle2 className="w-3.5 h-3.5" /> Resolved
+                            <CheckCircle2 className="w-3.5 h-3.5" /> {t('actionCenter.btn_resolved', 'Resolved')}
                           </span>
                         )}
                       </div>
@@ -562,7 +572,7 @@ export default function ActionCenter() {
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-[#0f172a] border border-slate-800 rounded-2xl p-6 w-full max-w-md shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <h3 className="text-sm font-bold text-white">Assign Staff Member</h3>
+              <h3 className="text-sm font-bold text-white">{t('actionCenter.assign_modal_title', 'Assign Staff Member')}</h3>
               <button
                 onClick={() => setAssignModalItem(null)}
                 className="text-slate-400 hover:text-white cursor-pointer"
@@ -572,20 +582,20 @@ export default function ActionCenter() {
             </div>
 
             <p className="text-xs text-slate-300">
-              Select who should take ownership of:{' '}
+              {t('actionCenter.assign_modal_desc', 'Select who should take ownership of:')}{' '}
               <span className="font-semibold text-white">"{assignModalItem.title}"</span>
             </p>
 
             <form onSubmit={handleAssignSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1.5">Select Staff</label>
+                <label className="block text-xs font-medium text-slate-400 mb-1.5">{t('actionCenter.assign_select_staff', 'Select Staff')}</label>
                 <select
                   value={selectedStaffId}
                   onChange={(e) => setSelectedStaffId(Number(e.target.value))}
                   required
                   className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500"
                 >
-                  <option value="">Choose Staff Member...</option>
+                  <option value="">{t('actionCenter.assign_choose_placeholder', 'Choose Staff Member...')}</option>
                   {staffList.map((st) => (
                     <option key={st.id} value={st.id}>
                       {st.name} ({st.role})
@@ -600,14 +610,14 @@ export default function ActionCenter() {
                   onClick={() => setAssignModalItem(null)}
                   className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold cursor-pointer"
                 >
-                  Cancel
+                  {t('common.cancel', 'Cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting || !selectedStaffId}
                   className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition-colors disabled:opacity-50 cursor-pointer"
                 >
-                  {isSubmitting ? 'Assigning...' : 'Save Assignment'}
+                  {isSubmitting ? t('actionCenter.assign_saving', 'Assigning...') : t('actionCenter.assign_btn_save', 'Save Assignment')}
                 </button>
               </div>
             </form>
@@ -620,7 +630,7 @@ export default function ActionCenter() {
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-[#0f172a] border border-slate-800 rounded-2xl p-6 w-full max-w-md shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <h3 className="text-sm font-bold text-white">Mark Action as Resolved</h3>
+              <h3 className="text-sm font-bold text-white">{t('actionCenter.resolve_modal_title', 'Mark Action as Resolved')}</h3>
               <button
                 onClick={() => setResolveModalItem(null)}
                 className="text-slate-400 hover:text-white cursor-pointer"
@@ -630,19 +640,19 @@ export default function ActionCenter() {
             </div>
 
             <p className="text-xs text-slate-300">
-              Confirm resolution for: <span className="font-semibold text-white">"{resolveModalItem.title}"</span>
+              {t('actionCenter.resolve_modal_desc', 'Confirm resolution for:')} <span className="font-semibold text-white">"{resolveModalItem.title}"</span>
             </p>
 
             <form onSubmit={handleResolveSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs font-medium text-slate-400 mb-1.5">
-                  Resolution Notes / Actions Taken
+                  {t('actionCenter.resolve_notes_label', 'Resolution Notes / Actions Taken')}
                 </label>
                 <textarea
                   rows={3}
                   value={resolutionNotes}
                   onChange={(e) => setResolutionNotes(e.target.value)}
-                  placeholder="e.g. Called member; renewal fee collected via UPI."
+                  placeholder={t('actionCenter.resolve_notes_placeholder', 'e.g. Called member; renewal fee collected via UPI.')}
                   required
                   className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500"
                 />
@@ -654,14 +664,14 @@ export default function ActionCenter() {
                   onClick={() => setResolveModalItem(null)}
                   className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold cursor-pointer"
                 >
-                  Cancel
+                  {t('common.cancel', 'Cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting || !resolutionNotes}
                   className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition-colors disabled:opacity-50 cursor-pointer"
                 >
-                  {isSubmitting ? 'Resolving...' : 'Confirm Resolution'}
+                  {isSubmitting ? t('actionCenter.resolve_saving', 'Resolving...') : t('actionCenter.resolve_btn_confirm', 'Confirm Resolution')}
                 </button>
               </div>
             </form>
@@ -674,7 +684,7 @@ export default function ActionCenter() {
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-[#0f172a] border border-slate-800 rounded-2xl p-6 w-full max-w-lg shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <h3 className="text-sm font-bold text-white">Create New Operational Task</h3>
+              <h3 className="text-sm font-bold text-white">{t('actionCenter.create_modal_title', 'Create New Operational Task')}</h3>
               <button
                 onClick={() => setCreateModalOpen(false)}
                 className="text-slate-400 hover:text-white cursor-pointer"
@@ -686,7 +696,7 @@ export default function ActionCenter() {
             <form onSubmit={handleCreateSubmit} className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-1">Type</label>
+                  <label className="block text-xs font-medium text-slate-400 mb-1">{t('actionCenter.create_type_label', 'Type')}</label>
                   <select
                     value={newType}
                     onChange={(e) => setNewType(e.target.value)}
@@ -700,25 +710,25 @@ export default function ActionCenter() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-1">Severity</label>
+                  <label className="block text-xs font-medium text-slate-400 mb-1">{t('actionCenter.create_severity_label', 'Severity')}</label>
                   <select
                     value={newSeverity}
                     onChange={(e) => setNewSeverity(e.target.value as any)}
                     className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white"
                   >
-                    <option value="critical">Critical (Immediate)</option>
-                    <option value="warning">Warning (High Priority)</option>
-                    <option value="info">Info (Standard)</option>
+                    <option value="critical">{t('actionCenter.severity_critical', 'Critical')}</option>
+                    <option value="warning">{t('actionCenter.severity_warning', 'Warning')}</option>
+                    <option value="info">{t('actionCenter.severity_info', 'Info')}</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1">Title</label>
+                <label className="block text-xs font-medium text-slate-400 mb-1">{t('actionCenter.create_title_label', 'Title')}</label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Inspect Treadmill #3 motor noise"
+                  placeholder={t('actionCenter.create_title_placeholder', 'e.g. Inspect Treadmill #3 motor noise')}
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                   className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white"
@@ -726,10 +736,10 @@ export default function ActionCenter() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1">Description / Notes</label>
+                <label className="block text-xs font-medium text-slate-400 mb-1">{t('actionCenter.create_desc_label', 'Description / Notes')}</label>
                 <textarea
                   rows={2}
-                  placeholder="Details and instructions for staff..."
+                  placeholder={t('actionCenter.create_desc_placeholder', 'Details and instructions for staff...')}
                   value={newDescription}
                   onChange={(e) => setNewDescription(e.target.value)}
                   className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white"
@@ -738,13 +748,13 @@ export default function ActionCenter() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-1">Assign To</label>
+                  <label className="block text-xs font-medium text-slate-400 mb-1">{t('actionCenter.create_assign_label', 'Assign To')}</label>
                   <select
                     value={newAssigneeId}
                     onChange={(e) => setNewAssigneeId(e.target.value)}
                     className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white"
                   >
-                    <option value="">Unassigned</option>
+                    <option value="">{t('actionCenter.unassigned', 'Unassigned')}</option>
                     {staffList.map((st) => (
                       <option key={st.id} value={st.id}>
                         {st.name} ({st.role})
@@ -754,7 +764,7 @@ export default function ActionCenter() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-1">Due Date</label>
+                  <label className="block text-xs font-medium text-slate-400 mb-1">{t('common.date', 'Due Date')}</label>
                   <input
                     type="date"
                     value={newDueDate}
@@ -770,14 +780,14 @@ export default function ActionCenter() {
                   onClick={() => setCreateModalOpen(false)}
                   className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold cursor-pointer"
                 >
-                  Cancel
+                  {t('common.cancel', 'Cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting || !newTitle}
                   className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition-colors disabled:opacity-50 cursor-pointer"
                 >
-                  {isSubmitting ? 'Creating...' : 'Create Task'}
+                  {isSubmitting ? t('common.loading', 'Creating...') : t('actionCenter.create_btn_save', 'Create Task')}
                 </button>
               </div>
             </form>

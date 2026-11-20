@@ -200,7 +200,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
           ))}
           {totalMatches > 0 && (
             <span className="ml-auto text-[11px] text-slate-500">
-              {totalMatches} matches
+              {totalMatches} {t('globalSearch.matches', 'matches')}
             </span>
           )}
         </div>
@@ -210,17 +210,17 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
           {query.trim().length < 2 ? (
             <div className="p-8 text-center text-slate-500 text-xs">
               <Search className="w-8 h-8 text-slate-600 mx-auto mb-2 opacity-50" />
-              <p>Type at least 2 characters to search across all gym records.</p>
+              <p>{t('globalSearch.type_to_search', 'Type at least 2 characters to search across all gym records.')}</p>
               <div className="mt-4 flex flex-wrap justify-center gap-2 text-[11px] text-slate-400">
-                <span className="px-2 py-1 bg-slate-800/60 rounded border border-slate-800">Phone numbers</span>
-                <span className="px-2 py-1 bg-slate-800/60 rounded border border-slate-800">Member ID</span>
-                <span className="px-2 py-1 bg-slate-800/60 rounded border border-slate-800">Receipt No</span>
-                <span className="px-2 py-1 bg-slate-800/60 rounded border border-slate-800">Product SKU</span>
+                <span className="px-2 py-1 bg-slate-800/60 rounded border border-slate-800">{t('globalSearch.phone_numbers', 'Phone numbers')}</span>
+                <span className="px-2 py-1 bg-slate-800/60 rounded border border-slate-800">{t('globalSearch.member_id', 'Member ID')}</span>
+                <span className="px-2 py-1 bg-slate-800/60 rounded border border-slate-800">{t('globalSearch.receipt_no', 'Receipt No')}</span>
+                <span className="px-2 py-1 bg-slate-800/60 rounded border border-slate-800">{t('globalSearch.product_sku', 'Product SKU')}</span>
               </div>
             </div>
           ) : items.length === 0 && !loading ? (
             <div className="p-8 text-center text-slate-500 text-xs">
-              <p>No results found for "{query}".</p>
+              <p>{t('globalSearch.no_matches', 'No records found matching')} "{query}".</p>
             </div>
           ) : (
             items.map((item) => (
