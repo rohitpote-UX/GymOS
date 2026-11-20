@@ -46,6 +46,8 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        $this->call(WorkoutAndNutritionSeeder::class);
+
         // 1. Super Admin (Platform Owner)
         $superAdmin = User::create([
             'gym_id' => null,

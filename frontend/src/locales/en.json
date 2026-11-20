@@ -890,5 +890,25 @@
     "subscription_duration": "Subscription Duration",
     "btn_register_gym": "Register Gym",
     "registering": "Registering Gym..."
+  },
+  "fitness": {
+    "workout_plans": "Workout Routines",
+    "diet_plans": "Diet & Nutrition",
+    "exercise_library": "Exercise Library",
+    "templates": "Ready Templates",
+    "create_workout": "Create Workout Plan",
+    "create_diet": "Create Diet Plan",
+    "today_workout": "Today's Workout",
+    "today_diet": "Today's Nutrition",
+    "my_progress": "My Progress",
+    "log_set": "Record Set",
+    "complete_workout": "Mark Workout Completed",
+    "record_progress": "Record Measurements",
+    "active_plans": "Active Routines",
+    "days_per_week": "Days / Week",
+    "target_calories": "Target Calories",
+    "target_protein": "Target Protein",
+    "target_carbs": "Target Carbs",
+    "target_fats": "Target Fats"
   }
 }

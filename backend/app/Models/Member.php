@@ -98,6 +98,51 @@ class Member extends Model
         return $this->hasMany(PosOrder::class);
     }
 
+    public function workoutPlans(): HasMany
+    {
+        return $this->hasMany(MemberWorkoutPlan::class);
+    }
+
+    public function activeWorkoutPlan(): HasOne
+    {
+        return $this->hasOne(MemberWorkoutPlan::class)
+            ->where('status', 'active')
+            ->where('is_active', true)
+            ->latestOfMany();
+    }
+
+    public function workoutSessions(): HasMany
+    {
+        return $this->hasMany(MemberWorkoutSession::class);
+    }
+
+    public function dietPlans(): HasMany
+    {
+        return $this->hasMany(MemberDietPlan::class);
+    }
+
+    public function activeDietPlan(): HasOne
+    {
+        return $this->hasOne(MemberDietPlan::class)
+            ->where('status', 'active')
+            ->latestOfMany();
+    }
+
+    public function mealLogs(): HasMany
+    {
+        return $this->hasMany(MemberMealLog::class);
+    }
+
+    public function progressLogs(): HasMany
+    {
+        return $this->hasMany(MemberProgressLog::class)->orderBy('log_date', 'desc');
+    }
+
+    public function latestProgressLog(): HasOne
+    {
+        return $this->hasOne(MemberProgressLog::class)->latestOfMany('log_date');
+    }
+
     public function getFullNameAttribute(): string
     {
         return trim("{$this->first_name} {$this->last_name}");

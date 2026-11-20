@@ -31,6 +31,8 @@ import Trainers from './pages/Trainers';
 import WhatsAppAutomation from './pages/WhatsAppAutomation';
 import SelfCheckIn from './pages/SelfCheckIn';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import WorkoutPlans from './pages/WorkoutPlans';
+import DietPlans from './pages/DietPlans';
 
 const AppRoutes: React.FC = () => {
   const { user } = useAuth();
@@ -63,6 +65,8 @@ const AppRoutes: React.FC = () => {
       ) : user.role === 'trainer' ? (
         <Route element={<Layout />}>
           <Route path="/trainer-portal" element={<TrainerPortal />} />
+          <Route path="/workouts" element={<WorkoutPlans />} />
+          <Route path="/diets" element={<DietPlans />} />
           <Route path="/attendance" element={<Attendance />} />
           <Route path="/members" element={<Members />} />
           <Route path="/support" element={<SupportTickets />} />
@@ -85,6 +89,8 @@ const AppRoutes: React.FC = () => {
           {/* Operational Modules */}
           <Route path="/attendance" element={<Attendance />} />
           <Route path="/members" element={<Members />} />
+          <Route path="/workouts" element={<WorkoutPlans />} />
+          <Route path="/diets" element={<DietPlans />} />
           <Route path="/pos" element={<Pos />} />
           <Route path="/inventory" element={<Inventory />} />
           <Route path="/purchases" element={<Purchases />} />

@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   Activity,
   AlertCircle,
+  BookOpen,
   Calendar,
   CheckCircle2,
   Clock,
@@ -16,6 +18,7 @@ import {
   User,
   UserCheck,
   Users,
+  Utensils,
   X,
 } from 'lucide-react';
 import api, { errorMessage } from '../api/client';
@@ -99,21 +102,43 @@ export default function TrainerPortal() {
   const [progressNotes, setProgressNotes] = useState('');
   const [isLoggingProgress, setIsLoggingProgress] = useState(false);
 
+  // Assign Diet Modal
+  const [dietModalMember, setDietModalMember] = useState<AssignedMember | null>(null);
+  const [dietTitle, setDietTitle] = useState('High-Protein Balanced Nutrition');
+  const [dietGoal, setDietGoal] = useState('muscle_gain');
+  const [dietaryPref, setDietaryPref] = useState('vegetarian');
+  const [dietCals, setDietCals] = useState<number>(2200);
+  const [dietProtein, setDietProtein] = useState<number>(130);
+  const [dietCarbs, setDietCarbs] = useState<number>(220);
+  const [dietFat, setDietFat] = useState<number>(65);
+  const [dietNotes, setDietNotes] = useState('');
+  const [isAssigningDiet, setIsAssigningDiet] = useState(false);
+
+  // Fitness Overview Data
+  const [fitnessMetrics, setFitnessMetrics] = useState<{
+    active_workout_plans_count?: number;
+    active_diet_plans_count?: number;
+    today_workout_completions?: number;
+    expiring_plans_count?: number;
+  } | null>(null);
+
   const [successToast, setSuccessToast] = useState<string | null>(null);
 
   const fetchTrainerData = async () => {
     try {
       setLoading(true);
       setError(null);
-      const [dashRes, memRes, sessRes] = await Promise.all([
+      const [dashRes, memRes, sessRes, fitRes] = await Promise.all([
         api.get('/trainer-portal/dashboard'),
         api.get('/trainer-portal/members').catch(() => ({ data: { members: [] } })),
         api.get('/trainer-portal/sessions').catch(() => ({ data: { sessions: [] } })),
+        api.get('/trainer-portal/fitness-overview').catch(() => ({ data: { metrics: null } })),
       ]);
 
       setMetrics(dashRes.data.metrics || null);
       setMembers(memRes.data.members || memRes.data.data || []);
       setSessions(sessRes.data.sessions || sessRes.data.data || []);
+      setFitnessMetrics(fitRes.data.metrics || null);
     } catch (err) {
       setError(errorMessage(err));
     } finally {
@@ -215,6 +240,65 @@ export default function TrainerPortal() {
     }
   };
 
+  const handleAssignDietSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!dietModalMember) return;
+
+    try {
+      setIsAssigningDiet(true);
+      await api.post('/trainer-portal/assign-diet', {
+        member_id: dietModalMember.id,
+        title: dietTitle,
+        goal: dietGoal,
+        dietary_preference: dietaryPref,
+        target_calories: Number(dietCals),
+        target_protein_g: Number(dietProtein),
+        target_carbs_g: Number(dietCarbs),
+        target_fat_g: Number(dietFat),
+        notes: dietNotes,
+        meals: [
+          {
+            slot_name: 'Breakfast',
+            time_hint: '08:30 AM',
+            items: [
+              { food_name: 'Rolled Oats with Milk', quantity: '80g oats + 250ml milk', calories: 380, protein: 16, carbs: 60, fat: 7 },
+            ],
+          },
+          {
+            slot_name: 'Lunch',
+            time_hint: '01:30 PM',
+            items: [
+              { food_name: 'Brown Rice + Paneer / Chicken', quantity: '150g rice + 150g protein', calories: 550, protein: 35, carbs: 55, fat: 18 },
+            ],
+          },
+          {
+            slot_name: 'Evening Snack',
+            time_hint: '05:30 PM',
+            items: [
+              { food_name: 'Boiled Sprouts or Whey Shake', quantity: '1 serving', calories: 220, protein: 24, carbs: 20, fat: 3 },
+            ],
+          },
+          {
+            slot_name: 'Dinner',
+            time_hint: '08:30 PM',
+            items: [
+              { food_name: 'Roti with Dal Tadka & Salad', quantity: '2 rotis + 1 bowl dal', calories: 420, protein: 18, carbs: 65, fat: 8 },
+            ],
+          },
+        ],
+      });
+
+      setDietModalMember(null);
+      setSuccessToast(`Diet & Nutrition plan assigned to ${dietModalMember.first_name}!`);
+      setTimeout(() => setSuccessToast(null), 4000);
+      fetchTrainerData();
+    } catch (err) {
+      alert(errorMessage(err));
+    } finally {
+      setIsAssigningDiet(false);
+    }
+  };
+
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6">
       {/* Header */}
@@ -222,10 +306,10 @@ export default function TrainerPortal() {
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
-              <Dumbbell className="w-6 h-6 text-emerald-400" />
+              <Dumbbell className="w-6 h-6 text-red-500" />
               <span>{t('trainer.title', 'Trainer & Coach Portal')}</span>
             </h1>
-            <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-bold border border-emerald-500/20">
+            <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-red-500/10 text-red-400 font-bold border border-red-500/20">
               Coach: {user?.name}
             </span>
           </div>
@@ -234,7 +318,23 @@ export default function TrainerPortal() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 self-start md:self-auto">
+        <div className="flex items-center gap-2 self-start md:self-auto flex-wrap">
+          <Link
+            to="/workouts"
+            className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center gap-1.5 transition-colors border border-slate-700 cursor-pointer"
+          >
+            <Dumbbell className="w-3.5 h-3.5 text-red-400" />
+            <span>Workout Plans</span>
+          </Link>
+
+          <Link
+            to="/diets"
+            className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center gap-1.5 transition-colors border border-slate-700 cursor-pointer"
+          >
+            <Utensils className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Diet Plans</span>
+          </Link>
+
           <LanguageSwitcher variant="dropdown" />
           <button
             onClick={fetchTrainerData}
@@ -441,8 +541,19 @@ export default function TrainerPortal() {
                     }}
                     className="flex-1 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center justify-center gap-1 border border-slate-700 cursor-pointer"
                   >
-                    <Dumbbell className="w-3.5 h-3.5 text-emerald-400" />
+                    <Dumbbell className="w-3.5 h-3.5 text-red-400" />
                     <span>Workout</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setDietModalMember(m);
+                      setDietTitle('Personalized Nutrition Routine');
+                    }}
+                    className="flex-1 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center justify-center gap-1 border border-slate-700 cursor-pointer"
+                  >
+                    <Utensils className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Diet</span>
                   </button>
 
                   <button
@@ -718,6 +829,116 @@ export default function TrainerPortal() {
                   className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition-colors disabled:opacity-50 cursor-pointer"
                 >
                   {isLoggingProgress ? 'Saving...' : 'Save Measurements'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Assign Diet Plan Modal */}
+      {dietModalMember && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-[#0f172a] border border-slate-800 rounded-2xl p-6 w-full max-w-lg shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <Utensils className="w-4 h-4 text-emerald-400" />
+                <span>Assign Diet Plan — {dietModalMember.first_name}</span>
+              </h3>
+              <button
+                onClick={() => setDietModalMember(null)}
+                className="text-slate-400 hover:text-white cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAssignDietSubmit} className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-slate-400 mb-1">Diet Title *</label>
+                <input
+                  type="text"
+                  required
+                  value={dietTitle}
+                  onChange={(e) => setDietTitle(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 mb-1">Goal</label>
+                  <select
+                    value={dietGoal}
+                    onChange={(e) => setDietGoal(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white"
+                  >
+                    <option value="muscle_gain">Muscle Gain</option>
+                    <option value="fat_loss">Fat Loss</option>
+                    <option value="maintenance">Maintenance</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 mb-1">Dietary Preference</label>
+                  <select
+                    value={dietaryPref}
+                    onChange={(e) => setDietaryPref(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white"
+                  >
+                    <option value="vegetarian">Vegetarian</option>
+                    <option value="non_vegetarian">Non-Vegetarian</option>
+                    <option value="vegan">Vegan</option>
+                    <option value="eggetarian">Eggetarian</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 mb-1">Target Calories (kcal)</label>
+                  <input
+                    type="number"
+                    value={dietCals}
+                    onChange={(e) => setDietCals(Number(e.target.value))}
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 mb-1">Protein (g)</label>
+                  <input
+                    type="number"
+                    value={dietProtein}
+                    onChange={(e) => setDietProtein(Number(e.target.value))}
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white font-mono"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-400 mb-1">Coach Nutrition Guidelines</label>
+                <textarea
+                  rows={2}
+                  placeholder="e.g. Drink 3.5L water daily. Have post-workout shake within 30 mins."
+                  value={dietNotes}
+                  onChange={(e) => setDietNotes(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setDietModalMember(null)}
+                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isAssigningDiet}
+                  className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  {isAssigningDiet ? 'Assigning...' : 'Assign Diet Plan'}
                 </button>
               </div>
             </form>

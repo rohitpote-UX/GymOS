@@ -890,5 +890,25 @@
     "subscription_duration": "सबस्क्रिप्शन कालावधी",
     "btn_register_gym": "जिम नोंदणी करा",
     "registering": "नोंदणी करत आहे..."
+  },
+  "fitness": {
+    "workout_plans": "वर्कआउट योजना",
+    "diet_plans": "आहार व पोषण",
+    "exercise_library": "व्यायाम लायब्ररी",
+    "templates": "तयार टेम्प्लेट्स",
+    "create_workout": "नवीन वर्कआउट प्लॅन तयार करा",
+    "create_diet": "नवीन डाएट प्लॅन तयार करा",
+    "today_workout": "आजचा वर्कआउट",
+    "today_diet": "आजचा आहार",
+    "my_progress": "माझी प्रगती",
+    "log_set": "सेट नोंदवा",
+    "complete_workout": "वर्कआउट पूर्ण करा",
+    "record_progress": "मापे नोंदवा",
+    "active_plans": "सक्रिय वर्कआउट",
+    "days_per_week": "दिवस / आठवडा",
+    "target_calories": "लक्ष्य कॅलरी",
+    "target_protein": "लक्ष्य प्रथिने (प्रोटीन)",
+    "target_carbs": "लक्ष्य कर्बोदके (कार्ब्स)",
+    "target_fats": "लक्ष्य स्निग्धता (फॅट)"
   }
 }

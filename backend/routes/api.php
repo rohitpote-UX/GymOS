@@ -12,6 +12,8 @@ use App\Http\Controllers\Api\BranchController;
 use App\Http\Controllers\Api\BrandingController;
 use App\Http\Controllers\Api\CashClosingController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\DietPlanController;
+use App\Http\Controllers\Api\ExerciseController;
 use App\Http\Controllers\Api\ExpenseController;
 use App\Http\Controllers\Api\GlobalSearchController;
 use App\Http\Controllers\Api\GymQrCodeController;
@@ -36,6 +38,7 @@ use App\Http\Controllers\Api\SupportTicketController;
 use App\Http\Controllers\Api\TrainerController;
 use App\Http\Controllers\Api\TrainerPortalController;
 use App\Http\Controllers\Api\WhatsAppController;
+use App\Http\Controllers\Api\WorkoutPlanController;
 use Illuminate\Support\Facades\Route;
 
 // -------------------------------------------------------------
@@ -128,6 +131,30 @@ Route::middleware(['auth:sanctum', 'gym', 'branch'])->group(function () {
     Route::post('/member-memberships/{id}/extend', [MemberMembershipController::class, 'extend']);
     Route::post('/member-memberships/{id}/cancel', [MemberMembershipController::class, 'cancel']);
 
+    // Workout & Diet Libraries (Scoped to Gym or System Global)
+    Route::get('/exercises', [ExerciseController::class, 'index']);
+    Route::post('/exercises', [ExerciseController::class, 'store']);
+    Route::get('/workout-templates', [ExerciseController::class, 'workoutTemplates']);
+    Route::get('/foods', [ExerciseController::class, 'foods']);
+    Route::post('/foods', [ExerciseController::class, 'storeFood']);
+    Route::get('/diet-templates', [ExerciseController::class, 'dietTemplates']);
+
+    // Workout Routine Management
+    Route::get('/workout-plans', [WorkoutPlanController::class, 'index']);
+    Route::post('/workout-plans', [WorkoutPlanController::class, 'store']);
+    Route::get('/workout-plans/{id}', [WorkoutPlanController::class, 'show']);
+    Route::put('/workout-plans/{id}', [WorkoutPlanController::class, 'update']);
+    Route::post('/workout-plans/{id}/duplicate', [WorkoutPlanController::class, 'duplicate']);
+    Route::patch('/workout-plans/{id}/status', [WorkoutPlanController::class, 'updateStatus']);
+
+    // Diet & Nutrition Plan Management
+    Route::get('/diet-plans', [DietPlanController::class, 'index']);
+    Route::post('/diet-plans', [DietPlanController::class, 'store']);
+    Route::get('/diet-plans/{id}', [DietPlanController::class, 'show']);
+    Route::put('/diet-plans/{id}', [DietPlanController::class, 'update']);
+    Route::post('/diet-plans/{id}/duplicate', [DietPlanController::class, 'duplicate']);
+    Route::patch('/diet-plans/{id}/status', [DietPlanController::class, 'updateStatus']);
+
     // Module 3: Attendance & Access Control
     Route::middleware('module:attendance')->group(function () {
         Route::get('/attendance', [AttendanceController::class, 'index']);
@@ -189,6 +216,9 @@ Route::middleware(['auth:sanctum', 'gym', 'branch'])->group(function () {
         Route::post('/trainer-portal/sessions/{id}/complete', [TrainerPortalController::class, 'completeSession']);
         Route::post('/trainer-portal/assign-workout', [TrainerPortalController::class, 'assignWorkout']);
         Route::post('/trainer-portal/log-progress', [TrainerPortalController::class, 'logProgress']);
+        Route::get('/trainer-portal/fitness-overview', [TrainerPortalController::class, 'fitnessOverview']);
+        Route::get('/trainer-portal/member/{id}/fitness', [TrainerPortalController::class, 'memberFitnessDetail']);
+        Route::post('/trainer-portal/assign-diet', [TrainerPortalController::class, 'assignDiet']);
     });
 
     // Module 7: Leads & CRM
@@ -250,6 +280,12 @@ Route::middleware(['auth:sanctum', 'gym', 'branch'])->group(function () {
     Route::get('/member-portal/attendance', [MemberPortalController::class, 'attendance']);
     Route::get('/member-portal/payments', [MemberPortalController::class, 'payments']);
     Route::get('/member-portal/workouts', [MemberPortalController::class, 'workouts']);
+    Route::get('/member-portal/fitness-today', [MemberPortalController::class, 'fitnessToday']);
+    Route::post('/member-portal/workout-session/log-set', [MemberPortalController::class, 'logWorkoutSet']);
+    Route::post('/member-portal/workout-session/complete', [MemberPortalController::class, 'completeWorkoutSession']);
+    Route::post('/member-portal/meal-log/toggle', [MemberPortalController::class, 'toggleMealLog']);
+    Route::get('/member-portal/my-progress', [MemberPortalController::class, 'myProgress']);
+    Route::post('/member-portal/record-progress', [MemberPortalController::class, 'recordProgress']);
     Route::get('/member-portal/pt-sessions', [MemberPortalController::class, 'ptSessions']);
     Route::get('/member-portal/progress', [MemberPortalController::class, 'progress']);
     Route::post('/member-portal/renew-request', [MemberPortalController::class, 'renewRequest']);

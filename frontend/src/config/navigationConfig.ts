@@ -25,6 +25,7 @@ import {
   Truck,
   User,
   Users,
+  Utensils,
 } from 'lucide-react';
 import { UserInfo } from '../context/AuthContext';
 
@@ -101,6 +102,22 @@ export const NAVIGATION_DESTINATIONS: NavDestination[] = [
         to: '/plans',
         icon: Dumbbell,
         roles: ['super_admin', 'gym_owner', 'branch_manager'],
+      },
+      {
+        id: 'members_workouts',
+        labelKey: 'fitness.workout_plans',
+        defaultLabel: 'Workout Routines',
+        to: '/workouts',
+        icon: Dumbbell,
+        roles: ['super_admin', 'gym_owner', 'branch_manager', 'trainer'],
+      },
+      {
+        id: 'members_diets',
+        labelKey: 'fitness.diet_plans',
+        defaultLabel: 'Diet & Nutrition',
+        to: '/diets',
+        icon: Utensils,
+        roles: ['super_admin', 'gym_owner', 'branch_manager', 'trainer'],
       },
       {
         id: 'members_pass',

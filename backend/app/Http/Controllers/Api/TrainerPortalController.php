@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\ActionItem;
 use App\Models\AuditLog;
 use App\Models\Member;
+use App\Models\MemberDietPlan;
 use App\Models\MemberProgressLog;
 use App\Models\MemberWorkoutPlan;
+use App\Models\MemberWorkoutSession;
 use App\Models\PtSession;
 use App\Models\User;
 use App\Support\CurrentGym;
@@ -232,6 +234,176 @@ class TrainerPortalController extends Controller
         return response()->json([
             'message' => 'Progress log recorded successfully',
             'log' => $log,
+        ], 201);
+    }
+
+    /**
+     * Fitness overview metrics and assigned members triage for trainer.
+     */
+    public function fitnessOverview(Request $request)
+    {
+        $trainer = $this->resolveTrainer($request);
+        $gymId = CurrentGym::require();
+        $today = Carbon::today()->toDateString();
+        $sevenDaysLater = Carbon::today()->addDays(7)->toDateString();
+
+        $assignedMembers = Member::with([
+            'activeWorkoutPlan',
+            'activeDietPlan',
+            'latestProgressLog',
+            'workoutSessions' => function ($q) {
+                $q->latest('session_date')->take(5);
+            },
+        ])
+        ->where('gym_id', $gymId)
+        ->where('assigned_trainer_id', $trainer->id)
+        ->where('status', 'active')
+        ->get();
+
+        $assignedMemberIds = $assignedMembers->pluck('id');
+
+        $activeWorkoutPlansCount = MemberWorkoutPlan::where('gym_id', $gymId)
+            ->whereIn('member_id', $assignedMemberIds)
+            ->where('status', 'active')
+            ->count();
+
+        $activeDietPlansCount = MemberDietPlan::where('gym_id', $gymId)
+            ->whereIn('member_id', $assignedMemberIds)
+            ->where('status', 'active')
+            ->count();
+
+        $todayCompletions = MemberWorkoutSession::where('gym_id', $gymId)
+            ->whereIn('member_id', $assignedMemberIds)
+            ->whereDate('session_date', $today)
+            ->where('status', 'completed')
+            ->count();
+
+        $expiringPlans = MemberWorkoutPlan::with('member:id,first_name,last_name,phone')
+            ->where('gym_id', $gymId)
+            ->whereIn('member_id', $assignedMemberIds)
+            ->where('status', 'active')
+            ->whereBetween('end_date', [$today, $sevenDaysLater])
+            ->get();
+
+        return response()->json([
+            'metrics' => [
+                'assigned_members_count' => $assignedMembers->count(),
+                'active_workout_plans_count' => $activeWorkoutPlansCount,
+                'active_diet_plans_count' => $activeDietPlansCount,
+                'today_workout_completions' => $todayCompletions,
+                'expiring_plans_count' => $expiringPlans->count(),
+            ],
+            'assigned_members' => $assignedMembers,
+            'expiring_plans' => $expiringPlans,
+        ]);
+    }
+
+    /**
+     * Get a member's full fitness dossier (plans, session logs, progress history).
+     */
+    public function memberFitnessDetail(Request $request, $id)
+    {
+        $trainer = $this->resolveTrainer($request);
+        $gymId = CurrentGym::require();
+
+        $member = Member::where('gym_id', $gymId)->findOrFail($id);
+
+        $workoutPlans = MemberWorkoutPlan::where('gym_id', $gymId)
+            ->where('member_id', $id)
+            ->latest('id')
+            ->get();
+
+        $dietPlans = MemberDietPlan::where('gym_id', $gymId)
+            ->where('member_id', $id)
+            ->latest('id')
+            ->get();
+
+        $sessions = MemberWorkoutSession::where('gym_id', $gymId)
+            ->where('member_id', $id)
+            ->latest('session_date')
+            ->take(20)
+            ->get();
+
+        $progressLogs = MemberProgressLog::where('gym_id', $gymId)
+            ->where('member_id', $id)
+            ->latest('log_date')
+            ->take(30)
+            ->get();
+
+        return response()->json([
+            'member' => $member,
+            'workout_plans' => $workoutPlans,
+            'diet_plans' => $dietPlans,
+            'sessions' => $sessions,
+            'progress_logs' => $progressLogs,
+        ]);
+    }
+
+    /**
+     * Quick assign diet plan for trainer.
+     */
+    public function assignDiet(Request $request)
+    {
+        $trainer = $this->resolveTrainer($request);
+        $gymId = CurrentGym::require();
+
+        $validated = $request->validate([
+            'member_id' => 'required|exists:members,id',
+            'title' => 'required|string|max:150',
+            'goal' => 'required|string|max:60',
+            'dietary_preference' => 'required|string|in:vegetarian,non_vegetarian,vegan,eggetarian',
+            'food_allergies' => 'nullable|string',
+            'food_preferences' => 'nullable|string',
+            'target_calories' => 'nullable|integer',
+            'target_protein_g' => 'nullable|integer',
+            'target_carbs_g' => 'nullable|integer',
+            'target_fat_g' => 'nullable|integer',
+            'meals' => 'required|array|min:1',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date',
+            'notes' => 'nullable|string',
+        ]);
+
+        $member = Member::where('gym_id', $gymId)->findOrFail($validated['member_id']);
+
+        // Archive previous active diet plan
+        MemberDietPlan::where('gym_id', $gymId)
+            ->where('member_id', $member->id)
+            ->where('status', 'active')
+            ->update(['status' => 'archived']);
+
+        $plan = MemberDietPlan::create([
+            'gym_id' => $gymId,
+            'branch_id' => $member->primary_branch_id,
+            'member_id' => $member->id,
+            'trainer_id' => $trainer->id,
+            'title' => $validated['title'],
+            'goal' => $validated['goal'],
+            'dietary_preference' => $validated['dietary_preference'],
+            'food_allergies' => $validated['food_allergies'] ?? null,
+            'food_preferences' => $validated['food_preferences'] ?? null,
+            'target_calories' => $validated['target_calories'] ?? 2000,
+            'target_protein_g' => $validated['target_protein_g'] ?? 120,
+            'target_carbs_g' => $validated['target_carbs_g'] ?? 200,
+            'target_fat_g' => $validated['target_fat_g'] ?? 60,
+            'meals' => $validated['meals'],
+            'start_date' => $validated['start_date'] ?? now()->toDateString(),
+            'end_date' => $validated['end_date'] ?? now()->addMonths(2)->toDateString(),
+            'notes' => $validated['notes'] ?? null,
+            'status' => 'active',
+            'version' => 1,
+        ]);
+
+        AuditLog::record('diet_plan.assigned', [
+            'plan_id' => $plan->id,
+            'member_id' => $plan->member_id,
+            'trainer_id' => $trainer->id,
+            'title' => $plan->title,
+        ]);
+
+        return response()->json([
+            'message' => 'Diet plan assigned successfully',
+            'diet_plan' => $plan->load('member:id,first_name,last_name'),
         ], 201);
     }
 }

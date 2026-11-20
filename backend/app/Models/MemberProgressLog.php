@@ -15,12 +15,18 @@ class MemberProgressLog extends Model
         'gym_id',
         'member_id',
         'logged_by_user_id',
+        'logged_by_role',
         'log_date',
+        'height_cm',
         'weight_kg',
         'body_fat_percent',
         'chest_cm',
         'waist_cm',
+        'hips_cm',
         'arms_cm',
+        'thighs_cm',
+        'calves_cm',
+        'photo_url',
         'notes',
     ];
 
@@ -28,11 +34,15 @@ class MemberProgressLog extends Model
     {
         return [
             'log_date' => 'date',
+            'height_cm' => 'decimal:1',
             'weight_kg' => 'decimal:2',
             'body_fat_percent' => 'decimal:1',
             'chest_cm' => 'decimal:1',
             'waist_cm' => 'decimal:1',
+            'hips_cm' => 'decimal:1',
             'arms_cm' => 'decimal:1',
+            'thighs_cm' => 'decimal:1',
+            'calves_cm' => 'decimal:1',
         ];
     }
 

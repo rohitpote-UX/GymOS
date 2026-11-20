@@ -135,6 +135,7 @@ class User extends Authenticatable
                 'expenses.manage', 'expenses.view',
                 'leads.manage', 'leads.view',
                 'trainers.manage', 'trainers.view',
+                'workouts.manage', 'diet.manage',
                 'cash.manage', 'cash.view',
                 'reports.financial', 'reports.attendance',
                 'settings.edit', 'branding.edit', 'billing.manage'
@@ -149,6 +150,7 @@ class User extends Authenticatable
                 'expenses.manage', 'expenses.view',
                 'leads.manage', 'leads.view',
                 'trainers.view',
+                'workouts.manage', 'diet.manage',
                 'cash.manage', 'cash.view',
                 'reports.attendance', 'reports.financial'
             ],
@@ -165,7 +167,7 @@ class User extends Authenticatable
                 'branches.view',
                 'members.view',
                 'attendance.record', 'attendance.view',
-                'trainers.view', 'workouts.manage'
+                'trainers.view', 'workouts.manage', 'diet.manage'
             ],
             self::ROLE_ACCOUNTANT => [
                 'branches.view',
