@@ -109,34 +109,39 @@
     "search_placeholder": "सदस्य, पावत्या, उत्पादने शोधा..."
   },
   "nav": {
-    "group_overview": "अवलोकन (डॅशबोर्ड)",
+    "group_overview": "आढावा",
     "group_members": "सदस्य",
-    "group_attendance": "उपस्थिती",
-    "group_finance": "आर्थिक व्यवस्थापन",
-    "group_pos_inventory": "विक्री व इन्व्हेंटरी",
-    "group_growth_leads": "ग्राहक व वाढ",
+    "group_attendance": "हजेरी",
+    "group_finance": "आर्थिक व शुल्क",
+    "group_pos_inventory": "दुकान व स्टॉक",
+    "group_growth_leads": "चौकशी व व्हॉट्सॲप",
     "group_ai_advisor": "एआय व्यवसाय सल्लागार",
     "group_more_settings": "अधिक व सेटिंग्ज",
     "quick_actions": "जलद कृती",
     "global_search": "शोधा (Ctrl+K)",
-    "dashboard": "मुख्य डॅशबोर्ड",
-    "members": "सदस्य व्यवस्थापन",
+    "dashboard": "डॅशबोर्ड",
+    "members": "सर्व सदस्य",
     "attendance": "उपस्थिती व हजेरी",
-    "pos": "सप्लिमेंट विक्री / पीओएस",
-    "inventory": "स्टॉक व इन्व्हेंटरी",
-    "payments": "शुल्क संकलन व थकबाकी",
+    "pos": "सप्लिमेंट विक्री (POS)",
+    "inventory": "उत्पादने व स्टॉक",
+    "payments": "शुल्क संकलन व बाकी",
     "expenses": "जिम खर्च",
     "cash_closing": "दैनंदिन कॅश क्लोजिंग",
-    "leads": "संभाव्य ग्राहक (लीड्स)",
+    "leads": "नवीन चौकशी (लीड्स)",
     "reports": "अहवाल व विश्लेषण",
-    "action_center": "ॲक्शन सेंटर",
+    "action_center": "तातडीची कामे",
     "whatsapp": "व्हॉट्सॲप मेसेज",
     "ai_advisor": "एआय व्यवसाय सल्लागार",
     "member_portal": "सदस्य डिजिटल पास",
     "trainer_portal": "ट्रेनर कार्यक्षेत्र",
     "support": "मदत व सपोर्ट डेस्क",
     "settings": "जिम सेटिंग्ज",
-    "platform_admin": "प्लॅटफॉर्म ॲडमिन"
+    "platform_admin": "प्लॅटफॉर्म ॲडमिन",
+    "bottom_home": "होम",
+    "bottom_attendance": "हजेरी",
+    "bottom_quick": "जलद +",
+    "bottom_members": "सदस्य",
+    "bottom_fees": "शुल्क"
   },
   "auth": {
     "login_title": "जिम बिझनेस ओएस मध्ये लॉग इन करा",
@@ -159,8 +164,8 @@
     "invalid_credentials": "दिलेला ईमेल किंवा पासवर्ड जुळत नाही."
   },
   "dashboard": {
-    "title": "व्यवसाय डॅशबोर्ड",
-    "subtitle": "रिअल-टाइम व्यवसाय आकडेवारी आणि आर्थिक स्थिती",
+    "title": "जिम डॅशबोर्ड",
+    "subtitle": "आजची कामगिरी, तातडीची कामे आणि पुढील पावले",
     "total_members": "एकूण सदस्य",
     "active_members": "सक्रिय सदस्य",
     "expiring_memberships": "मुदत संपत आलेले (७ दिवस)",
@@ -193,7 +198,27 @@
     "col_active_members": "सक्रिय सदस्य",
     "col_collections": "एकूण संकलन",
     "col_occupancy": "सध्याची गर्दी / हजेरी",
-    "empty_branches": "शाखा कामगिरीची कोणतीही नोंद नाही."
+    "empty_branches": "शाखा कामगिरीची कोणतीही नोंद नाही.",
+    "how_is_gym_doing": "तुमची जिम कशी चालली आहे?",
+    "what_needs_attention": "कशावर लक्ष देणे आवश्यक आहे?",
+    "quick_next_actions": "तुम्हाला काय करायचे आहे?",
+    "pending_fees_label": "बाकी शुल्क",
+    "fees_collected_today": "आज जमा झालेले शुल्क",
+    "view_and_collect": "पहा व जमा करा",
+    "view_members": "सदस्य पहा",
+    "call_or_whatsapp": "आठवण पाठवा",
+    "all_good_no_issues": "सर्व काही सुरळीत सुरू आहे! कोणतीही तातडीची अडचण नाही.",
+    "setup_checklist_title": "सुरुवात करा: तुमच्या जिमची प्राथमिक मांडणी",
+    "setup_checklist_sub": "जिमचे कामकाज सहज सुरू करण्यासाठी ही सोपी पावले पूर्ण करा",
+    "step_plans": "१. सदस्यत्व प्लॅन्स जोडा",
+    "step_plans_desc": "मासिक, ३-महिने किंवा वार्षिक दर ठरवा",
+    "step_staff": "२. कर्मचारी व ट्रेनर्स जोडा",
+    "step_staff_desc": "स्वागत कक्ष किंवा ट्रेनरसाठी लॉगिन द्या",
+    "step_member": "३. पहिला सदस्य नोंदवा",
+    "step_member_desc": "मोबाईल नंबर आणि प्लॅन निवडून नोंदणी करा",
+    "step_attendance": "४. दैनंदिन हजेरी नोंदवून पहा",
+    "step_attendance_desc": "नावाने शोधा किंवा क्यूआर स्कॅन करून हजेरी घ्या",
+    "dismiss_guide": "मार्गदर्शक लपवा"
   },
   "members": {
     "title": "सदस्य यादी",
@@ -261,7 +286,11 @@
     "gender_other": "इतर",
     "membership_plan": "सदस्यता प्लॅन *",
     "paid_amount": "भरलेली रक्कम (₹)",
-    "discount": "सूट / डिस्काउंट (₹)"
+    "discount": "सूट / डिस्काउंट (₹)",
+    "renew_membership": "सदस्यत्व नूतनीकरण करा",
+    "renew_desc": "प्लॅनची मुदत वाढवा आणि नूतनीकरण फी जमा करा",
+    "empty_title": "अद्याप कोणतेही सदस्य जोडलेले नाहीत",
+    "empty_desc": "मोबाईल नंबर आणि प्लॅन निवडून तुमच्या पहिल्या सदस्याची नोंदणी सुरू करा."
   },
   "attendance": {
     "title": "जिम उपस्थिती",
@@ -282,7 +311,9 @@
     "duration": "कालावधी",
     "col_member_name": "सदस्याचे नाव",
     "col_member_code": "सदस्य कोड",
-    "col_floor_status": "फ्लोअर स्थिती"
+    "col_floor_status": "फ्लोअर स्थिती",
+    "empty_today": "आज अद्याप कोणाचीही हजेरी नोंदवलेली नाही",
+    "empty_today_desc": "हजेरी नोंदवण्यासाठी वर सदस्याचे नाव शोधा किंवा क्यूआर कोड स्कॅन करा."
   },
   "pos": {
     "title": "सप्लिमेंट्स आणि स्टोअर पीओएस",
@@ -347,7 +378,9 @@
     "discrepancy": "तफावत (फरक)",
     "close_register": "दिवसाचा हिशोब बंद करा",
     "recent_transactions": "आर्थिक व्यवहार",
-    "export_financials": "आर्थिक अहवाल डाऊनलोड करा"
+    "export_financials": "आर्थिक अहवाल डाऊनलोड करा",
+    "empty_payments": "अद्याप कोणतेही शुल्क संकलन नोंदवलेले नाही",
+    "empty_payments_desc": "सदस्यांकडून सदस्यत्व फी, प्लॅन नूतनीकरण किंवा बाकी रक्कम जमा करा."
   },
   "action_center": {
     "title": "ॲक्शन सेंटर",

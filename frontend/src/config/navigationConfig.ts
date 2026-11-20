@@ -63,14 +63,14 @@ export const NAVIGATION_DESTINATIONS: NavDestination[] = [
       {
         id: 'overview_dashboard',
         labelKey: 'nav.dashboard',
-        defaultLabel: 'Executive Dashboard',
+        defaultLabel: 'Dashboard',
         to: '/',
         icon: LayoutDashboard,
       },
       {
         id: 'overview_action_center',
         labelKey: 'nav.action_center',
-        defaultLabel: 'Action Center',
+        defaultLabel: 'Actions Needed',
         to: '/action-center',
         icon: ShieldAlert,
       },
@@ -90,14 +90,14 @@ export const NAVIGATION_DESTINATIONS: NavDestination[] = [
       {
         id: 'members_directory',
         labelKey: 'nav.members',
-        defaultLabel: 'Member Directory',
+        defaultLabel: 'All Members',
         to: '/members',
         icon: Users,
       },
       {
         id: 'members_plans',
         labelKey: 'common.memberships',
-        defaultLabel: 'Membership Plans',
+        defaultLabel: 'Plans & Packages',
         to: '/plans',
         icon: Dumbbell,
         roles: ['super_admin', 'gym_owner', 'branch_manager'],
@@ -126,7 +126,7 @@ export const NAVIGATION_DESTINATIONS: NavDestination[] = [
       {
         id: 'attendance_checkin',
         labelKey: 'attendance.check_in',
-        defaultLabel: 'Check-in Desk & QR',
+        defaultLabel: 'Mark Attendance & QR',
         to: '/attendance',
         icon: CalendarCheck,
       },
@@ -137,7 +137,7 @@ export const NAVIGATION_DESTINATIONS: NavDestination[] = [
   {
     id: 'finance',
     labelKey: 'nav.group_finance',
-    defaultLabel: 'Finance',
+    defaultLabel: 'Finance & Fees',
     icon: Coins,
     to: '/payments',
     module: 'finance',
@@ -146,7 +146,7 @@ export const NAVIGATION_DESTINATIONS: NavDestination[] = [
       {
         id: 'finance_payments',
         labelKey: 'nav.payments',
-        defaultLabel: 'Fee Collections & Dues',
+        defaultLabel: 'Collect Fees & Dues',
         to: '/payments',
         icon: Receipt,
       },
@@ -180,7 +180,7 @@ export const NAVIGATION_DESTINATIONS: NavDestination[] = [
   {
     id: 'pos_inventory',
     labelKey: 'nav.group_pos_inventory',
-    defaultLabel: 'Sales & Inventory',
+    defaultLabel: 'Store & Inventory',
     icon: Package,
     to: '/pos',
     module: 'pos_inventory',
@@ -189,7 +189,7 @@ export const NAVIGATION_DESTINATIONS: NavDestination[] = [
       {
         id: 'sales_pos',
         labelKey: 'nav.pos',
-        defaultLabel: 'Supplement POS',
+        defaultLabel: 'Sell Supplements (POS)',
         to: '/pos',
         icon: ShoppingCart,
       },
@@ -224,7 +224,7 @@ export const NAVIGATION_DESTINATIONS: NavDestination[] = [
   {
     id: 'growth_leads',
     labelKey: 'nav.group_growth_leads',
-    defaultLabel: 'Growth & Leads',
+    defaultLabel: 'Enquiries & WhatsApp',
     icon: Target,
     to: '/leads',
     module: 'leads_crm',
@@ -233,7 +233,7 @@ export const NAVIGATION_DESTINATIONS: NavDestination[] = [
       {
         id: 'leads_crm_pipeline',
         labelKey: 'nav.leads',
-        defaultLabel: 'Leads CRM',
+        defaultLabel: 'New Enquiries (Leads)',
         to: '/leads',
         icon: Target,
       },

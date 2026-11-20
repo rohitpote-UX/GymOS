@@ -435,8 +435,16 @@ export default function Attendance() {
         </div>
 
         {logs.length === 0 ? (
-          <div className="p-12 text-center text-slate-500 text-xs">
-            No check-in records recorded today. Use the search or QR scanner above.
+          <div className="py-14 text-center flex flex-col items-center justify-center space-y-2.5">
+            <div className="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-sky-400 flex items-center justify-center">
+              <CalendarCheck className="w-6 h-6" />
+            </div>
+            <h3 className="text-sm font-bold text-white">
+              {t('attendance.empty_today', 'No members checked in yet today')}
+            </h3>
+            <p className="text-xs text-slate-400 max-w-sm">
+              {t('attendance.empty_today_desc', 'Search a member above or scan their QR code to record their check-in.')}
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">

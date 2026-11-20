@@ -4,12 +4,17 @@ import { useTranslation } from 'react-i18next';
 import {
   ArrowRightLeft,
   Building2,
+  CalendarCheck,
   ChevronDown,
   ChevronRight,
+  Coins,
+  LayoutDashboard,
   LogOut,
   Menu,
+  Receipt,
   Search,
   Sparkles,
+  Users,
   Wifi,
   WifiOff,
   X,
@@ -537,9 +542,70 @@ export const Layout: React.FC = () => {
       )}
 
       {/* Main Content Workspace Area */}
-      <main className="flex-1 overflow-x-hidden min-h-screen flex flex-col">
+      <main className="flex-1 overflow-x-hidden min-h-screen flex flex-col pb-20 md:pb-6">
         <Outlet />
       </main>
+
+      {/* Mobile Persistent Bottom Action Bar (Phase 8: Mobile-First Accessibility) */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0f172a]/95 backdrop-blur-md border-t border-slate-800 px-2 py-1.5 flex items-center justify-around shadow-2xl safe-area-inset-bottom">
+        <NavLink
+          to="/"
+          end
+          className={({ isActive }) =>
+            `flex flex-col items-center justify-center min-w-[54px] py-1 text-[10px] font-semibold transition-colors cursor-pointer ${
+              isActive ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-slate-200'
+            }`
+          }
+        >
+          <LayoutDashboard className="w-5 h-5 mb-0.5" />
+          <span>{t('nav.bottom_home', 'Home')}</span>
+        </NavLink>
+
+        <NavLink
+          to="/attendance"
+          className={({ isActive }) =>
+            `flex flex-col items-center justify-center min-w-[54px] py-1 text-[10px] font-semibold transition-colors cursor-pointer ${
+              isActive ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-slate-200'
+            }`
+          }
+        >
+          <CalendarCheck className="w-5 h-5 mb-0.5" />
+          <span>{t('nav.bottom_attendance', 'Attendance')}</span>
+        </NavLink>
+
+        {/* Center Floating Quick Action Button */}
+        <button
+          onClick={() => setQuickActionsOpen(true)}
+          className="flex flex-col items-center justify-center -mt-5 bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 w-12 h-12 rounded-full shadow-lg shadow-emerald-500/30 font-bold cursor-pointer hover:scale-105 active:scale-95 transition-all"
+          title={t('nav.bottom_quick', 'Quick Actions')}
+        >
+          <Zap className="w-6 h-6 fill-slate-950" />
+        </button>
+
+        <NavLink
+          to="/members"
+          className={({ isActive }) =>
+            `flex flex-col items-center justify-center min-w-[54px] py-1 text-[10px] font-semibold transition-colors cursor-pointer ${
+              isActive ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-slate-200'
+            }`
+          }
+        >
+          <Users className="w-5 h-5 mb-0.5" />
+          <span>{t('nav.bottom_members', 'Members')}</span>
+        </NavLink>
+
+        <NavLink
+          to="/payments"
+          className={({ isActive }) =>
+            `flex flex-col items-center justify-center min-w-[54px] py-1 text-[10px] font-semibold transition-colors cursor-pointer ${
+              isActive ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-slate-200'
+            }`
+          }
+        >
+          <Coins className="w-5 h-5 mb-0.5" />
+          <span>{t('nav.bottom_fees', 'Fees')}</span>
+        </NavLink>
+      </nav>
 
       {/* Global Modals */}
       <GlobalSearchModal

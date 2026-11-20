@@ -367,9 +367,28 @@ export default function Payments() {
             </table>
           </div>
         ) : (
-          <div className="py-14 text-center text-slate-500 text-xs">
-            <Receipt className="w-8 h-8 text-slate-700 mx-auto mb-2" />
-            <p>No payment records recorded yet.</p>
+          <div className="py-16 text-center flex flex-col items-center justify-center space-y-3">
+            <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
+              <Receipt className="w-7 h-7" />
+            </div>
+            <div className="max-w-md">
+              <h3 className="text-sm font-bold text-white">
+                {t('finance.empty_payments', 'No fee collections recorded yet')}
+              </h3>
+              <p className="text-xs text-slate-400 mt-1">
+                {t('finance.empty_payments_desc', 'Collect membership fees, package renewals, or pending dues from members.')}
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                resetForm();
+                setCollectModalOpen(true);
+              }}
+              className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold flex items-center gap-1.5 shadow-lg shadow-emerald-950/40 cursor-pointer mt-2"
+            >
+              <Plus className="w-4 h-4" />
+              <span>{t('members.collect_due', 'Collect Fee Payment')}</span>
+            </button>
           </div>
         )}
       </div>

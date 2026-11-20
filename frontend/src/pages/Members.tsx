@@ -163,9 +163,18 @@ export default function Members() {
 
   // Register Modal State
   const [modalOpen, setModalOpen] = useState(false);
+  const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  // Renew Membership Modal State (Phase 3D)
+  const [renewModalOpen, setRenewModalOpen] = useState(false);
+  const [renewPlanId, setRenewPlanId] = useState('');
+  const [renewPaidAmount, setRenewPaidAmount] = useState('');
+  const [renewDiscountAmount, setRenewDiscountAmount] = useState('0');
+  const [renewPaymentMethod, setRenewPaymentMethod] = useState('upi');
+  const [renewNotes, setRenewNotes] = useState('Membership renewal');
 
   // Register Form Fields
   const [firstName, setFirstName] = useState('');
@@ -343,6 +352,62 @@ export default function Members() {
       alert(errorMessage(err));
     } finally {
       setSaving(false);
+    }
+  };
+
+  const openRenewModal = () => {
+    if (!selectedMember) return;
+    const currentPlanId = selectedMember.active_membership?.plan?.id || plans[0]?.id;
+    const plan = plans.find((p) => p.id === currentPlanId) || plans[0];
+    setRenewPlanId(plan ? plan.id.toString() : '');
+    setRenewPaidAmount(plan ? plan.price.toString() : '');
+    setRenewDiscountAmount('0');
+    setRenewPaymentMethod('upi');
+    setRenewNotes('Membership renewal');
+    setRenewModalOpen(true);
+  };
+
+  const handleRenewMembership = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedMember || !renewPlanId) return;
+    setSaving(true);
+    setError(null);
+    try {
+      await api.post('/member-memberships/renew', {
+        member_id: selectedMember.id,
+        membership_plan_id: parseInt(renewPlanId, 10),
+        paid_amount: parseFloat(renewPaidAmount || '0'),
+        discount_amount: parseFloat(renewDiscountAmount || '0'),
+        payment_method: renewPaymentMethod,
+        notes: renewNotes,
+      });
+      setRenewModalOpen(false);
+      openMemberDetail(selectedMember.id);
+      fetchMembers();
+      setSuccess('Membership renewed successfully! Financial ledger and expiry updated.');
+      setTimeout(() => setSuccess(null), 4000);
+    } catch (err: any) {
+      alert(errorMessage(err));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handlePhoneBlur = async () => {
+    if (phone.trim().length >= 10 && !firstName) {
+      try {
+        const res = await api.get<{ data: any[] }>(`/leads?search=${encodeURIComponent(phone.trim())}`);
+        if (res.data?.data && res.data.data.length > 0) {
+          const lead = res.data.data[0];
+          const parts = (lead.name || '').trim().split(' ');
+          setFirstName(parts[0] || '');
+          if (parts.length > 1) setLastName(parts.slice(1).join(' '));
+          if (lead.email) setEmail(lead.email);
+          if (lead.gender) setGender(lead.gender);
+        }
+      } catch {
+        // ignore lookup failure
+      }
     }
   };
 
@@ -557,9 +622,28 @@ export default function Members() {
             </table>
           </div>
         ) : (
-          <div className="py-14 text-center text-slate-500 text-xs">
-            <Users className="w-8 h-8 text-slate-700 mx-auto mb-2" />
-            <p>No members found matching your search.</p>
+          <div className="py-16 text-center flex flex-col items-center justify-center space-y-3">
+            <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
+              <Users className="w-7 h-7" />
+            </div>
+            <div className="max-w-md">
+              <h3 className="text-sm font-bold text-white">
+                {t('members.empty_title', 'No members added yet')}
+              </h3>
+              <p className="text-xs text-slate-400 mt-1">
+                {t('members.empty_desc', 'Start by registering your first gym member with their mobile number and plan.')}
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                resetForm();
+                setModalOpen(true);
+              }}
+              className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold flex items-center gap-1.5 shadow-lg shadow-emerald-950/40 cursor-pointer mt-2"
+            >
+              <Plus className="w-4 h-4" />
+              <span>{t('members.add_member', 'Add First Member')}</span>
+            </button>
           </div>
         )}
       </div>
@@ -589,12 +673,22 @@ export default function Members() {
                   </div>
                 </div>
               </div>
-              <button
-                onClick={() => setSelectedMember(null)}
-                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={openRenewModal}
+                  className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs flex items-center gap-1.5 transition-colors shadow-md shadow-emerald-950/30 cursor-pointer"
+                  title={t('members.renew_membership', 'Renew Membership')}
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>{t('members.renew_membership', 'Renew')}</span>
+                </button>
+                <button
+                  onClick={() => setSelectedMember(null)}
+                  className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
             {/* Financial Overview Banner */}
@@ -1081,14 +1175,130 @@ export default function Members() {
         </div>
       )}
 
-      {/* Add Member Modal */}
+      {/* Renew Membership Modal (Phase 3D: Fast Renew Workflow) */}
+      {renewModalOpen && selectedMember && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#0f172a] border border-slate-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+            <div className="flex justify-between items-center pb-3 border-b border-slate-800">
+              <h3 className="font-bold text-white text-base flex items-center gap-2">
+                <RotateCcw className="w-5 h-5 text-emerald-400" />
+                <span>{t('members.renew_membership', 'Renew Membership')}</span>
+              </h3>
+              <button onClick={() => setRenewModalOpen(false)} className="text-slate-400 hover:text-white cursor-pointer">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-xs space-y-1">
+              <span className="text-slate-400 block">{t('common.member', 'Member')}:</span>
+              <span className="text-white font-bold text-sm">
+                {selectedMember.first_name} {selectedMember.last_name} ({selectedMember.member_code})
+              </span>
+              <span className="text-emerald-400 font-mono text-[11px] block">
+                {t('common.phone', 'Phone')}: {selectedMember.phone}
+              </span>
+            </div>
+
+            <form onSubmit={handleRenewMembership} className="space-y-3.5 text-xs">
+              <div>
+                <label className="block text-slate-300 font-medium mb-1">
+                  {t('memberships.plan_name', 'Select Renewal Plan')} *
+                </label>
+                <select
+                  required
+                  value={renewPlanId}
+                  onChange={(e) => {
+                    const id = e.target.value;
+                    setRenewPlanId(id);
+                    const p = plans.find((x) => x.id === parseInt(id, 10));
+                    if (p) setRenewPaidAmount(p.price.toString());
+                  }}
+                  className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
+                >
+                  <option value="">Select Plan...</option>
+                  {plans.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} — ₹{Number(p.price).toLocaleString('en-IN')} ({p.duration_days} {t('common.days', 'Days')})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-300 font-medium mb-1">
+                    {t('payments.amount_to_collect', 'Paid Amount (₹)')} *
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min="0"
+                    step="0.01"
+                    value={renewPaidAmount}
+                    onChange={(e) => setRenewPaidAmount(e.target.value)}
+                    className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white font-mono focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-300 font-medium mb-1">
+                    {t('payments.discount', 'Discount (₹)')}
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={renewDiscountAmount}
+                    onChange={(e) => setRenewDiscountAmount(e.target.value)}
+                    className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white font-mono focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-300 font-medium mb-1">
+                  {t('common.payment_mode', 'Payment Method')} *
+                </label>
+                <select
+                  value={renewPaymentMethod}
+                  onChange={(e) => setRenewPaymentMethod(e.target.value)}
+                  className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
+                >
+                  <option value="upi">UPI (GPay / PhonePe / Paytm)</option>
+                  <option value="cash">Cash (रोख)</option>
+                  <option value="card">Card / POS</option>
+                  <option value="bank_transfer">Net Banking / NEFT</option>
+                </select>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setRenewModalOpen(false)}
+                  className="px-4 py-2 text-slate-400 hover:text-white cursor-pointer"
+                >
+                  {t('common.close', 'Cancel')}
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="bg-emerald-500 hover:bg-emerald-400 font-bold px-4 py-2 rounded-xl text-slate-950 cursor-pointer shadow-lg shadow-emerald-950/40"
+                >
+                  {saving ? t('common.saving', 'Saving...') : t('members.renew_membership', 'Confirm Renewal & Collect')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Add Member Modal (Phase 3A: Fast Registration Experience) */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-[#0f172a] border border-slate-800 rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-2xl">
             <div className="flex justify-between items-center pb-3 border-b border-slate-800">
               <h3 className="font-bold text-white text-base flex items-center gap-2">
                 <Users className="w-5 h-5 text-emerald-400" />
-                <span>Register New Member</span>
+                <span>{t('members.add_member', 'Register New Member')}</span>
               </h3>
               <button onClick={() => setModalOpen(false)} className="text-slate-400 hover:text-white cursor-pointer">
                 <X className="w-5 h-5" />
@@ -1102,145 +1312,181 @@ export default function Members() {
             )}
 
             <form onSubmit={handleCreateMember} className="space-y-3.5 text-xs">
+              {/* Step 1: Mobile Number with Auto-Lookup */}
+              <div>
+                <label className="block text-slate-300 font-medium mb-1">
+                  {t('auth.phone', 'Mobile Number')} *
+                </label>
+                <input
+                  type="tel"
+                  required
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  onBlur={handlePhoneBlur}
+                  placeholder="98200XXXXX (10 digits)"
+                  className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white font-mono focus:outline-none focus:border-emerald-500"
+                />
+                <span className="text-[10px] text-slate-500 mt-0.5 block">
+                  Tip: Auto-detects enquiry leads and fills details
+                </span>
+              </div>
+
+              {/* Step 2: Member Name */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-300 font-medium mb-1">First Name *</label>
+                  <label className="block text-slate-300 font-medium mb-1">
+                    {t('members.first_name', 'First Name')} *
+                  </label>
                   <input
                     type="text"
                     required
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    placeholder="Aarav"
+                    placeholder="e.g. Aarav"
                     className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-300 font-medium mb-1">Last Name</label>
+                  <label className="block text-slate-300 font-medium mb-1">
+                    {t('members.last_name', 'Last Name')}
+                  </label>
                   <input
                     type="text"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    placeholder="Sharma"
+                    placeholder="e.g. Sharma"
                     className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-300 font-medium mb-1">Phone Number *</label>
-                  <input
-                    type="tel"
-                    required
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="98200XXXXX"
-                    className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white font-mono focus:outline-none focus:border-emerald-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-300 font-medium mb-1">Email</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="aarav@gmail.com"
-                    className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
-                  />
-                </div>
+              {/* Step 3: Membership Plan Selection */}
+              <div>
+                <label className="block text-slate-300 font-medium mb-1">
+                  {t('memberships.plan_name', 'Membership Plan')} (Optional)
+                </label>
+                <select
+                  value={planId}
+                  onChange={(e) => {
+                    const id = e.target.value;
+                    setPlanId(id);
+                    const p = plans.find((x) => x.id === parseInt(id, 10));
+                    if (p) {
+                      setPaidAmount(p.price.toString());
+                    }
+                  }}
+                  className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
+                >
+                  <option value="">No Plan (Add Plan Later)</option>
+                  {plans.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} — ₹{Number(p.price).toLocaleString('en-IN')} ({p.duration_days} {t('common.days', 'Days')})
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-300 font-medium mb-1">Gender</label>
-                  <select
-                    value={gender}
-                    onChange={(e) => setGender(e.target.value)}
-                    className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
-                  >
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-slate-300 font-medium mb-1">Assign Trainer</label>
-                  <select
-                    value={assignedTrainerId}
-                    onChange={(e) => setAssignedTrainerId(e.target.value)}
-                    className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
-                  >
-                    <option value="">None (General Member)</option>
-                    {trainers.map((t) => (
-                      <option key={t.id} value={t.id}>{t.name} ({t.specialization || 'Trainer'})</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+              {/* Step 4: Payment Details (Only when plan selected) */}
+              {planId && (
+                <div className="p-3 bg-slate-900/60 border border-slate-800 rounded-xl space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-slate-300 font-medium mb-1">
+                        {t('payments.amount_to_collect', 'Paid Amount (₹)')}
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={paidAmount}
+                        onChange={(e) => setPaidAmount(e.target.value)}
+                        className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white font-mono focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-300 font-medium mb-1">
+                        {t('payments.discount', 'Discount (₹)')}
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={discountAmount}
+                        onChange={(e) => setDiscountAmount(e.target.value)}
+                        className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white font-mono focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+                  </div>
 
-              {/* Membership enrolment */}
-              <div className="pt-3 border-t border-slate-800 space-y-3">
-                <div>
-                  <label className="block text-slate-300 font-medium mb-1">Membership Plan (Optional)</label>
-                  <select
-                    value={planId}
-                    onChange={(e) => {
-                      const id = e.target.value;
-                      setPlanId(id);
-                      const p = plans.find((x) => x.id === parseInt(id, 10));
-                      if (p) {
-                        setPaidAmount(p.price.toString());
-                      }
-                    }}
-                    className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
-                  >
-                    <option value="">Select Plan / Package...</option>
-                    {plans.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name} — ₹{Number(p.price).toLocaleString('en-IN')} ({p.duration_days} Days)
-                      </option>
-                    ))}
-                  </select>
+                  <div>
+                    <label className="block text-slate-300 font-medium mb-1">
+                      {t('common.payment_mode', 'Payment Method')}
+                    </label>
+                    <select
+                      value={paymentMethod}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                      className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
+                    >
+                      <option value="cash">Cash (रोख)</option>
+                      <option value="upi">UPI (GPay / PhonePe / Paytm)</option>
+                      <option value="card">Card / POS</option>
+                      <option value="bank_transfer">Bank Transfer / NEFT</option>
+                    </select>
+                  </div>
                 </div>
+              )}
 
-                {planId && (
-                  <>
+              {/* Optional Collapsible Details */}
+              <div className="pt-2 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setShowMoreOptions(!showMoreOptions)}
+                  className="text-xs text-slate-400 hover:text-emerald-400 flex items-center justify-between w-full py-1 cursor-pointer font-semibold"
+                >
+                  <span>{showMoreOptions ? '− Less Options' : '+ More Options (Email, Gender, Trainer)'}</span>
+                </button>
+
+                {showMoreOptions && (
+                  <div className="space-y-3 mt-3 animate-in fade-in duration-150">
+                    <div>
+                      <label className="block text-slate-400 mb-1">{t('common.email', 'Email Address')}</label>
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="aarav@gmail.com"
+                        className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-slate-300 font-medium mb-1">Paid Amount (₹)</label>
-                        <input
-                          type="number"
-                          value={paidAmount}
-                          onChange={(e) => setPaidAmount(e.target.value)}
-                          className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white font-mono focus:outline-none focus:border-emerald-500"
-                        />
+                        <label className="block text-slate-400 mb-1">{t('members.gender', 'Gender')}</label>
+                        <select
+                          value={gender}
+                          onChange={(e) => setGender(e.target.value)}
+                          className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
+                        >
+                          <option value="male">Male</option>
+                          <option value="female">Female</option>
+                          <option value="other">Other</option>
+                        </select>
                       </div>
                       <div>
-                        <label className="block text-slate-300 font-medium mb-1">Discount (₹)</label>
-                        <input
-                          type="number"
-                          value={discountAmount}
-                          onChange={(e) => setDiscountAmount(e.target.value)}
-                          className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white font-mono focus:outline-none focus:border-emerald-500"
-                        />
+                        <label className="block text-slate-400 mb-1">{t('members.assigned_trainer', 'Assign Trainer')}</label>
+                        <select
+                          value={assignedTrainerId}
+                          onChange={(e) => setAssignedTrainerId(e.target.value)}
+                          className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
+                        >
+                          <option value="">None (General)</option>
+                          {trainers.map((t) => (
+                            <option key={t.id} value={t.id}>{t.name}</option>
+                          ))}
+                        </select>
                       </div>
                     </div>
-
-                    <div>
-                      <label className="block text-slate-300 font-medium mb-1">Payment Method</label>
-                      <select
-                        value={paymentMethod}
-                        onChange={(e) => setPaymentMethod(e.target.value)}
-                        className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
-                      >
-                        <option value="cash">Cash</option>
-                        <option value="upi">UPI / GPay / PhonePe</option>
-                        <option value="card">Card / POS</option>
-                        <option value="bank_transfer">Bank Transfer / NEFT</option>
-                        <option value="cheque">Cheque</option>
-                      </select>
-                    </div>
-                  </>
+                  </div>
                 )}
               </div>
 
@@ -1250,14 +1496,14 @@ export default function Members() {
                   onClick={() => setModalOpen(false)}
                   className="px-4 py-2 rounded-xl text-slate-400 hover:text-white cursor-pointer"
                 >
-                  Cancel
+                  {t('common.close', 'Cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold cursor-pointer"
+                  className="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold cursor-pointer shadow-lg shadow-emerald-950/40"
                 >
-                  {saving ? 'Registering...' : 'Register Member'}
+                  {saving ? t('common.saving', 'Saving...') : t('members.add_member', 'Save Member')}
                 </button>
               </div>
             </form>
