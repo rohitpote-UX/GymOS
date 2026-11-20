@@ -204,19 +204,19 @@ export default function ActionCenter() {
   });
 
   return (
-    <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto space-y-8">
       {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-[#E8E8E8] dark:border-[#303030]">
-        <div>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[#E9ECEF] dark:border-[#2E2E33]">
+        <div className="space-y-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-black text-[#171717] dark:text-white tracking-tight flex items-center gap-2">
+            <h1 className="text-gym-title font-display font-bold text-[#171717] dark:text-[#EDEDED] flex items-center gap-2">
               <span>{t('actionCenter.title', 'Action Center')}</span>
-              <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#D92332]/10 text-[#D92332] dark:text-[#F02D3A] font-bold border border-[#D92332]/20 dark:border-[#F02D3A]/20">
+              <span className="badge-gym-red shrink-0">
                 {t('actionCenter.live_radar', 'Live Radar')}
               </span>
             </h1>
           </div>
-          <p className="text-xs text-[#707070] dark:text-[#A3A3A3] mt-1">
+          <p className="text-gym-sub">
             {t('actionCenter.subtitle', 'Central operations radar: triage expiring plans, dues and inactive members')}
           </p>
         </div>
@@ -224,14 +224,14 @@ export default function ActionCenter() {
         <div className="flex items-center gap-2.5">
           <button
             onClick={() => fetchActionCenterData()}
-            className="px-3 py-2 rounded-xl bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-[#171717] dark:text-slate-300 text-xs font-semibold flex items-center gap-1.5 transition-colors border border-[#E8E8E8] dark:border-[#303030] cursor-pointer"
+            className="btn-gym-secondary text-xs min-h-[38px] px-3.5 py-2"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>{t('actionCenter.refresh', 'Refresh')}</span>
           </button>
           <button
             onClick={() => setCreateModalOpen(true)}
-            className="px-4 py-2 rounded-xl bg-[#D92332] hover:bg-[#B91C2B] dark:bg-[#F02D3A] dark:hover:bg-[#FF4652] text-white text-xs font-bold flex items-center gap-1.5 transition-colors shadow-lg shadow-red-600/30 cursor-pointer"
+            className="btn-gym-primary text-xs min-h-[38px] px-4 py-2 font-bold shadow-gym-red"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>{t('actionCenter.create_action', 'Create Action')}</span>

@@ -1,19 +1,25 @@
 @import "tailwindcss";
 
+@theme {
+  --font-display: 'Barlow Condensed', 'Teko', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: 'Inter', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
 :root {
   /* ----------------------------------------------------------- */
   /* LIGHT MODE: 70% White / Neutrals, 30% Brand Red Accents    */
   /* ----------------------------------------------------------- */
   --bg-main: #FFFFFF;
-  --bg-card: #F7F7F7;
-  --bg-card-hover: #EFEFEF;
+  --bg-card: #F8F9FA;
+  --bg-card-hover: #F1F3F5;
   --bg-input: #FFFFFF;
-  --bg-sidebar: #F7F7F7;
-  --border-main: #E8E8E8;
-  --border-subtle: #F0F0F0;
+  --bg-sidebar: #F8F9FA;
+  --border-main: #E9ECEF;
+  --border-subtle: #F1F3F5;
   --text-primary: #171717;
-  --text-secondary: #707070;
-  --text-muted: #9E9E9E;
+  --text-secondary: #525252;
+  --text-muted: #737373;
 
   --brand-red: #D92332;
   --brand-red-hover: #B91C2B;
@@ -21,7 +27,7 @@
   --brand-red-border: rgba(217, 35, 50, 0.25);
   --brand-red-glow: rgba(217, 35, 50, 0.2);
 
-  /* Semantic Colors */
+  /* Semantic Colors (Preserved for status logic) */
   --semantic-success: #16A34A;
   --semantic-warning: #D97706;
   --semantic-info: #0284C7;
@@ -36,15 +42,15 @@ html.dark,
   /* DARK MODE: 70% Black / Neutrals, 30% Brand Red Accents     */
   /* ----------------------------------------------------------- */
   --bg-main: #101010;
-  --bg-card: #1C1C1C;
-  --bg-card-hover: #262626;
-  --bg-input: #141414;
-  --bg-sidebar: #141414;
-  --border-main: #303030;
-  --border-subtle: #242424;
-  --text-primary: #FFFFFF;
-  --text-secondary: #A3A3A3;
-  --text-muted: #737373;
+  --bg-card: #18181B;
+  --bg-card-hover: #222226;
+  --bg-input: #141416;
+  --bg-sidebar: #141416;
+  --border-main: #2E2E33;
+  --border-subtle: #242428;
+  --text-primary: #EDEDED;
+  --text-secondary: #A1A1AA;
+  --text-muted: #71717A;
 
   --brand-red: #F02D3A;
   --brand-red-hover: #FF4652;
@@ -64,12 +70,115 @@ html.dark,
 body {
   background-color: var(--bg-main) !important;
   color: var(--text-primary) !important;
-  font-family: "Inter", "Noto Sans Devanagari", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   margin: 0;
   padding: 0;
   min-height: 100vh;
   transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* ----------------------------------------------------------- */
+/* MULTILINGUAL DEVANAGARI RULES (MARATHI & HINDI)             */
+/* ----------------------------------------------------------- */
+:lang(mr), :lang(hi),
+html[lang="mr"], html[lang="hi"],
+[lang="mr"], [lang="hi"] {
+  /* Prevent uppercase transforms from distorting Devanagari text */
+  text-transform: none !important;
+  /* Line height must provide comfortable clearance for upper and lower matras */
+  line-height: 1.55 !important;
+  /* Avoid artificial letter-spacing that disrupts conjunct ligatures */
+  letter-spacing: normal !important;
+}
+
+:lang(mr) .text-gym-micro,
+:lang(hi) .text-gym-micro,
+html[lang="mr"] .text-gym-micro,
+html[lang="hi"] .text-gym-micro {
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  font-size: 0.75rem !important; /* 12px for clear readability of Devanagari script */
+}
+
+/* ----------------------------------------------------------- */
+/* STANDARDIZED TYPOGRAPHY SCALE TOKENS                         */
+/* ----------------------------------------------------------- */
+.font-display {
+  font-family: var(--font-display) !important;
+}
+
+.font-sans {
+  font-family: var(--font-sans) !important;
+}
+
+.font-mono {
+  font-family: var(--font-mono) !important;
+}
+
+/* Big Hero Numbers & Metric Figures */
+.text-gym-hero {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4.5vw, 2.75rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Main Page Titles */
+.text-gym-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+}
+
+/* Section Headings */
+.text-gym-section {
+  font-family: var(--font-display);
+  font-size: clamp(1.15rem, 2.2vw, 1.35rem);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.01em;
+}
+
+/* Card Headings */
+.text-gym-card-title {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* Body Text */
+.text-gym-body {
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.55;
+}
+
+/* Secondary Information */
+.text-gym-sub {
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+/* Metadata, Small Tags & Micro Labels */
+.text-gym-micro {
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
 }
 
 /* ----------------------------------------------------------- */
@@ -102,13 +211,110 @@ body {
 .bg-gym-red-subtle { background-color: var(--brand-red-subtle) !important; }
 .shadow-gym-red { box-shadow: 0 4px 14px 0 var(--brand-red-glow) !important; }
 
-/* Form Elements */
+/* ----------------------------------------------------------- */
+/* STANDARDIZED COMPONENT UTILITY CLASSES                      */
+/* ----------------------------------------------------------- */
+
+/* Primary Action Button (athletic, high contrast, prominent) */
+.btn-gym-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: var(--brand-red) !important;
+  color: #FFFFFF !important;
+  font-weight: 700;
+  font-size: 0.875rem;
+  border-radius: 0.875rem;
+  padding: 0.625rem 1.125rem;
+  min-height: 44px;
+  box-shadow: 0 4px 14px 0 var(--brand-red-glow);
+  transition: all 0.18s ease;
+  cursor: pointer;
+  user-select: none;
+}
+.btn-gym-primary:hover {
+  background-color: var(--brand-red-hover) !important;
+  box-shadow: 0 6px 18px 0 var(--brand-red-glow);
+  transform: translateY(-1px);
+}
+.btn-gym-primary:active {
+  transform: translateY(0);
+}
+
+/* Secondary Action Button (subtle, clean, subordinate) */
+.btn-gym-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border: 1px solid var(--border-main) !important;
+  border-radius: 0.875rem;
+  padding: 0.625rem 1.125rem;
+  min-height: 44px;
+  transition: all 0.18s ease;
+  cursor: pointer;
+  user-select: none;
+}
+.btn-gym-secondary:hover {
+  background-color: var(--bg-card-hover) !important;
+  border-color: var(--brand-red-border) !important;
+}
+
+/* Standard Card Container (relaxed padding, soft border) */
+.card-gym {
+  background-color: var(--bg-card) !important;
+  border: 1px solid var(--border-main) !important;
+  border-radius: 1rem;
+  padding: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+@media (min-width: 640px) {
+  .card-gym {
+    padding: 1.5rem;
+    border-radius: 1.25rem;
+  }
+}
+
+/* Interactive Clickable Card */
+.card-gym-interactive {
+  background-color: var(--bg-card) !important;
+  border: 1px solid var(--border-main) !important;
+  border-radius: 1rem;
+  padding: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: border-color 0.18s ease, transform 0.18s ease, background-color 0.18s ease;
+  cursor: pointer;
+}
+@media (min-width: 640px) {
+  .card-gym-interactive {
+    padding: 1.5rem;
+    border-radius: 1.25rem;
+  }
+}
+.card-gym-interactive:hover {
+  background-color: var(--bg-card-hover) !important;
+  border-color: var(--brand-red-border) !important;
+  transform: translateY(-1px);
+}
+
+/* Standard Form Input */
 input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
 textarea,
 select {
   background-color: var(--bg-input) !important;
   color: var(--text-primary) !important;
-  border-color: var(--border-main) !important;
+  border: 1px solid var(--border-main) !important;
+  border-radius: 0.75rem;
+  min-height: 44px;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
 input:focus,
@@ -116,6 +322,34 @@ textarea:focus,
 select:focus {
   border-color: var(--brand-red) !important;
   outline: none !important;
+  box-shadow: 0 0 0 2px var(--brand-red-subtle) !important;
+}
+
+/* Status Badges */
+.badge-gym-red {
+  background-color: var(--brand-red-subtle) !important;
+  color: var(--brand-red) !important;
+  border: 1px solid var(--brand-red-border) !important;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 0.1875rem 0.625rem;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.badge-gym-neutral {
+  background-color: var(--bg-card-hover) !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid var(--border-main) !important;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 0.1875rem 0.625rem;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
 }
 
 /* ----------------------------------------------------------- */

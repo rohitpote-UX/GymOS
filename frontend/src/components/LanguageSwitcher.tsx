@@ -56,7 +56,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
   if (variant === 'pill') {
     return (
       <div
-        className={`inline-flex items-center rounded-lg bg-slate-900/80 p-1 border border-slate-700/60 shadow-inner ${className}`}
+        className={`inline-flex items-center rounded-xl bg-neutral-100 dark:bg-[#18181B] p-1 border border-[#E9ECEF] dark:border-[#2E2E33] shadow-inner ${className}`}
         role="group"
         aria-label="Language Selector"
       >
@@ -67,10 +67,10 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
               key={lang.code}
               type="button"
               onClick={() => handleSelectLanguage(lang.code as SupportedLanguage)}
-              className={`px-3 py-1 text-xs font-medium rounded-md transition-all duration-150 cursor-pointer ${
+              className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all duration-150 cursor-pointer ${
                 isActive
-                  ? 'bg-emerald-600 text-white shadow-sm font-semibold'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                  ? 'bg-[#D92332] dark:bg-[#F02D3A] text-white shadow-sm'
+                  : 'text-[#707070] dark:text-[#A1A1AA] hover:text-[#171717] dark:hover:text-white hover:bg-neutral-200/60 dark:hover:bg-neutral-800/60'
               }`}
             >
               {lang.nativeName}
@@ -86,19 +86,19 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800/70 hover:bg-slate-750 border border-slate-700 text-xs font-medium text-slate-200 hover:text-white transition-colors cursor-pointer shadow-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-neutral-100 dark:bg-[#18181B] hover:bg-neutral-200/70 dark:hover:bg-neutral-800/70 border border-[#E9ECEF] dark:border-[#2E2E33] text-xs font-semibold text-[#171717] dark:text-[#EDEDED] transition-colors cursor-pointer shadow-xs focus:outline-none focus:ring-1 focus:ring-[#D92332] dark:focus:ring-[#F02D3A] min-h-[36px]"
         aria-expanded={isOpen}
         aria-haspopup="true"
         title="Change Language"
       >
-        <Globe className="w-3.5 h-3.5 text-emerald-400" />
-        <span className="font-medium">{currentLang.nativeName}</span>
-        <ChevronDown className="w-3 h-3 text-slate-400" />
+        <Globe className="w-3.5 h-3.5 text-[#D92332] dark:text-[#F02D3A]" />
+        <span>{currentLang.nativeName}</span>
+        <ChevronDown className="w-3 h-3 text-[#707070] dark:text-[#A1A1AA]" />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-1 w-36 rounded-lg bg-slate-900 border border-slate-700/80 shadow-2xl py-1 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
-          <div className="px-2.5 py-1 text-[10px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+        <div className="absolute right-0 mt-1.5 w-36 rounded-xl bg-white dark:bg-[#18181B] border border-[#E9ECEF] dark:border-[#2E2E33] shadow-xl py-1 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
+          <div className="px-3 py-1.5 text-[10px] font-bold text-[#707070] dark:text-[#A1A1AA] uppercase tracking-wider border-b border-[#E9ECEF] dark:border-[#2E2E33]">
             भाषा / Language
           </div>
           {SUPPORTED_LANGUAGES.map((lang) => {
@@ -108,14 +108,14 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
                 key={lang.code}
                 type="button"
                 onClick={() => handleSelectLanguage(lang.code as SupportedLanguage)}
-                className={`w-full flex items-center justify-between px-3 py-1.5 text-xs text-left cursor-pointer transition-colors ${
+                className={`w-full flex items-center justify-between px-3 py-2 text-xs text-left cursor-pointer transition-colors ${
                   isSelected
-                    ? 'bg-emerald-950/60 text-emerald-300 font-semibold'
-                    : 'text-slate-300 hover:bg-slate-800/70 hover:text-white'
+                    ? 'bg-[#D92332]/10 dark:bg-[#F02D3A]/15 text-[#D92332] dark:text-[#F02D3A] font-bold'
+                    : 'text-[#171717] dark:text-[#EDEDED] hover:bg-neutral-100 dark:hover:bg-neutral-800/60'
                 }`}
               >
                 <span>{lang.nativeName}</span>
-                {isSelected && <Check className="w-3.5 h-3.5 text-emerald-400 ml-2" />}
+                {isSelected && <Check className="w-3.5 h-3.5 text-[#D92332] dark:text-[#F02D3A] ml-2" />}
               </button>
             );
           })}

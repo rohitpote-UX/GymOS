@@ -302,18 +302,19 @@ export default function TrainerPortal() {
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-slate-800">
-        <div>
+      {/* Top Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[#E9ECEF] dark:border-[#2E2E33]">
+        <div className="space-y-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
-              <Dumbbell className="w-6 h-6 text-red-500" />
+            <h1 className="text-gym-title font-display font-bold text-[#171717] dark:text-[#EDEDED] flex items-center gap-2">
+              <Dumbbell className="w-6 h-6 text-gym-red" />
               <span>{t('trainer.title', 'Trainer & Coach Portal')}</span>
             </h1>
-            <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-red-500/10 text-red-400 font-bold border border-red-500/20">
+            <span className="badge-gym-red shrink-0">
               Coach: {user?.name}
             </span>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-gym-sub">
             {t('trainer.subtitle', 'Assigned member roster, PT session logs and performance tracking')}
           </p>
         </div>
@@ -321,24 +322,24 @@ export default function TrainerPortal() {
         <div className="flex items-center gap-2 self-start md:self-auto flex-wrap">
           <Link
             to="/workouts"
-            className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center gap-1.5 transition-colors border border-slate-700 cursor-pointer"
+            className="btn-gym-secondary text-xs min-h-[38px] px-3.5 py-1.5 font-bold"
           >
-            <Dumbbell className="w-3.5 h-3.5 text-red-400" />
+            <Dumbbell className="w-3.5 h-3.5 text-gym-red" />
             <span>Workout Plans</span>
           </Link>
 
           <Link
             to="/diets"
-            className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center gap-1.5 transition-colors border border-slate-700 cursor-pointer"
+            className="btn-gym-secondary text-xs min-h-[38px] px-3.5 py-1.5 font-bold"
           >
-            <Utensils className="w-3.5 h-3.5 text-emerald-400" />
+            <Utensils className="w-3.5 h-3.5 text-gym-red" />
             <span>Diet Plans</span>
           </Link>
 
           <LanguageSwitcher variant="dropdown" />
           <button
             onClick={fetchTrainerData}
-            className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold flex items-center gap-1.5 transition-colors border border-slate-700 cursor-pointer"
+            className="btn-gym-secondary text-xs min-h-[38px] px-3 py-1.5"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>Refresh</span>
@@ -347,63 +348,63 @@ export default function TrainerPortal() {
       </div>
 
       {successToast && (
-        <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 text-xs flex items-center gap-2">
+        <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-500 text-xs flex items-center gap-2">
           <CheckCircle2 className="w-4 h-4 shrink-0" />
           <span>{successToast}</span>
         </div>
       )}
 
       {error && (
-        <div className="p-3.5 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400 text-xs flex items-center gap-2">
+        <div className="p-3.5 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-500 text-xs flex items-center gap-2">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
       {/* Trainer Metrics Bar */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-        <div className="bg-[#0f172a] border border-slate-800 p-4 rounded-2xl flex flex-col justify-between">
-          <div className="flex items-center justify-between text-emerald-400">
-            <span className="text-[10px] uppercase font-bold tracking-wider">Assigned Members</span>
-            <Users className="w-4 h-4" />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
+        <div className="card-gym flex flex-col justify-between hover:border-gym-red/40 transition-all">
+          <div className="flex items-center justify-between text-[#707070] dark:text-[#A1A1AA]">
+            <span className="text-gym-micro">Assigned Members</span>
+            <Users className="w-4 h-4 text-gym-red" />
           </div>
-          <div className="text-3xl font-black text-white mt-2">
+          <div className="text-gym-hero text-[#171717] dark:text-[#EDEDED] mt-2">
             {metrics?.assigned_members_count || members.length}
           </div>
-          <span className="text-[10px] text-slate-400 mt-1">Active athletes</span>
+          <span className="text-gym-sub text-[11px] mt-1">Active athletes</span>
         </div>
 
-        <div className="bg-[#0f172a] border border-slate-800 p-4 rounded-2xl flex flex-col justify-between">
-          <div className="flex items-center justify-between text-sky-400">
-            <span className="text-[10px] uppercase font-bold tracking-wider">PT Conducted (Mo)</span>
-            <Activity className="w-4 h-4" />
+        <div className="card-gym flex flex-col justify-between hover:border-gym-red/40 transition-all">
+          <div className="flex items-center justify-between text-[#707070] dark:text-[#A1A1AA]">
+            <span className="text-gym-micro">PT Conducted (Mo)</span>
+            <Activity className="w-4 h-4 text-sky-500" />
           </div>
-          <div className="text-3xl font-black text-white mt-2">
+          <div className="text-gym-hero text-[#171717] dark:text-[#EDEDED] mt-2">
             {metrics?.completed_sessions_this_month || 0}
           </div>
-          <span className="text-[10px] text-slate-400 mt-1">Sessions signed off</span>
+          <span className="text-gym-sub text-[11px] mt-1">Sessions signed off</span>
         </div>
 
-        <div className="bg-[#0f172a] border border-slate-800 p-4 rounded-2xl flex flex-col justify-between">
-          <div className="flex items-center justify-between text-amber-400">
-            <span className="text-[10px] uppercase font-bold tracking-wider">Today's Sessions</span>
-            <Calendar className="w-4 h-4" />
+        <div className="card-gym flex flex-col justify-between hover:border-gym-red/40 transition-all">
+          <div className="flex items-center justify-between text-[#707070] dark:text-[#A1A1AA]">
+            <span className="text-gym-micro">Today's Sessions</span>
+            <Calendar className="w-4 h-4 text-amber-500" />
           </div>
-          <div className="text-3xl font-black text-white mt-2">
+          <div className="text-gym-hero text-[#171717] dark:text-[#EDEDED] mt-2">
             {metrics?.scheduled_sessions_today || sessions.filter((s) => s.status === 'scheduled').length}
           </div>
-          <span className="text-[10px] text-slate-400 mt-1">On schedule</span>
+          <span className="text-gym-sub text-[11px] mt-1">On schedule</span>
         </div>
 
-        <div className="bg-[#0f172a] border border-slate-800 p-4 rounded-2xl flex flex-col justify-between">
-          <div className="flex items-center justify-between text-indigo-400">
-            <span className="text-[10px] uppercase font-bold tracking-wider">Estimated PT Earnings</span>
-            <TrendingUp className="w-4 h-4" />
+        <div className="card-gym flex flex-col justify-between hover:border-gym-red/40 transition-all">
+          <div className="flex items-center justify-between text-[#707070] dark:text-[#A1A1AA]">
+            <span className="text-gym-micro">Estimated PT Earnings</span>
+            <TrendingUp className="w-4 h-4 text-gym-red" />
           </div>
-          <div className="text-3xl font-black text-white mt-2">
+          <div className="text-gym-hero text-gym-red mt-2 font-mono">
             ₹{(metrics?.total_pt_earnings || 0).toLocaleString('en-IN')}
           </div>
-          <span className="text-[10px] text-slate-400 mt-1">Commission & payouts</span>
+          <span className="text-gym-sub text-[11px] mt-1">Commission & payouts</span>
         </div>
       </div>
 

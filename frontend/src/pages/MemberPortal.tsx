@@ -406,12 +406,12 @@ export default function MemberPortal() {
   return (
     <div className="p-3 sm:p-6 md:p-8 max-w-4xl mx-auto space-y-6">
       {/* Top Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-[#303030]">
-        <div>
-          <h1 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+      <div className="flex items-center justify-between pb-4 border-b border-[#E9ECEF] dark:border-[#2E2E33]">
+        <div className="space-y-1">
+          <h1 className="text-gym-title font-display font-bold text-[#171717] dark:text-[#EDEDED] flex items-center gap-2">
             <span>{t('portal.title', 'Member Digital Portal')}</span>
           </h1>
-          <p className="text-xs text-slate-500 dark:text-[#A3A3A3] mt-0.5">
+          <p className="text-gym-sub">
             {t('portal.subtitle', 'Daily fitness plans, digital pass, and body progress tracking')}
           </p>
         </div>
@@ -420,7 +420,7 @@ export default function MemberPortal() {
           <LanguageSwitcher variant="dropdown" />
           <button
             onClick={fetchPortalData}
-            className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#1C1C1C] dark:hover:bg-[#252525] text-slate-700 dark:text-slate-300 text-xs flex items-center gap-1 border border-slate-300 dark:border-[#303030] cursor-pointer"
+            className="btn-gym-secondary text-xs min-h-[38px] px-3 py-1.5"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Refresh</span>

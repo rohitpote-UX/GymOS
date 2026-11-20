@@ -550,30 +550,40 @@ export const Layout: React.FC = () => {
       </main>
 
       {/* Mobile Persistent Bottom Action Bar (Red & White in Light Mode / Red & Black in Dark Mode) */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#F7F7F7]/95 dark:bg-[#1C1C1C]/95 backdrop-blur-md border-t border-[#E8E8E8] dark:border-[#303030] px-3 py-2 flex items-center justify-around shadow-[0_-8px_25px_rgba(0,0,0,0.08)] dark:shadow-[0_-8px_25px_rgba(0,0,0,0.6)] safe-bottom transition-colors">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#18181B]/95 backdrop-blur-md border-t border-[#E9ECEF] dark:border-[#2E2E33] px-3 py-1.5 flex items-center justify-around shadow-[0_-8px_25px_rgba(0,0,0,0.06)] dark:shadow-[0_-8px_25px_rgba(0,0,0,0.6)] safe-bottom transition-colors">
         <NavLink
           to="/"
           end
           className={({ isActive }) =>
             `flex flex-col items-center justify-center min-w-[54px] py-1 text-[10px] font-semibold transition-colors cursor-pointer ${
-              isActive ? 'text-[#D92332] dark:text-[#F02D3A] font-bold' : 'text-[#707070] dark:text-[#A3A3A3] hover:text-[#171717] dark:hover:text-white'
+              isActive ? 'text-[#D92332] dark:text-[#F02D3A] font-bold' : 'text-[#707070] dark:text-[#A1A1AA] hover:text-[#171717] dark:hover:text-white'
             }`
           }
         >
-          <LayoutDashboard className="w-5 h-5 mb-0.5" />
-          <span>{t('nav.bottom_home', 'Home')}</span>
+          {({ isActive }) => (
+            <>
+              <LayoutDashboard className="w-5 h-5 mb-0.5" />
+              <span>{t('nav.bottom_home', 'Home')}</span>
+              {isActive && <span className="w-1 h-1 rounded-full bg-[#D92332] dark:bg-[#F02D3A] mt-0.5" />}
+            </>
+          )}
         </NavLink>
 
         <NavLink
           to="/attendance"
           className={({ isActive }) =>
             `flex flex-col items-center justify-center min-w-[54px] py-1 text-[10px] font-semibold transition-colors cursor-pointer ${
-              isActive ? 'text-[#D92332] dark:text-[#F02D3A] font-bold' : 'text-[#707070] dark:text-[#A3A3A3] hover:text-[#171717] dark:hover:text-white'
+              isActive ? 'text-[#D92332] dark:text-[#F02D3A] font-bold' : 'text-[#707070] dark:text-[#A1A1AA] hover:text-[#171717] dark:hover:text-white'
             }`
           }
         >
-          <CalendarCheck className="w-5 h-5 mb-0.5" />
-          <span>{t('nav.bottom_attendance', 'Attendance')}</span>
+          {({ isActive }) => (
+            <>
+              <CalendarCheck className="w-5 h-5 mb-0.5" />
+              <span>{t('nav.bottom_attendance', 'Attendance')}</span>
+              {isActive && <span className="w-1 h-1 rounded-full bg-[#D92332] dark:bg-[#F02D3A] mt-0.5" />}
+            </>
+          )}
         </NavLink>
 
         {/* Center Floating Quick Action Button */}
@@ -589,24 +599,34 @@ export const Layout: React.FC = () => {
           to="/members"
           className={({ isActive }) =>
             `flex flex-col items-center justify-center min-w-[54px] py-1 text-[10px] font-semibold transition-colors cursor-pointer ${
-              isActive ? 'text-[#D92332] dark:text-[#F02D3A] font-bold' : 'text-[#707070] dark:text-[#A3A3A3] hover:text-[#171717] dark:hover:text-white'
+              isActive ? 'text-[#D92332] dark:text-[#F02D3A] font-bold' : 'text-[#707070] dark:text-[#A1A1AA] hover:text-[#171717] dark:hover:text-white'
             }`
           }
         >
-          <Users className="w-5 h-5 mb-0.5" />
-          <span>{t('nav.bottom_members', 'Members')}</span>
+          {({ isActive }) => (
+            <>
+              <Users className="w-5 h-5 mb-0.5" />
+              <span>{t('nav.bottom_members', 'Members')}</span>
+              {isActive && <span className="w-1 h-1 rounded-full bg-[#D92332] dark:bg-[#F02D3A] mt-0.5" />}
+            </>
+          )}
         </NavLink>
 
         <NavLink
           to="/payments"
           className={({ isActive }) =>
             `flex flex-col items-center justify-center min-w-[54px] py-1 text-[10px] font-semibold transition-colors cursor-pointer ${
-              isActive ? 'text-[#D92332] dark:text-[#F02D3A] font-bold' : 'text-[#707070] dark:text-[#A3A3A3] hover:text-[#171717] dark:hover:text-white'
+              isActive ? 'text-[#D92332] dark:text-[#F02D3A] font-bold' : 'text-[#707070] dark:text-[#A1A1AA] hover:text-[#171717] dark:hover:text-white'
             }`
           }
         >
-          <Coins className="w-5 h-5 mb-0.5" />
-          <span>{t('nav.bottom_fees', 'Fees')}</span>
+          {({ isActive }) => (
+            <>
+              <Coins className="w-5 h-5 mb-0.5" />
+              <span>{t('nav.bottom_fees', 'Fees')}</span>
+              {isActive && <span className="w-1 h-1 rounded-full bg-[#D92332] dark:bg-[#F02D3A] mt-0.5" />}
+            </>
+          )}
         </NavLink>
       </nav>
 
