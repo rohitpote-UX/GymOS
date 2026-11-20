@@ -245,6 +245,11 @@ class AttendanceController extends Controller
         $totalToday = (clone $query)->count();
         $currentlyInside = (clone $query)->whereNull('check_out_at')->count();
 
+        // Method Breakdown
+        $qrSelfCount = (clone $query)->where('method', 'qr_self_check_in')->count();
+        $qrScanCount = (clone $query)->where('method', 'qr_scan')->count();
+        $manualCount = (clone $query)->whereIn('method', ['front_desk', 'manual', 'biometric'])->count();
+
         // Morning (before 12 PM) vs Evening (after 12 PM)
         $morningCount = (clone $query)->whereTime('check_in_at', '<', '12:00:00')->count();
         $eveningCount = (clone $query)->whereTime('check_in_at', '>=', '12:00:00')->count();
@@ -252,6 +257,9 @@ class AttendanceController extends Controller
         return response()->json([
             'total_check_ins' => $totalToday,
             'currently_inside' => $currentlyInside,
+            'qr_self_check_ins' => $qrSelfCount,
+            'qr_scan_check_ins' => $qrScanCount,
+            'manual_check_ins' => $manualCount,
             'morning_check_ins' => $morningCount,
             'evening_check_ins' => $eveningCount,
             'date' => now()->toDateString(),

@@ -28,58 +28,37 @@ import SupportTickets from './pages/SupportTickets';
 import TrainerPortal from './pages/TrainerPortal';
 import Trainers from './pages/Trainers';
 import WhatsAppAutomation from './pages/WhatsAppAutomation';
+import SelfCheckIn from './pages/SelfCheckIn';
 import AdminDashboard from './pages/admin/AdminDashboard';
 
 const AppRoutes: React.FC = () => {
   const { user } = useAuth();
 
-  if (!user) {
-    return (
-      <Routes>
+  return (
+    <Routes>
+      {/* Public QR Self-Attendance Endpoints (Camera Scan / PWA) */}
+      <Route path="/check-in/:token" element={<SelfCheckIn />} />
+      <Route path="/self-check-in/:token" element={<SelfCheckIn />} />
+
+      {!user ? (
         <Route path="*" element={<Login />} />
-      </Routes>
-    );
-  }
-
-  // Super Admin Platform Plane
-  if (user.role === 'super_admin') {
-    return (
-      <Routes>
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="*" element={<Navigate to="/admin" replace />} />
-      </Routes>
-    );
-  }
-
-  // Expired Gym Lockdown (billing screen remains accessible so owners can pay and renew)
-  if (user.gym?.expired) {
-    return (
-      <Routes>
+      ) : user.role === 'super_admin' ? (
+        <>
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="*" element={<Navigate to="/admin" replace />} />
+        </>
+      ) : user.gym?.expired ? (
         <Route element={<Layout />}>
           <Route path="/billing" element={<Billing />} />
           <Route path="*" element={<PlanExpired />} />
         </Route>
-      </Routes>
-    );
-  }
-
-  // Member Portal Dedicated Role
-  if (user.role === 'member') {
-    return (
-      <Routes>
+      ) : user.role === 'member' ? (
         <Route element={<Layout />}>
           <Route path="/portal" element={<MemberPortal />} />
           <Route path="/support" element={<SupportTickets />} />
           <Route path="*" element={<Navigate to="/portal" replace />} />
         </Route>
-      </Routes>
-    );
-  }
-
-  // Trainer Dedicated Role
-  if (user.role === 'trainer') {
-    return (
-      <Routes>
+      ) : user.role === 'trainer' ? (
         <Route element={<Layout />}>
           <Route path="/trainer-portal" element={<TrainerPortal />} />
           <Route path="/attendance" element={<Attendance />} />
@@ -87,53 +66,54 @@ const AppRoutes: React.FC = () => {
           <Route path="/support" element={<SupportTickets />} />
           <Route path="*" element={<Navigate to="/trainer-portal" replace />} />
         </Route>
-      </Routes>
-    );
-  }
+      ) : (
+        /* Regular Staff & Owner Dashboard Routes */
+        <Route element={<Layout />}>
+          {/* Core BI & Action Center */}
+          <Route index element={<Dashboard />} />
+          <Route path="/action-center" element={<ActionCenter />} />
+          <Route path="/ai-advisor" element={<AiAdvisor />} />
+          <Route path="/whatsapp" element={<WhatsAppAutomation />} />
+          <Route path="/support" element={<SupportTickets />} />
 
-  const isOwner = user.role === 'gym_owner';
-  const isManager = user.role === 'branch_manager';
-  const canManageBranches = isOwner || isManager;
+          {/* Portals (cross-accessible to owners & managers for testing/preview) */}
+          <Route path="/portal" element={<MemberPortal />} />
+          <Route path="/trainer-portal" element={<TrainerPortal />} />
 
-  return (
-    <Routes>
-      <Route element={<Layout />}>
-        {/* Core BI & Action Center */}
-        <Route index element={<Dashboard />} />
-        <Route path="/action-center" element={<ActionCenter />} />
-        <Route path="/ai-advisor" element={<AiAdvisor />} />
-        <Route path="/whatsapp" element={<WhatsAppAutomation />} />
-        <Route path="/support" element={<SupportTickets />} />
+          {/* Operational Modules */}
+          <Route path="/attendance" element={<Attendance />} />
+          <Route path="/members" element={<Members />} />
+          <Route path="/pos" element={<Pos />} />
+          <Route path="/inventory" element={<Inventory />} />
+          <Route path="/purchases" element={<Purchases />} />
+          <Route path="/profitability" element={<Profitability />} />
+          <Route path="/leads" element={<Leads />} />
+          <Route path="/payments" element={<Payments />} />
+          <Route path="/cash-closing" element={<CashClosing />} />
+          <Route path="/expenses" element={<Expenses />} />
+          <Route path="/plans" element={<MembershipPlans />} />
+          <Route path="/trainers" element={<Trainers />} />
+          <Route path="/reports" element={<Reports />} />
 
-        {/* Portals (cross-accessible to owners & managers for testing/preview) */}
-        <Route path="/portal" element={<MemberPortal />} />
-        <Route path="/trainer-portal" element={<TrainerPortal />} />
+          {/* Branch & Staff Admin */}
+          {(user.role === 'gym_owner' || user.role === 'branch_manager') && (
+            <>
+              <Route path="/branches" element={<Branches />} />
+              <Route path="/staff" element={<Staff />} />
+            </>
+          )}
 
-        {/* Operational Modules */}
-        <Route path="/attendance" element={<Attendance />} />
-        <Route path="/members" element={<Members />} />
-        <Route path="/pos" element={<Pos />} />
-        <Route path="/inventory" element={<Inventory />} />
-        <Route path="/purchases" element={<Purchases />} />
-        <Route path="/profitability" element={<Profitability />} />
-        <Route path="/leads" element={<Leads />} />
-        <Route path="/payments" element={<Payments />} />
-        <Route path="/cash-closing" element={<CashClosing />} />
-        <Route path="/expenses" element={<Expenses />} />
-        <Route path="/plans" element={<MembershipPlans />} />
-        <Route path="/trainers" element={<Trainers />} />
-        <Route path="/reports" element={<Reports />} />
+          {/* Tenant Settings & Plan */}
+          {user.role === 'gym_owner' && (
+            <>
+              <Route path="/billing" element={<Billing />} />
+              <Route path="/settings" element={<Settings />} />
+            </>
+          )}
 
-        {/* Branch & Staff Admin */}
-        {canManageBranches && <Route path="/branches" element={<Branches />} />}
-        {canManageBranches && <Route path="/staff" element={<Staff />} />}
-
-        {/* Tenant Settings & Plan */}
-        {isOwner && <Route path="/billing" element={<Billing />} />}
-        {isOwner && <Route path="/settings" element={<Settings />} />}
-
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Route>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
+      )}
     </Routes>
   );
 };

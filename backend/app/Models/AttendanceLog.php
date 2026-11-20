@@ -15,10 +15,13 @@ class AttendanceLog extends Model
         'gym_id',
         'branch_id',
         'member_id',
+        'gym_qr_code_id',
         'client_uuid',
         'check_in_at',
         'check_out_at',
         'method',
+        'latitude',
+        'longitude',
         'verified_by_user_id',
     ];
 
@@ -27,6 +30,8 @@ class AttendanceLog extends Model
         return [
             'check_in_at' => 'datetime',
             'check_out_at' => 'datetime',
+            'latitude' => 'float',
+            'longitude' => 'float',
         ];
     }
 
@@ -38,6 +43,11 @@ class AttendanceLog extends Model
     public function branch(): BelongsTo
     {
         return $this->belongsTo(Branch::class);
+    }
+
+    public function gymQrCode(): BelongsTo
+    {
+        return $this->belongsTo(GymQrCode::class, 'gym_qr_code_id');
     }
 
     public function verifier(): BelongsTo

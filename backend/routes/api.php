@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\CashClosingController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ExpenseController;
 use App\Http\Controllers\Api\GlobalSearchController;
+use App\Http\Controllers\Api\GymQrCodeController;
 use App\Http\Controllers\Api\InventoryController;
 use App\Http\Controllers\Api\LeadController;
 use App\Http\Controllers\Api\MemberController;
@@ -27,6 +28,7 @@ use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProfitabilityController;
 use App\Http\Controllers\Api\PurchaseInvoiceController;
 use App\Http\Controllers\Api\ReportController;
+use App\Http\Controllers\Api\SelfCheckInController;
 use App\Http\Controllers\Api\SettingsController;
 use App\Http\Controllers\Api\StaffController;
 use App\Http\Controllers\Api\SupplierController;
@@ -50,6 +52,13 @@ Route::get('/manifest.webmanifest', [BrandingController::class, 'platformManifes
 Route::get('/gyms/{slug}/branding', [BrandingController::class, 'gym']);
 Route::get('/gyms/{slug}/manifest.webmanifest', [BrandingController::class, 'gymManifest']);
 Route::get('/gyms/{slug}/icons/{kind}.png', [BrandingController::class, 'icon']);
+
+// Member Self Check-in via QR Poster (Public / Rate-limited)
+Route::prefix('self-check-in')->middleware('throttle:60,1')->group(function () {
+    Route::get('/info/{token}', [SelfCheckInController::class, 'info']);
+    Route::post('/verify-member', [SelfCheckInController::class, 'verifyMember'])->middleware('throttle:30,1');
+    Route::post('/confirm', [SelfCheckInController::class, 'confirm'])->middleware('throttle:20,1');
+});
 
 // -------------------------------------------------------------
 // 2. AUTHENTICATED COMMON ROUTES
@@ -124,6 +133,15 @@ Route::middleware(['auth:sanctum', 'gym', 'branch'])->group(function () {
         Route::post('/attendance/qr-check-in', [AttendanceController::class, 'qrCheckIn']);
         Route::post('/attendance/{id}/check-out', [AttendanceController::class, 'checkOut']);
         Route::get('/attendance/today-stats', [AttendanceController::class, 'todayStats']);
+
+        // Gym Self-Attendance QR Posters Management
+        Route::get('/attendance/qr-codes', [GymQrCodeController::class, 'index']);
+        Route::post('/attendance/qr-codes', [GymQrCodeController::class, 'store']);
+        Route::get('/attendance/qr-codes/{id}', [GymQrCodeController::class, 'show']);
+        Route::put('/attendance/qr-codes/{id}', [GymQrCodeController::class, 'update']);
+        Route::post('/attendance/qr-codes/{id}/regenerate', [GymQrCodeController::class, 'regenerate']);
+        Route::post('/attendance/qr-codes/{id}/toggle-status', [GymQrCodeController::class, 'toggleStatus']);
+        Route::get('/attendance/qr-codes/{id}/activity', [GymQrCodeController::class, 'activity']);
     });
 
     // Module 4: Financial Management & Cash Flow
