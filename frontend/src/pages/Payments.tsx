@@ -284,33 +284,16 @@ export default function Payments() {
       {/* Payments Table */}
       <div className="bg-[#0f172a] border border-slate-800 rounded-2xl overflow-hidden">
         {payments.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-900/60 text-slate-400 uppercase tracking-wider text-[10px] border-b border-slate-800">
-                <tr>
-                  <th className="py-3.5 px-4">{t('payments.col_receipt_no', 'Receipt #')}</th>
-                  <th className="py-3.5 px-4">{t('payments.col_member', 'Member')}</th>
-                  <th className="py-3.5 px-4">{t('payments.col_type', 'Type')}</th>
-                  <th className="py-3.5 px-4">{t('payments.col_plan', 'Plan / Package')}</th>
-                  <th className="py-3.5 px-4">{t('payments.col_amount', 'Amount')}</th>
-                  <th className="py-3.5 px-4">{t('payments.col_method', 'Method')}</th>
-                  <th className="py-3.5 px-4">{t('payments.col_date', 'Date')}</th>
-                  <th className="py-3.5 px-4 text-right">{t('payments.col_actions', 'Actions')}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/60 text-slate-200">
-                {payments.map((p) => {
-                  const isRefund = p.type === 'refund';
-                  return (
-                    <tr key={p.id} className="hover:bg-slate-800/30 transition-colors">
-                      <td className="py-3.5 px-4 font-mono font-bold text-white">{p.receipt_number}</td>
-                      <td className="py-3.5 px-4">
-                        <div className="font-semibold text-white">
-                          {p.member?.first_name} {p.member?.last_name}
-                        </div>
-                        <div className="text-[10px] text-slate-400 font-mono">{p.member?.member_code}</div>
-                      </td>
-                      <td className="py-3.5 px-4">
+          <>
+            {/* Mobile Cards View (< md) */}
+            <div className="md:hidden divide-y divide-slate-800/70">
+              {payments.map((p) => {
+                const isRefund = p.type === 'refund';
+                return (
+                  <div key={p.id} className="p-4 hover:bg-slate-800/30 transition-colors space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-bold text-xs text-white">{p.receipt_number}</span>
                         <span
                           className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                             isRefund
@@ -320,52 +303,144 @@ export default function Payments() {
                         >
                           {isRefund ? 'REFUND' : 'PAYMENT'}
                         </span>
-                      </td>
-                      <td className="py-3.5 px-4 text-slate-300">
-                        {p.membership?.plan?.name || (isRefund ? 'Refund Voucher' : 'Direct Fee')}
-                      </td>
-                      <td className={`py-3.5 px-4 font-mono font-bold text-sm ${isRefund ? 'text-rose-400' : 'text-emerald-400'}`}>
-                        {isRefund ? '-' : ''}₹{Number(p.amount).toLocaleString('en-IN')}
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span className="px-2 py-0.5 rounded-md text-[10px] bg-slate-800 text-slate-300 font-mono uppercase">
+                      </div>
+                      <span className="text-[10px] text-slate-400 font-mono">{p.payment_date}</span>
+                    </div>
+
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h4 className="font-bold text-sm text-white">
+                          {p.member?.first_name} {p.member?.last_name}
+                        </h4>
+                        <div className="text-[10px] text-slate-400 font-mono mt-0.5">
+                          {p.member?.member_code} • {p.member?.phone}
+                        </div>
+                        <div className="text-xs text-slate-300 mt-1">
+                          {p.membership?.plan?.name || (isRefund ? 'Refund Voucher' : 'Direct Fee')}
+                        </div>
+                      </div>
+
+                      <div className="text-right">
+                        <div className={`font-mono font-bold text-base ${isRefund ? 'text-rose-400' : 'text-emerald-400'}`}>
+                          {isRefund ? '-' : ''}₹{Number(p.amount).toLocaleString('en-IN')}
+                        </div>
+                        <span className="px-2 py-0.5 rounded-md text-[10px] bg-slate-800 text-slate-300 font-mono uppercase inline-block mt-1">
                           {p.payment_method}
                         </span>
-                      </td>
-                      <td className="py-3.5 px-4 text-slate-400 font-mono">{p.payment_date}</td>
-                      <td className="py-3.5 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          {!isRefund && (
-                            <>
-                              <button
-                                onClick={() => sendReceiptWhatsApp(p)}
-                                title="Send WhatsApp Receipt"
-                                className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-emerald-400 border border-slate-700 text-xs inline-flex items-center gap-1 cursor-pointer"
-                              >
-                                <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
-                                <span>Receipt</span>
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setRefundModalPayment(p);
-                                  setRefundAmount(String(p.amount));
-                                  setRefundNotes(`Refund for receipt ${p.receipt_number}`);
-                                }}
-                                title="Issue Refund"
-                                className="p-1.5 rounded-lg hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 cursor-pointer transition-colors"
-                              >
-                                <Undo2 className="w-3.5 h-3.5" />
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                      </div>
+                    </div>
+
+                    {!isRefund && (
+                      <div className="flex items-center justify-end gap-2 pt-1 border-t border-slate-800/60">
+                        <button
+                          onClick={() => sendReceiptWhatsApp(p)}
+                          className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-emerald-400 border border-slate-700 text-xs inline-flex items-center gap-1.5 cursor-pointer min-h-[38px]"
+                        >
+                          <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>WhatsApp Receipt</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            setRefundModalPayment(p);
+                            setRefundAmount(String(p.amount));
+                            setRefundNotes(`Refund for receipt ${p.receipt_number}`);
+                          }}
+                          className="px-3 py-1.5 rounded-xl hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 border border-slate-800 text-xs cursor-pointer transition-colors inline-flex items-center gap-1 min-h-[38px]"
+                        >
+                          <Undo2 className="w-3.5 h-3.5" />
+                          <span>Refund</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Desktop Table View (>= md) */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-900/60 text-slate-400 uppercase tracking-wider text-[10px] border-b border-slate-800">
+                  <tr>
+                    <th className="py-3.5 px-4">{t('payments.col_receipt_no', 'Receipt #')}</th>
+                    <th className="py-3.5 px-4">{t('payments.col_member', 'Member')}</th>
+                    <th className="py-3.5 px-4">{t('payments.col_type', 'Type')}</th>
+                    <th className="py-3.5 px-4">{t('payments.col_plan', 'Plan / Package')}</th>
+                    <th className="py-3.5 px-4">{t('payments.col_amount', 'Amount')}</th>
+                    <th className="py-3.5 px-4">{t('payments.col_method', 'Method')}</th>
+                    <th className="py-3.5 px-4">{t('payments.col_date', 'Date')}</th>
+                    <th className="py-3.5 px-4 text-right">{t('payments.col_actions', 'Actions')}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60 text-slate-200">
+                  {payments.map((p) => {
+                    const isRefund = p.type === 'refund';
+                    return (
+                      <tr key={p.id} className="hover:bg-slate-800/30 transition-colors">
+                        <td className="py-3.5 px-4 font-mono font-bold text-white">{p.receipt_number}</td>
+                        <td className="py-3.5 px-4">
+                          <div className="font-semibold text-white">
+                            {p.member?.first_name} {p.member?.last_name}
+                          </div>
+                          <div className="text-[10px] text-slate-400 font-mono">{p.member?.member_code}</div>
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                              isRefund
+                                ? 'bg-rose-500/10 text-rose-400 border-rose-500/30'
+                                : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                            }`}
+                          >
+                            {isRefund ? 'REFUND' : 'PAYMENT'}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4 text-slate-300">
+                          {p.membership?.plan?.name || (isRefund ? 'Refund Voucher' : 'Direct Fee')}
+                        </td>
+                        <td className={`py-3.5 px-4 font-mono font-bold text-sm ${isRefund ? 'text-rose-400' : 'text-emerald-400'}`}>
+                          {isRefund ? '-' : ''}₹{Number(p.amount).toLocaleString('en-IN')}
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <span className="px-2 py-0.5 rounded-md text-[10px] bg-slate-800 text-slate-300 font-mono uppercase">
+                            {p.payment_method}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4 text-slate-400 font-mono">{p.payment_date}</td>
+                        <td className="py-3.5 px-4 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            {!isRefund && (
+                              <>
+                                <button
+                                  onClick={() => sendReceiptWhatsApp(p)}
+                                  title="Send WhatsApp Receipt"
+                                  className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-emerald-400 border border-slate-700 text-xs inline-flex items-center gap-1 cursor-pointer"
+                                >
+                                  <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
+                                  <span>Receipt</span>
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setRefundModalPayment(p);
+                                    setRefundAmount(String(p.amount));
+                                    setRefundNotes(`Refund for receipt ${p.receipt_number}`);
+                                  }}
+                                  title="Issue Refund"
+                                  className="p-1.5 rounded-lg hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 cursor-pointer transition-colors"
+                                >
+                                  <Undo2 className="w-3.5 h-3.5" />
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
         ) : (
           <div className="py-16 text-center flex flex-col items-center justify-center space-y-3">
             <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">

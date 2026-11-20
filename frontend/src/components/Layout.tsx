@@ -542,12 +542,12 @@ export const Layout: React.FC = () => {
       )}
 
       {/* Main Content Workspace Area */}
-      <main className="flex-1 overflow-x-hidden min-h-screen flex flex-col pb-20 md:pb-6">
+      <main className="flex-1 overflow-x-hidden min-h-screen flex flex-col pb-32 sm:pb-36 md:pb-8">
         <Outlet />
       </main>
 
       {/* Mobile Persistent Bottom Action Bar (Phase 8: Mobile-First Accessibility) */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0f172a]/95 backdrop-blur-md border-t border-slate-800 px-2 py-1.5 flex items-center justify-around shadow-2xl safe-area-inset-bottom">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0f172a]/95 backdrop-blur-md border-t border-slate-800/90 px-3 py-2 flex items-center justify-around shadow-[0_-8px_25px_rgba(0,0,0,0.6)] safe-bottom">
         <NavLink
           to="/"
           end

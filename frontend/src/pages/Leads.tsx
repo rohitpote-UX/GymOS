@@ -313,37 +313,37 @@ export default function Leads() {
       )}
 
       {/* Pipeline Metric Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3.5 backdrop-blur-sm">
-          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Total Leads</span>
-          <div className="text-xl font-bold text-white mt-1">{total}</div>
+      <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
+        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-2.5 sm:p-3.5 backdrop-blur-sm">
+          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider truncate block">Total Leads</span>
+          <div className="text-lg sm:text-xl font-bold text-white mt-1">{total}</div>
         </div>
 
-        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3.5 backdrop-blur-sm">
-          <span className="text-[10px] font-semibold text-blue-400 uppercase tracking-wider">New</span>
-          <div className="text-xl font-bold text-blue-400 mt-1">{stats.new || 0}</div>
+        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-2.5 sm:p-3.5 backdrop-blur-sm">
+          <span className="text-[10px] font-semibold text-blue-400 uppercase tracking-wider truncate block">New</span>
+          <div className="text-lg sm:text-xl font-bold text-blue-400 mt-1">{stats.new || 0}</div>
         </div>
 
-        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3.5 backdrop-blur-sm">
-          <span className="text-[10px] font-semibold text-amber-400 uppercase tracking-wider">Contacted</span>
-          <div className="text-xl font-bold text-amber-400 mt-1">{stats.contacted || 0}</div>
+        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-2.5 sm:p-3.5 backdrop-blur-sm">
+          <span className="text-[10px] font-semibold text-amber-400 uppercase tracking-wider truncate block">Contacted</span>
+          <div className="text-lg sm:text-xl font-bold text-amber-400 mt-1">{stats.contacted || 0}</div>
         </div>
 
-        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3.5 backdrop-blur-sm">
-          <span className="text-[10px] font-semibold text-purple-400 uppercase tracking-wider">Trials Booked</span>
-          <div className="text-xl font-bold text-purple-400 mt-1">{stats.trial_booked || 0}</div>
+        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-2.5 sm:p-3.5 backdrop-blur-sm">
+          <span className="text-[10px] font-semibold text-purple-400 uppercase tracking-wider truncate block">Trials Booked</span>
+          <div className="text-lg sm:text-xl font-bold text-purple-400 mt-1">{stats.trial_booked || 0}</div>
         </div>
 
-        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3.5 backdrop-blur-sm">
-          <span className="text-[10px] font-semibold text-emerald-400 uppercase tracking-wider">Converted</span>
-          <div className="text-xl font-bold text-emerald-400 mt-1">{stats.converted || 0}</div>
+        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-2.5 sm:p-3.5 backdrop-blur-sm">
+          <span className="text-[10px] font-semibold text-emerald-400 uppercase tracking-wider truncate block">Converted</span>
+          <div className="text-lg sm:text-xl font-bold text-emerald-400 mt-1">{stats.converted || 0}</div>
         </div>
 
-        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3.5 backdrop-blur-sm">
-          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Conversion %</span>
-          <div className="text-xl font-bold text-emerald-400 mt-1 flex items-center gap-1">
-            <Flame className="w-4 h-4 text-emerald-400" />
-            {conversionRate}%
+        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-2.5 sm:p-3.5 backdrop-blur-sm">
+          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider truncate block">Conversion %</span>
+          <div className="text-lg sm:text-xl font-bold text-emerald-400 mt-1 flex items-center gap-1">
+            <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400 shrink-0" />
+            <span>{conversionRate}%</span>
           </div>
         </div>
       </div>
@@ -399,143 +399,274 @@ export default function Leads() {
             <p className="text-xs text-slate-500 mt-1">Capture new prospect details using the button above.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="border-b border-slate-800 text-slate-400 bg-slate-900/60 font-medium">
-                  <th className="py-3 px-4">Lead Name</th>
-                  <th className="py-3 px-4">Contact</th>
-                  <th className="py-3 px-4">Source</th>
-                  <th className="py-3 px-4">Fitness Goal</th>
-                  <th className="py-3 px-4">Follow-up</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4">Owner / Staff</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/60">
-                {filteredLeads.map((lead) => {
-                  const isConverted = lead.status === 'converted';
-                  const isLost = lead.status === 'lost';
-                  return (
-                    <tr key={lead.id} className="hover:bg-slate-800/30 transition-colors">
-                      <td className="py-3 px-4">
-                        <div className="font-semibold text-white">{lead.name}</div>
-                        {lead.gender && (
-                          <span className="text-[10px] text-slate-500 capitalize">{lead.gender}</span>
-                        )}
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-1.5 text-slate-300 font-mono">
-                          <Phone className="w-3 h-3 text-slate-500" />
-                          <a href={`tel:${lead.phone}`} className="hover:underline">{lead.phone}</a>
+          <>
+            {/* Mobile Cards View (< md) */}
+            <div className="md:hidden divide-y divide-slate-800/70">
+              {filteredLeads.map((lead) => {
+                const isConverted = lead.status === 'converted';
+                const isLost = lead.status === 'lost';
+                return (
+                  <div key={lead.id} className="p-4 hover:bg-slate-800/30 transition-colors space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="font-bold text-sm text-white">{lead.name}</div>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="px-2 py-0.5 rounded-md text-[10px] bg-slate-800 text-slate-300 capitalize font-medium">
+                            {lead.source.replace('_', ' ')}
+                          </span>
+                          <span className="text-[10px] text-slate-400 capitalize">
+                            Goal: {lead.fitness_goal.replace('_', ' ')}
+                          </span>
                         </div>
-                        {lead.email && <div className="text-[10px] text-slate-500">{lead.email}</div>}
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className="px-2 py-0.5 rounded-md text-[10px] bg-slate-800 text-slate-300 capitalize font-medium">
-                          {lead.source.replace('_', ' ')}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-slate-300 capitalize">
-                        {lead.fitness_goal.replace('_', ' ')}
-                      </td>
-                      <td className="py-3 px-4">
-                        {lead.followup_date ? (
-                          <div className="flex items-center gap-1 font-mono text-slate-300">
-                            <Clock className="w-3 h-3 text-amber-400" />
-                            {lead.followup_date}
+                      </div>
+
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold border shrink-0 ${
+                          lead.status === 'converted'
+                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                            : lead.status === 'trial_booked'
+                            ? 'bg-purple-500/10 text-purple-400 border-purple-500/30'
+                            : lead.status === 'contacted'
+                            ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                            : lead.status === 'lost'
+                            ? 'bg-rose-500/10 text-rose-400 border-rose-500/30'
+                            : 'bg-blue-500/10 text-blue-400 border-blue-500/30'
+                        }`}
+                      >
+                        {lead.status.replace('_', ' ').toUpperCase()}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs bg-slate-900/60 p-2.5 rounded-xl border border-slate-800/60">
+                      <div className="space-y-0.5">
+                        <a
+                          href={`tel:${lead.phone}`}
+                          className="text-emerald-400 font-mono text-xs flex items-center gap-1 hover:underline"
+                        >
+                          <Phone className="w-3 h-3 text-slate-400" />
+                          <span>{lead.phone}</span>
+                        </a>
+                        {lead.email && <div className="text-[10px] text-slate-500 truncate max-w-[150px]">{lead.email}</div>}
+                      </div>
+
+                      <div className="text-right text-[11px] font-mono">
+                        {lead.followup_date && (
+                          <div className="text-amber-400 flex items-center gap-1 justify-end">
+                            <Clock className="w-3 h-3" />
+                            <span>{lead.followup_date}</span>
                           </div>
-                        ) : (
-                          '—'
                         )}
                         {lead.trial_date && (
-                          <div className="text-[10px] text-purple-400 font-medium">
+                          <div className="text-purple-400 font-semibold">
                             Trial: {lead.trial_date}
                           </div>
                         )}
-                      </td>
-                      <td className="py-3 px-4">
-                        <span
-                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
-                            lead.status === 'converted'
-                              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                              : lead.status === 'trial_booked'
-                              ? 'bg-purple-500/10 text-purple-400 border-purple-500/30'
-                              : lead.status === 'contacted'
-                              ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-                              : lead.status === 'lost'
-                              ? 'bg-rose-500/10 text-rose-400 border-rose-500/30'
-                              : 'bg-blue-500/10 text-blue-400 border-blue-500/30'
-                          }`}
-                        >
-                          {lead.status.replace('_', ' ').toUpperCase()}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-slate-400">
-                        {lead.assigned_staff?.name || 'Unassigned'}
-                      </td>
-                      <td className="py-3 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          {!isConverted && !isLost && (
-                            <>
-                              <button
-                                onClick={() => {
-                                  setError(null);
-                                  setFollowupModalLead(lead);
-                                }}
-                                className="p-1.5 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg transition-colors cursor-pointer"
-                                title="Log Follow-up Call / Chat"
-                              >
-                                <PhoneCall className="w-3.5 h-3.5" />
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setError(null);
-                                  setTrialModalLead(lead);
-                                }}
-                                className="p-1.5 hover:bg-purple-500/10 text-slate-300 hover:text-purple-400 rounded-lg transition-colors cursor-pointer"
-                                title="Book Free Trial"
-                              >
-                                <Calendar className="w-3.5 h-3.5" />
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setError(null);
-                                  setConvertModalLead(lead);
-                                }}
-                                className="px-2.5 py-1 bg-emerald-500/20 hover:bg-emerald-500 text-emerald-400 hover:text-slate-950 font-bold rounded-lg transition-colors cursor-pointer text-[10px] flex items-center gap-1"
-                                title="Convert Lead to Member"
-                              >
-                                <UserCheck className="w-3 h-3" />
-                                Convert
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setError(null);
-                                  setLostModalLead(lead);
-                                }}
-                                className="p-1.5 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 rounded-lg transition-colors cursor-pointer"
-                                title="Mark Lost"
-                              >
-                                <XCircle className="w-3.5 h-3.5" />
-                              </button>
-                            </>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-800/60">
+                      <span className="text-[11px] text-slate-400">
+                        {lead.assigned_staff?.name ? `Staff: ${lead.assigned_staff.name}` : 'Unassigned'}
+                      </span>
+
+                      <div className="flex items-center gap-1.5">
+                        {!isConverted && !isLost && (
+                          <>
+                            <button
+                              onClick={() => {
+                                setError(null);
+                                setFollowupModalLead(lead);
+                              }}
+                              className="p-2 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl bg-slate-800 border border-slate-700 transition-colors cursor-pointer min-h-[38px] min-w-[38px] flex items-center justify-center"
+                              title="Call / Chat"
+                            >
+                              <PhoneCall className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => {
+                                setError(null);
+                                setTrialModalLead(lead);
+                              }}
+                              className="p-2 hover:bg-purple-500/20 text-purple-300 rounded-xl bg-slate-800 border border-slate-700 transition-colors cursor-pointer min-h-[38px] min-w-[38px] flex items-center justify-center"
+                              title="Book Trial"
+                            >
+                              <Calendar className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => {
+                                setError(null);
+                                setConvertModalLead(lead);
+                              }}
+                              className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl transition-colors cursor-pointer text-xs flex items-center gap-1 min-h-[38px]"
+                              title="Convert to Member"
+                            >
+                              <UserCheck className="w-3.5 h-3.5" />
+                              Convert
+                            </button>
+                            <button
+                              onClick={() => {
+                                setError(null);
+                                setLostModalLead(lead);
+                              }}
+                              className="p-2 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 rounded-xl border border-slate-800 transition-colors cursor-pointer min-h-[38px] min-w-[38px] flex items-center justify-center"
+                              title="Mark Lost"
+                            >
+                              <XCircle className="w-3.5 h-3.5" />
+                            </button>
+                          </>
+                        )}
+                        {isConverted && (
+                          <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
+                            <CheckCircle2 className="w-4 h-4" />
+                            Active Member
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Desktop Table View (>= md) */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="border-b border-slate-800 text-slate-400 bg-slate-900/60 font-medium">
+                    <th className="py-3 px-4">Lead Name</th>
+                    <th className="py-3 px-4">Contact</th>
+                    <th className="py-3 px-4">Source</th>
+                    <th className="py-3 px-4">Fitness Goal</th>
+                    <th className="py-3 px-4">Follow-up</th>
+                    <th className="py-3 px-4">Status</th>
+                    <th className="py-3 px-4">Owner / Staff</th>
+                    <th className="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60">
+                  {filteredLeads.map((lead) => {
+                    const isConverted = lead.status === 'converted';
+                    const isLost = lead.status === 'lost';
+                    return (
+                      <tr key={lead.id} className="hover:bg-slate-800/30 transition-colors">
+                        <td className="py-3 px-4">
+                          <div className="font-semibold text-white">{lead.name}</div>
+                          {lead.gender && (
+                            <span className="text-[10px] text-slate-500 capitalize">{lead.gender}</span>
                           )}
-                          {isConverted && (
-                            <span className="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
-                              <CheckCircle2 className="w-3.5 h-3.5" />
-                              Active Member
-                            </span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-1.5 text-slate-300 font-mono">
+                            <Phone className="w-3 h-3 text-slate-500" />
+                            <a href={`tel:${lead.phone}`} className="hover:underline">{lead.phone}</a>
+                          </div>
+                          {lead.email && <div className="text-[10px] text-slate-500">{lead.email}</div>}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="px-2 py-0.5 rounded-md text-[10px] bg-slate-800 text-slate-300 capitalize font-medium">
+                            {lead.source.replace('_', ' ')}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-slate-300 capitalize">
+                          {lead.fitness_goal.replace('_', ' ')}
+                        </td>
+                        <td className="py-3 px-4">
+                          {lead.followup_date ? (
+                            <div className="flex items-center gap-1 font-mono text-slate-300">
+                              <Clock className="w-3 h-3 text-amber-400" />
+                              {lead.followup_date}
+                            </div>
+                          ) : (
+                            '—'
                           )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                          {lead.trial_date && (
+                            <div className="text-[10px] text-purple-400 font-medium">
+                              Trial: {lead.trial_date}
+                            </div>
+                          )}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span
+                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                              lead.status === 'converted'
+                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                                : lead.status === 'trial_booked'
+                                ? 'bg-purple-500/10 text-purple-400 border-purple-500/30'
+                                : lead.status === 'contacted'
+                                ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                                : lead.status === 'lost'
+                                ? 'bg-rose-500/10 text-rose-400 border-rose-500/30'
+                                : 'bg-blue-500/10 text-blue-400 border-blue-500/30'
+                            }`}
+                          >
+                            {lead.status.replace('_', ' ').toUpperCase()}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-slate-400">
+                          {lead.assigned_staff?.name || 'Unassigned'}
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            {!isConverted && !isLost && (
+                              <>
+                                <button
+                                  onClick={() => {
+                                    setError(null);
+                                    setFollowupModalLead(lead);
+                                  }}
+                                  className="p-1.5 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg transition-colors cursor-pointer"
+                                  title="Log Follow-up Call / Chat"
+                                >
+                                  <PhoneCall className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setError(null);
+                                    setTrialModalLead(lead);
+                                  }}
+                                  className="p-1.5 hover:bg-purple-500/10 text-slate-300 hover:text-purple-400 rounded-lg transition-colors cursor-pointer"
+                                  title="Book Free Trial"
+                                >
+                                  <Calendar className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setError(null);
+                                    setConvertModalLead(lead);
+                                  }}
+                                  className="px-2.5 py-1 bg-emerald-500/20 hover:bg-emerald-500 text-emerald-400 hover:text-slate-950 font-bold rounded-lg transition-colors cursor-pointer text-[10px] flex items-center gap-1"
+                                  title="Convert Lead to Member"
+                                >
+                                  <UserCheck className="w-3 h-3" />
+                                  Convert
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setError(null);
+                                    setLostModalLead(lead);
+                                  }}
+                                  className="p-1.5 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 rounded-lg transition-colors cursor-pointer"
+                                  title="Mark Lost"
+                                >
+                                  <XCircle className="w-3.5 h-3.5" />
+                                </button>
+                              </>
+                            )}
+                            {isConverted && (
+                              <span className="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                Active Member
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
 

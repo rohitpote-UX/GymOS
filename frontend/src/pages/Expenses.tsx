@@ -197,66 +197,66 @@ export default function Expenses() {
       )}
 
       {/* Summary Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 backdrop-blur-sm">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+        <div className="bg-slate-900/60 border border-slate-800 rounded-xl sm:rounded-2xl p-3.5 sm:p-5 backdrop-blur-sm">
           <div className="flex justify-between items-start">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Expenses</span>
-            <div className="p-2 bg-rose-500/10 text-rose-400 rounded-xl">
-              <TrendingDown className="w-4 h-4" />
+            <span className="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider truncate">Total Expenses</span>
+            <div className="p-1.5 sm:p-2 bg-rose-500/10 text-rose-400 rounded-xl shrink-0">
+              <TrendingDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="mt-3 text-2xl font-bold text-white">
+          <div className="mt-2 sm:mt-3 text-lg sm:text-2xl font-bold text-white truncate font-mono">
             {formatCurrency(Number(summary?.total_amount || 0))}
           </div>
-          <p className="text-[11px] text-slate-500 mt-1">Current filtered period</p>
+          <p className="text-[10px] sm:text-[11px] text-slate-500 mt-1 truncate">Current period</p>
         </div>
 
-        <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 backdrop-blur-sm">
+        <div className="bg-slate-900/60 border border-slate-800 rounded-xl sm:rounded-2xl p-3.5 sm:p-5 backdrop-blur-sm">
           <div className="flex justify-between items-start">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Rent & Utilities</span>
-            <div className="p-2 bg-purple-500/10 text-purple-400 rounded-xl">
-              <Building className="w-4 h-4" />
+            <span className="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider truncate">Rent & Utilities</span>
+            <div className="p-1.5 sm:p-2 bg-purple-500/10 text-purple-400 rounded-xl shrink-0">
+              <Building className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="mt-3 text-2xl font-bold text-white">
+          <div className="mt-2 sm:mt-3 text-lg sm:text-2xl font-bold text-white truncate font-mono">
             {formatCurrency(
               Number(summary?.by_category?.rent || 0) +
               Number(summary?.by_category?.electricity || 0)
             )}
           </div>
-          <p className="text-[11px] text-slate-500 mt-1">Premises overhead</p>
+          <p className="text-[10px] sm:text-[11px] text-slate-500 mt-1 truncate">Premises overhead</p>
         </div>
 
-        <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 backdrop-blur-sm">
+        <div className="bg-slate-900/60 border border-slate-800 rounded-xl sm:rounded-2xl p-3.5 sm:p-5 backdrop-blur-sm">
           <div className="flex justify-between items-start">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Maintenance & Equip</span>
-            <div className="p-2 bg-orange-500/10 text-orange-400 rounded-xl">
-              <Zap className="w-4 h-4" />
+            <span className="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider truncate">Maintenance & Equip</span>
+            <div className="p-1.5 sm:p-2 bg-orange-500/10 text-orange-400 rounded-xl shrink-0">
+              <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="mt-3 text-2xl font-bold text-white">
+          <div className="mt-2 sm:mt-3 text-lg sm:text-2xl font-bold text-white truncate font-mono">
             {formatCurrency(
               Number(summary?.by_category?.maintenance || 0) +
               Number(summary?.by_category?.equipment || 0)
             )}
           </div>
-          <p className="text-[11px] text-slate-500 mt-1">Facility uptime</p>
+          <p className="text-[10px] sm:text-[11px] text-slate-500 mt-1 truncate">Facility uptime</p>
         </div>
 
-        <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 backdrop-blur-sm">
+        <div className="bg-slate-900/60 border border-slate-800 rounded-xl sm:rounded-2xl p-3.5 sm:p-5 backdrop-blur-sm">
           <div className="flex justify-between items-start">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Marketing & Staff</span>
-            <div className="p-2 bg-blue-500/10 text-blue-400 rounded-xl">
-              <DollarSign className="w-4 h-4" />
+            <span className="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider truncate">Marketing & Staff</span>
+            <div className="p-1.5 sm:p-2 bg-blue-500/10 text-blue-400 rounded-xl shrink-0">
+              <DollarSign className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="mt-3 text-2xl font-bold text-white">
+          <div className="mt-2 sm:mt-3 text-lg sm:text-2xl font-bold text-white truncate font-mono">
             {formatCurrency(
               Number(summary?.by_category?.marketing || 0) +
               Number(summary?.by_category?.salaries || 0)
             )}
           </div>
-          <p className="text-[11px] text-slate-500 mt-1">Growth & payroll</p>
+          <p className="text-[10px] sm:text-[11px] text-slate-500 mt-1 truncate">Growth & payroll</p>
         </div>
       </div>
 
@@ -326,69 +326,123 @@ export default function Expenses() {
             </button>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="border-b border-slate-800 text-slate-400 bg-slate-900/60 font-medium">
-                  <th className="py-3 px-4">Date</th>
-                  <th className="py-3 px-4">Expense Title</th>
-                  <th className="py-3 px-4">Category</th>
-                  <th className="py-3 px-4">Amount</th>
-                  <th className="py-3 px-4">Mode</th>
-                  <th className="py-3 px-4">Vendor / Bill</th>
-                  <th className="py-3 px-4">Recorded By</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/60">
-                {filteredExpenses.map((expense) => {
-                  const style = CATEGORY_COLORS[expense.category] || CATEGORY_COLORS.other;
-                  return (
-                    <tr key={expense.id} className="hover:bg-slate-800/30 transition-colors">
-                      <td className="py-3 px-4 text-slate-300 font-mono">
-                        {expense.expense_date}
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="font-semibold text-white">{expense.title}</div>
-                        {expense.notes && <div className="text-[11px] text-slate-400 truncate max-w-xs">{expense.notes}</div>}
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${style.bg} ${style.text} ${style.border}`}>
-                          {expense.category.toUpperCase()}
+          <>
+            {/* Mobile Cards View (< md) */}
+            <div className="md:hidden divide-y divide-slate-800/70">
+              {filteredExpenses.map((expense) => {
+                const style = CATEGORY_COLORS[expense.category] || CATEGORY_COLORS.other;
+                return (
+                  <div key={expense.id} className="p-4 hover:bg-slate-800/30 transition-colors space-y-2.5">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <h4 className="font-bold text-sm text-white truncate">{expense.title}</h4>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${style.bg} ${style.text} ${style.border}`}>
+                            {expense.category.toUpperCase()}
+                          </span>
+                          <span className="text-[10px] text-slate-400 font-mono">{expense.expense_date}</span>
+                        </div>
+                      </div>
+
+                      <div className="text-right shrink-0">
+                        <div className="font-bold text-rose-400 font-mono text-sm">
+                          ₹{Number(expense.amount).toLocaleString('en-IN')}
+                        </div>
+                        <span className="px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-slate-300 font-mono uppercase inline-block mt-0.5">
+                          {expense.payment_mode}
                         </span>
-                      </td>
-                      <td className="py-3 px-4 font-bold text-rose-400">
-                        ₹{Number(expense.amount).toLocaleString('en-IN')}
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className="px-2 py-0.5 rounded-md text-[10px] bg-slate-800 text-slate-300 font-mono">
-                          {expense.payment_mode.toUpperCase()}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-slate-300">
-                        {expense.vendor_name || '—'}
-                        {expense.bill_number && (
-                          <div className="text-[10px] text-slate-500 font-mono">#{expense.bill_number}</div>
-                        )}
-                      </td>
-                      <td className="py-3 px-4 text-slate-400">
-                        {expense.recorder?.name || 'Staff'}
-                      </td>
-                      <td className="py-3 px-4 text-right">
-                        <button
-                          onClick={() => handleDelete(expense.id)}
-                          className="p-1.5 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 rounded-lg transition-colors cursor-pointer"
-                          title="Delete Expense"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                      </div>
+                    </div>
+
+                    {expense.notes && (
+                      <p className="text-[11px] text-slate-400 bg-slate-900/60 p-2 rounded-lg border border-slate-800/60">
+                        {expense.notes}
+                      </p>
+                    )}
+
+                    <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-800/60 text-slate-400">
+                      <span className="text-[10px] font-mono">
+                        {expense.vendor_name ? `Vendor: ${expense.vendor_name}` : 'Direct expense'}
+                        {expense.bill_number ? ` (#${expense.bill_number})` : ''}
+                      </span>
+                      <button
+                        onClick={() => handleDelete(expense.id)}
+                        className="p-2 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 rounded-lg transition-colors cursor-pointer min-h-[38px] min-w-[38px] flex items-center justify-center"
+                        title="Delete Expense"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Desktop Table View (>= md) */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="border-b border-slate-800 text-slate-400 bg-slate-900/60 font-medium">
+                    <th className="py-3 px-4">Date</th>
+                    <th className="py-3 px-4">Expense Title</th>
+                    <th className="py-3 px-4">Category</th>
+                    <th className="py-3 px-4">Amount</th>
+                    <th className="py-3 px-4">Mode</th>
+                    <th className="py-3 px-4">Vendor / Bill</th>
+                    <th className="py-3 px-4">Recorded By</th>
+                    <th className="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60">
+                  {filteredExpenses.map((expense) => {
+                    const style = CATEGORY_COLORS[expense.category] || CATEGORY_COLORS.other;
+                    return (
+                      <tr key={expense.id} className="hover:bg-slate-800/30 transition-colors">
+                        <td className="py-3 px-4 text-slate-300 font-mono">
+                          {expense.expense_date}
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="font-semibold text-white">{expense.title}</div>
+                          {expense.notes && <div className="text-[11px] text-slate-400 truncate max-w-xs">{expense.notes}</div>}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${style.bg} ${style.text} ${style.border}`}>
+                            {expense.category.toUpperCase()}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 font-bold text-rose-400">
+                          ₹{Number(expense.amount).toLocaleString('en-IN')}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="px-2 py-0.5 rounded-md text-[10px] bg-slate-800 text-slate-300 font-mono">
+                            {expense.payment_mode.toUpperCase()}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-slate-300">
+                          {expense.vendor_name || '—'}
+                          {expense.bill_number && (
+                            <div className="text-[10px] text-slate-500 font-mono">#{expense.bill_number}</div>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-slate-400">
+                          {expense.recorder?.name || 'Staff'}
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <button
+                            onClick={() => handleDelete(expense.id)}
+                            className="p-1.5 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 rounded-lg transition-colors cursor-pointer"
+                            title="Delete Expense"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
 

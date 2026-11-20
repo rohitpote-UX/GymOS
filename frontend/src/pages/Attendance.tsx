@@ -245,9 +245,9 @@ export default function Attendance() {
       )}
 
       {/* QR Scanner & Quick Search Console */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         {/* Box 1: QR Pass Scanner Simulator */}
-        <div className="bg-gradient-to-br from-[#0f172a] to-[#131b2e] border border-emerald-500/30 p-5 rounded-2xl shadow-xl space-y-3">
+        <div className="bg-gradient-to-br from-[#0f172a] to-[#131b2e] border border-emerald-500/30 p-4 sm:p-5 rounded-2xl shadow-xl space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-white flex items-center gap-2">
               <QrCode className="w-5 h-5 text-emerald-400" />
@@ -268,12 +268,12 @@ export default function Attendance() {
               value={qrInput}
               onChange={(e) => setQrInput(e.target.value)}
               placeholder="Scan QR payload or type MEM-xxxx..."
-              className="flex-1 bg-[#090d16] border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+              className="flex-1 bg-[#090d16] border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono placeholder-slate-500 focus:outline-none focus:border-emerald-500 min-h-[44px]"
             />
             <button
               type="submit"
               disabled={checkInLoading || !qrInput.trim()}
-              className="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              className="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5 cursor-pointer disabled:opacity-50 min-h-[44px]"
             >
               <span>{t('attendance.check_in', 'Check In')}</span>
             </button>
@@ -281,7 +281,7 @@ export default function Attendance() {
         </div>
 
         {/* Box 2: Name / Phone Search Entry */}
-        <div className="bg-[#0f172a] border border-slate-800 p-5 rounded-2xl shadow-xl space-y-3">
+        <div className="bg-[#0f172a] border border-slate-800 p-4 sm:p-5 rounded-2xl shadow-xl space-y-3">
           <h3 className="text-sm font-bold text-white flex items-center gap-2">
             <UserCheck className="w-5 h-5 text-sky-400" />
             <span>{t('attendance.manual_tab', 'Manual Member Search Check-in')}</span>
@@ -292,19 +292,19 @@ export default function Attendance() {
 
           <div className="relative">
             <div className="relative">
-              <Search className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
+              <Search className="w-4 h-4 text-slate-500 absolute left-3 top-3.5" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Type name (e.g. Aarav) or phone..."
-                className="w-full bg-[#131b2e] border border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
+                className="w-full bg-[#131b2e] border border-slate-700 rounded-xl pl-9 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors min-h-[44px]"
               />
             </div>
 
             {/* Dropdown */}
             {searchResults.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-[#131b2e] border border-slate-700 rounded-xl shadow-2xl z-30 max-h-60 overflow-y-auto divide-y divide-slate-800">
+              <div className="absolute top-full left-0 right-0 mt-2 bg-[#131b2e] border border-slate-700 rounded-xl shadow-2xl z-30 max-h-60 overflow-y-auto divide-y divide-slate-800 no-scrollbar">
                 {searchResults.map((m) => (
                   <div
                     key={m.id}
@@ -321,7 +321,7 @@ export default function Attendance() {
                     <button
                       onClick={() => handleManualCheckIn(m)}
                       disabled={checkInLoading}
-                      className="px-3 py-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-lg text-xs cursor-pointer transition-colors"
+                      className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-lg text-xs cursor-pointer transition-colors min-h-[36px]"
                     >
                       Check-In
                     </button>
@@ -447,63 +447,115 @@ export default function Attendance() {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-900/60 text-slate-400 uppercase tracking-wider text-[10px] border-b border-slate-800">
-                <tr>
-                  <th className="py-3 px-4">{t('attendance.col_member_name', 'Member Name')}</th>
-                  <th className="py-3 px-4">{t('attendance.col_member_code', 'Member Code')}</th>
-                  <th className="py-3 px-4">{t('common.phone', 'Phone')}</th>
-                  <th className="py-3 px-4">{t('attendance.time_in', 'Check-in Time')}</th>
-                  <th className="py-3 px-4">{t('common.type', 'Method')}</th>
-                  <th className="py-3 px-4">{t('attendance.time_out', 'Check-out Time')}</th>
-                  <th className="py-3 px-4 text-right">{t('attendance.col_floor_status', 'Floor Status')}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/60 text-slate-200">
-                {logs.map((item) => {
-                  const isInside = !item.check_out_at;
-                  return (
-                    <tr key={item.id} className="hover:bg-slate-800/30 transition-colors">
-                      <td className="py-3 px-4 font-semibold text-white">
-                        {item.member?.first_name} {item.member?.last_name}
-                      </td>
-                      <td className="py-3 px-4 font-mono text-slate-400">
-                        {item.member?.member_code}
-                      </td>
-                      <td className="py-3 px-4 font-mono text-slate-300">
-                        {item.member?.phone}
-                      </td>
-                      <td className="py-3 px-4 font-mono text-emerald-400">
-                        {item.check_in_at}
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className="px-2 py-0.5 rounded-md text-[10px] bg-slate-800 text-slate-300 capitalize font-medium">
-                          {item.method.replace('_', ' ')}
+          <>
+            {/* Mobile Cards View (< md) */}
+            <div className="md:hidden divide-y divide-slate-800/70">
+              {logs.map((item) => {
+                const isInside = !item.check_out_at;
+                return (
+                  <div key={item.id} className="p-4 hover:bg-slate-800/30 transition-colors space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-bold text-sm text-white">
+                          {item.member?.first_name} {item.member?.last_name}
+                        </h4>
+                        <div className="text-[10px] text-slate-400 font-mono mt-0.5">
+                          {item.member?.member_code} • {item.member?.phone}
+                        </div>
+                      </div>
+                      <span className="px-2 py-0.5 rounded-md text-[10px] bg-slate-800 text-slate-300 capitalize font-medium">
+                        {item.method.replace('_', ' ')}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-800/60">
+                      <div className="space-y-0.5">
+                        <span className="text-[10px] text-slate-400 uppercase font-semibold block">In: {item.check_in_at}</span>
+                        <span className="text-[10px] text-slate-500 font-mono block">
+                          Out: {item.check_out_at || 'Currently on floor'}
                         </span>
-                      </td>
-                      <td className="py-3 px-4 font-mono text-slate-400">
-                        {item.check_out_at || '—'}
-                      </td>
-                      <td className="py-3 px-4 text-right">
+                      </div>
+
+                      <div>
                         {isInside ? (
                           <button
                             onClick={() => handleCheckOut(item.id)}
-                            className="px-2.5 py-1 bg-sky-500/20 hover:bg-sky-500 text-sky-400 hover:text-slate-950 font-bold rounded-lg text-[10px] cursor-pointer transition-colors inline-flex items-center gap-1"
+                            className="px-3.5 py-2 bg-sky-500/20 hover:bg-sky-500 text-sky-400 hover:text-slate-950 font-bold rounded-xl text-xs cursor-pointer transition-colors inline-flex items-center gap-1.5 min-h-[40px]"
                           >
-                            <LogOut className="w-3 h-3" />
-                            Check Out
+                            <LogOut className="w-3.5 h-3.5" />
+                            <span>Check Out</span>
                           </button>
                         ) : (
-                          <span className="text-[10px] text-slate-500 font-medium">Completed</span>
+                          <span className="text-xs text-slate-500 font-medium px-2 py-1 bg-slate-900 rounded-lg border border-slate-800">
+                            Completed
+                          </span>
                         )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Desktop Table View (>= md) */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-900/60 text-slate-400 uppercase tracking-wider text-[10px] border-b border-slate-800">
+                  <tr>
+                    <th className="py-3 px-4">{t('attendance.col_member_name', 'Member Name')}</th>
+                    <th className="py-3 px-4">{t('attendance.col_member_code', 'Member Code')}</th>
+                    <th className="py-3 px-4">{t('common.phone', 'Phone')}</th>
+                    <th className="py-3 px-4">{t('attendance.time_in', 'Check-in Time')}</th>
+                    <th className="py-3 px-4">{t('common.type', 'Method')}</th>
+                    <th className="py-3 px-4">{t('attendance.time_out', 'Check-out Time')}</th>
+                    <th className="py-3 px-4 text-right">{t('attendance.col_floor_status', 'Floor Status')}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60 text-slate-200">
+                  {logs.map((item) => {
+                    const isInside = !item.check_out_at;
+                    return (
+                      <tr key={item.id} className="hover:bg-slate-800/30 transition-colors">
+                        <td className="py-3 px-4 font-semibold text-white">
+                          {item.member?.first_name} {item.member?.last_name}
+                        </td>
+                        <td className="py-3 px-4 font-mono text-slate-400">
+                          {item.member?.member_code}
+                        </td>
+                        <td className="py-3 px-4 font-mono text-slate-300">
+                          {item.member?.phone}
+                        </td>
+                        <td className="py-3 px-4 font-mono text-emerald-400">
+                          {item.check_in_at}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="px-2 py-0.5 rounded-md text-[10px] bg-slate-800 text-slate-300 capitalize font-medium">
+                            {item.method.replace('_', ' ')}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 font-mono text-slate-400">
+                          {item.check_out_at || '—'}
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          {isInside ? (
+                            <button
+                              onClick={() => handleCheckOut(item.id)}
+                              className="px-2.5 py-1 bg-sky-500/20 hover:bg-sky-500 text-sky-400 hover:text-slate-950 font-bold rounded-lg text-[10px] cursor-pointer transition-colors inline-flex items-center gap-1"
+                            >
+                              <LogOut className="w-3 h-3" />
+                              Check Out
+                            </button>
+                          ) : (
+                            <span className="text-[10px] text-slate-500 font-medium">Completed</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
     </div>

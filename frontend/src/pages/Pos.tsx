@@ -95,6 +95,7 @@ export const Pos: React.FC = () => {
   const { t } = useTranslation();
   const { user, activeBranchId } = useAuth();
   const [activeTab, setActiveTab] = useState<'terminal' | 'orders'>('terminal');
+  const [mobilePosView, setMobilePosView] = useState<'catalog' | 'cart'>('catalog');
 
   // Terminal state
   const [products, setProducts] = useState<Product[]>([]);
@@ -440,27 +441,53 @@ export const Pos: React.FC = () => {
       )}
 
       {activeTab === 'terminal' ? (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Left Column: Product Grid & Barcode Scanner (7 cols) */}
-          <div className="lg:col-span-7 space-y-4">
-            {/* Barcode Fast Gun Scanner */}
-            <form onSubmit={handleBarcodeSubmit} className="relative">
-              <Barcode className="w-5 h-5 text-emerald-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                ref={barcodeInputRef}
-                type="text"
-                placeholder="Scan product barcode with scanner gun (or type barcode & press Enter)..."
-                value={barcodeInput}
-                onChange={(e) => setBarcodeInput(e.target.value)}
-                className="w-full pl-10 pr-24 py-2.5 bg-slate-900/90 border-2 border-emerald-500/30 rounded-xl text-xs text-white placeholder-slate-400 focus:outline-none focus:border-emerald-400 font-mono shadow-inner"
-              />
-              <button
-                type="submit"
-                className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs rounded-lg cursor-pointer"
-              >
-                Scan Add
-              </button>
-            </form>
+        <div className="space-y-4">
+          {/* Mobile Terminal View Switcher (< lg) */}
+          <div className="lg:hidden flex items-center bg-slate-900 p-1 rounded-xl border border-slate-800 text-xs">
+            <button
+              onClick={() => setMobilePosView('catalog')}
+              className={`flex-1 py-2 font-bold rounded-lg transition-colors cursor-pointer text-center ${
+                mobilePosView === 'catalog'
+                  ? 'bg-emerald-500 text-slate-950'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              1. Browse Products
+            </button>
+            <button
+              onClick={() => setMobilePosView('cart')}
+              className={`flex-1 py-2 font-bold rounded-lg transition-colors cursor-pointer text-center flex items-center justify-center gap-1.5 ${
+                mobilePosView === 'cart'
+                  ? 'bg-emerald-500 text-slate-950'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <ShoppingCart className="w-3.5 h-3.5" />
+              <span>2. Cart ({cart.reduce((a, c) => a + c.quantity, 0)})</span>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {/* Left Column: Product Grid & Barcode Scanner (7 cols) */}
+            <div className={`space-y-4 lg:col-span-7 ${mobilePosView === 'cart' ? 'hidden lg:block' : 'block'}`}>
+              {/* Barcode Fast Gun Scanner */}
+              <form onSubmit={handleBarcodeSubmit} className="relative">
+                <Barcode className="w-5 h-5 text-emerald-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  ref={barcodeInputRef}
+                  type="text"
+                  placeholder="Scan product barcode with scanner gun (or type barcode & press Enter)..."
+                  value={barcodeInput}
+                  onChange={(e) => setBarcodeInput(e.target.value)}
+                  className="w-full pl-10 pr-24 py-2.5 bg-slate-900/90 border-2 border-emerald-500/30 rounded-xl text-xs text-white placeholder-slate-400 focus:outline-none focus:border-emerald-400 font-mono shadow-inner min-h-[44px]"
+                />
+                <button
+                  type="submit"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs rounded-lg cursor-pointer min-h-[32px]"
+                >
+                  Scan Add
+                </button>
+              </form>
 
             {/* Search and Category Filters */}
             <div className="space-y-2">
@@ -558,7 +585,14 @@ export const Pos: React.FC = () => {
           </div>
 
           {/* Right Column: Checkout Cart & Order Engine (5 cols) */}
-          <div className="lg:col-span-5 bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-2xl space-y-4">
+          <div className={`lg:col-span-5 bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-2xl space-y-4 ${mobilePosView === 'catalog' ? 'hidden lg:block' : 'block'}`}>
+            <button
+              type="button"
+              onClick={() => setMobilePosView('catalog')}
+              className="lg:hidden w-full text-left text-xs text-emerald-400 font-bold flex items-center gap-1.5 pb-2.5 border-b border-slate-800 cursor-pointer"
+            >
+              ← Back to Product Catalog
+            </button>
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
                 <ShoppingCart className="w-4 h-4 text-emerald-400" />
@@ -793,7 +827,7 @@ export const Pos: React.FC = () => {
               <button
                 type="submit"
                 disabled={cart.length === 0}
-                className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 font-extrabold text-sm rounded-xl shadow-lg shadow-emerald-500/25 transition-all cursor-pointer flex items-center justify-center gap-2"
+                className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 font-extrabold text-sm rounded-xl shadow-lg shadow-emerald-500/25 transition-all cursor-pointer flex items-center justify-center gap-2 min-h-[44px]"
               >
                 <CheckCircle2 className="w-5 h-5" />
                 Complete Sale & Print Receipt
@@ -801,6 +835,25 @@ export const Pos: React.FC = () => {
             </form>
           </div>
         </div>
+
+        {/* Floating Mobile Cart Pill when on catalog view */}
+        {cart.length > 0 && mobilePosView === 'catalog' && (
+          <div className="lg:hidden fixed bottom-24 left-4 right-4 z-30">
+            <button
+              onClick={() => setMobilePosView('cart')}
+              className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-3 px-4 rounded-2xl shadow-2xl flex items-center justify-between text-xs cursor-pointer border border-emerald-400 min-h-[48px]"
+            >
+              <span className="flex items-center gap-2">
+                <ShoppingCart className="w-4 h-4" />
+                <span>{cart.reduce((a, c) => a + c.quantity, 0)} in Cart</span>
+              </span>
+              <span className="bg-slate-950 text-emerald-400 px-3 py-1 rounded-xl text-xs font-bold">
+                Checkout →
+              </span>
+            </button>
+          </div>
+        )}
+      </div>
       ) : (
         /* Orders & Refunds View */
         <div className="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
@@ -808,102 +861,164 @@ export const Pos: React.FC = () => {
             <h3 className="text-sm font-bold text-white">Recent POS Sales Ledger</h3>
             <button
               onClick={fetchOrders}
-              className="text-xs text-slate-400 hover:text-white flex items-center gap-1 cursor-pointer"
+              className="text-xs text-slate-400 hover:text-white flex items-center gap-1 cursor-pointer min-h-[36px]"
             >
               <RefreshCw className="w-3.5 h-3.5" /> Refresh
             </button>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-950/60 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-800">
-                <tr>
-                  <th className="p-3">{t('pos.col_order_no', 'Order #')}</th>
-                  <th className="p-3">{t('common.date', 'Date')}</th>
-                  <th className="p-3">{t('pos.col_customer', 'Customer / Member')}</th>
-                  <th className="p-3">{t('common.payment_mode', 'Payment Mode')}</th>
-                  <th className="p-3 text-right">{t('pos.col_total', 'Total')}</th>
-                  <th className="p-3 text-right">{t('pos.col_paid', 'Paid')}</th>
-                  <th className="p-3 text-right">{t('pos.col_balance_due', 'Balance Due')}</th>
-                  <th className="p-3 text-center">{t('common.status', 'Status')}</th>
-                  <th className="p-3 text-center">{t('common.actions', 'Actions')}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/60 text-slate-300">
-                {ordersLoading ? (
-                  <tr>
-                    <td colSpan={9} className="p-8 text-center text-slate-500">
-                      Loading orders...
-                    </td>
-                  </tr>
-                ) : orders.length === 0 ? (
-                  <tr>
-                    <td colSpan={9} className="p-8 text-center text-slate-500">
-                      No POS orders recorded yet.
-                    </td>
-                  </tr>
-                ) : (
-                  orders.map((ord) => (
-                    <tr key={ord.id} className="hover:bg-slate-800/30">
-                      <td className="p-3 font-mono font-bold text-emerald-400">{ord.order_number}</td>
-                      <td className="p-3 text-slate-400">{ord.order_date}</td>
-                      <td className="p-3">
-                        <div className="font-semibold text-white">{ord.customer_name}</div>
+          {ordersLoading ? (
+            <div className="p-8 text-center text-slate-500 text-xs">Loading orders...</div>
+          ) : orders.length === 0 ? (
+            <div className="p-8 text-center text-slate-500 text-xs">No POS orders recorded yet.</div>
+          ) : (
+            <>
+              {/* Mobile Cards View (< md) */}
+              <div className="md:hidden divide-y divide-slate-800/70">
+                {orders.map((ord) => (
+                  <div key={ord.id} className="p-4 hover:bg-slate-800/30 transition-colors space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono font-bold text-xs text-emerald-400">{ord.order_number}</span>
+                      <span
+                        className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                          ord.status === 'refunded'
+                            ? 'bg-rose-500/20 text-rose-300'
+                            : 'bg-emerald-500/20 text-emerald-300'
+                        }`}
+                      >
+                        {ord.status}
+                      </span>
+                    </div>
+
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="font-semibold text-white text-xs">{ord.customer_name}</div>
                         {ord.member && (
-                          <div className="text-[10px] text-slate-500">Member #{ord.member.member_code}</div>
+                          <div className="text-[10px] text-slate-400 font-mono mt-0.5">#{ord.member.member_code}</div>
                         )}
-                      </td>
-                      <td className="p-3 uppercase font-medium text-slate-400">{ord.payment_method}</td>
-                      <td className="p-3 text-right font-bold text-white">₹{parseFloat(ord.total_amount as string).toFixed(2)}</td>
-                      <td className="p-3 text-right text-emerald-400">₹{parseFloat(ord.paid_amount as string).toFixed(2)}</td>
-                      <td className="p-3 text-right font-medium text-amber-400">
-                        ₹{parseFloat(ord.balance_due as string).toFixed(2)}
-                      </td>
-                      <td className="p-3 text-center">
-                        <span
-                          className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                            ord.status === 'refunded'
-                              ? 'bg-rose-500/20 text-rose-300'
-                              : 'bg-emerald-500/20 text-emerald-300'
-                          }`}
-                        >
-                          {ord.status}
-                        </span>
-                      </td>
-                      <td className="p-3 text-center space-x-2">
+                        <div className="text-[10px] text-slate-500 font-mono mt-1">{ord.order_date} • {ord.payment_method.toUpperCase()}</div>
+                      </div>
+
+                      <div className="text-right">
+                        <div className="font-bold text-white text-sm font-mono">₹{parseFloat(ord.total_amount as string).toFixed(2)}</div>
+                        <div className="text-[10px] text-emerald-400 font-mono">Paid: ₹{parseFloat(ord.paid_amount as string).toFixed(2)}</div>
+                        {parseFloat(ord.balance_due as string) > 0 && (
+                          <div className="text-[10px] text-amber-400 font-mono">Due: ₹{parseFloat(ord.balance_due as string).toFixed(2)}</div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-end gap-2 pt-1 border-t border-slate-800/60">
+                      <button
+                        onClick={() => {
+                          setReceiptOrder(ord);
+                          setShowReceiptModal(true);
+                        }}
+                        className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs cursor-pointer min-h-[36px]"
+                      >
+                        Receipt
+                      </button>
+                      {ord.status !== 'refunded' && parseFloat(ord.paid_amount as string) > 0 && (
                         <button
                           onClick={() => {
-                            setReceiptOrder(ord);
-                            setShowReceiptModal(true);
+                            setRefundOrder(ord);
+                            setRefundForm({
+                              amount: ord.paid_amount.toString(),
+                              payment_mode: ord.payment_method === 'split' ? 'cash' : ord.payment_method,
+                              reason: 'Customer returned sealed product',
+                              restock_items: true,
+                            });
+                            setShowRefundModal(true);
                           }}
-                          className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-[11px] cursor-pointer"
+                          className="px-3 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 rounded-lg text-xs cursor-pointer min-h-[36px]"
                         >
-                          Receipt
+                          Refund
                         </button>
-                        {ord.status !== 'refunded' && parseFloat(ord.paid_amount as string) > 0 && (
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Table View (>= md) */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-950/60 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-800">
+                    <tr>
+                      <th className="p-3">{t('pos.col_order_no', 'Order #')}</th>
+                      <th className="p-3">{t('common.date', 'Date')}</th>
+                      <th className="p-3">{t('pos.col_customer', 'Customer / Member')}</th>
+                      <th className="p-3">{t('common.payment_mode', 'Payment Mode')}</th>
+                      <th className="p-3 text-right">{t('pos.col_total', 'Total')}</th>
+                      <th className="p-3 text-right">{t('pos.col_paid', 'Paid')}</th>
+                      <th className="p-3 text-right">{t('pos.col_balance_due', 'Balance Due')}</th>
+                      <th className="p-3 text-center">{t('common.status', 'Status')}</th>
+                      <th className="p-3 text-center">{t('common.actions', 'Actions')}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/60 text-slate-300">
+                    {orders.map((ord) => (
+                      <tr key={ord.id} className="hover:bg-slate-800/30">
+                        <td className="p-3 font-mono font-bold text-emerald-400">{ord.order_number}</td>
+                        <td className="p-3 text-slate-400">{ord.order_date}</td>
+                        <td className="p-3">
+                          <div className="font-semibold text-white">{ord.customer_name}</div>
+                          {ord.member && (
+                            <div className="text-[10px] text-slate-500">Member #{ord.member.member_code}</div>
+                          )}
+                        </td>
+                        <td className="p-3 uppercase font-medium text-slate-400">{ord.payment_method}</td>
+                        <td className="p-3 text-right font-bold text-white">₹{parseFloat(ord.total_amount as string).toFixed(2)}</td>
+                        <td className="p-3 text-right text-emerald-400">₹{parseFloat(ord.paid_amount as string).toFixed(2)}</td>
+                        <td className="p-3 text-right font-medium text-amber-400">
+                          ₹{parseFloat(ord.balance_due as string).toFixed(2)}
+                        </td>
+                        <td className="p-3 text-center">
+                          <span
+                            className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                              ord.status === 'refunded'
+                                ? 'bg-rose-500/20 text-rose-300'
+                                : 'bg-emerald-500/20 text-emerald-300'
+                            }`}
+                          >
+                            {ord.status}
+                          </span>
+                        </td>
+                        <td className="p-3 text-center space-x-2">
                           <button
                             onClick={() => {
-                              setRefundOrder(ord);
-                              setRefundForm({
-                                amount: ord.paid_amount.toString(),
-                                payment_mode: ord.payment_method === 'split' ? 'cash' : ord.payment_method,
-                                reason: 'Customer returned sealed product',
-                                restock_items: true,
-                              });
-                              setShowRefundModal(true);
+                              setReceiptOrder(ord);
+                              setShowReceiptModal(true);
                             }}
-                            className="px-2 py-1 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 rounded text-[11px] cursor-pointer"
+                            className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-[11px] cursor-pointer"
                           >
-                            Refund
+                            Receipt
                           </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                          {ord.status !== 'refunded' && parseFloat(ord.paid_amount as string) > 0 && (
+                            <button
+                              onClick={() => {
+                                setRefundOrder(ord);
+                                setRefundForm({
+                                  amount: ord.paid_amount.toString(),
+                                  payment_mode: ord.payment_method === 'split' ? 'cash' : ord.payment_method,
+                                  reason: 'Customer returned sealed product',
+                                  restock_items: true,
+                                });
+                                setShowRefundModal(true);
+                              }}
+                              className="px-2 py-1 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 rounded text-[11px] cursor-pointer"
+                            >
+                              Refund
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
         </div>
       )}
 

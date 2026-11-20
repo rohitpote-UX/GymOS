@@ -485,133 +485,233 @@ export default function ActionCenter() {
             <span className="text-slate-500">{t('actionCenter.no_items_match', 'No pending operational triage items match current criteria.')}</span>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-900/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
-                <tr>
-                  <th className="py-3 px-4">{t('actionCenter.col_severity_status', 'Severity & Status')}</th>
-                  <th className="py-3 px-4">{t('actionCenter.col_action_context', 'Action Item & Context')}</th>
-                  <th className="py-3 px-4">{t('actionCenter.col_category', 'Category')}</th>
-                  <th className="py-3 px-4">{t('actionCenter.col_assigned_staff', 'Assigned Staff')}</th>
-                  <th className="py-3 px-4">{t('actionCenter.col_due_date', 'Due Date')}</th>
-                  <th className="py-3 px-4 text-right">{t('actionCenter.col_actions', 'Actions')}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/60 text-slate-300">
-                {filteredItems.map((item) => (
-                  <tr key={item.id} className="hover:bg-slate-800/30 transition-colors">
-                    {/* Severity & Status */}
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`w-2 h-2 rounded-full ${
-                            item.severity === 'critical'
-                              ? 'bg-rose-500 animate-pulse'
-                              : item.severity === 'warning'
-                              ? 'bg-amber-400'
-                              : 'bg-sky-400'
-                          }`}
-                        />
-                        <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                            item.severity === 'critical'
-                              ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                              : item.severity === 'warning'
-                              ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                              : 'bg-sky-500/10 text-sky-400 border border-sky-500/20'
-                          }`}
-                        >
-                          {item.severity}
-                        </span>
-                        <span
-                          className={`text-[10px] capitalize px-1.5 py-0.5 rounded ${
-                            item.status === 'resolved'
-                              ? 'bg-emerald-500/10 text-emerald-400'
-                              : 'bg-slate-800 text-slate-400'
-                          }`}
-                        >
-                          {item.status.replace('_', ' ')}
-                        </span>
-                      </div>
-                    </td>
-
-                    {/* Action Item & Context */}
-                    <td className="py-3.5 px-4 max-w-xs">
-                      <div className="font-semibold text-white truncate">{item.title}</div>
-                      {item.description && (
-                        <div className="text-[11px] text-slate-400 truncate mt-0.5">{item.description}</div>
-                      )}
-                      {item.resolution_notes && (
-                        <div className="text-[11px] text-emerald-400/90 italic mt-1 bg-emerald-950/20 p-1.5 rounded border border-emerald-900/30">
-                          Resolution: {item.resolution_notes}
-                        </div>
-                      )}
-                    </td>
-
-                    {/* Category */}
-                    <td className="py-3.5 px-4">
+          <>
+            {/* Mobile Cards View (< md) */}
+            <div className="md:hidden divide-y divide-slate-800/70">
+              {filteredItems.map((item) => (
+                <div key={item.id} className="p-4 hover:bg-slate-800/30 transition-colors space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`w-2 h-2 rounded-full ${
+                          item.severity === 'critical'
+                            ? 'bg-rose-500 animate-pulse'
+                            : item.severity === 'warning'
+                            ? 'bg-amber-400'
+                            : 'bg-sky-400'
+                        }`}
+                      />
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                          item.severity === 'critical'
+                            ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                            : item.severity === 'warning'
+                            ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                            : 'bg-sky-500/10 text-sky-400 border border-sky-500/20'
+                        }`}
+                      >
+                        {item.severity}
+                      </span>
                       <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono text-[10px]">
                         {item.type}
                       </span>
-                    </td>
+                    </div>
 
-                    {/* Assigned Staff */}
-                    <td className="py-3.5 px-4">
-                      {item.assignee ? (
-                        <div className="flex items-center gap-1.5">
-                          <User className="w-3.5 h-3.5 text-slate-400" />
-                          <span className="font-medium text-slate-200">{item.assignee.name}</span>
-                          <span className="text-[10px] text-slate-500 capitalize">({item.assignee.role})</span>
-                        </div>
-                      ) : (
-                        <span className="text-slate-500 italic">{t('actionCenter.unassigned', 'Unassigned')}</span>
-                      )}
-                    </td>
+                    <span
+                      className={`text-[10px] capitalize px-2 py-0.5 rounded ${
+                        item.status === 'resolved'
+                          ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-bold'
+                          : 'bg-slate-800 text-slate-400'
+                      }`}
+                    >
+                      {item.status.replace('_', ' ')}
+                    </span>
+                  </div>
 
-                    {/* Due Date */}
-                    <td className="py-3.5 px-4">
-                      <span className="text-slate-400 font-mono text-[11px]">
-                        {item.due_date || new Date(item.created_at).toLocaleDateString()}
-                      </span>
-                    </td>
-
-                    {/* Actions */}
-                    <td className="py-3.5 px-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        {item.status !== 'resolved' && (
-                          <>
-                            <button
-                              onClick={() => {
-                                setAssignModalItem(item);
-                                setSelectedStaffId(item.assignee?.id || '');
-                              }}
-                              className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-semibold border border-slate-700 cursor-pointer"
-                            >
-                              {t('actionCenter.btn_assign', 'Assign')}
-                            </button>
-                            <button
-                              onClick={() => {
-                                setResolveModalItem(item);
-                                setResolutionNotes('');
-                              }}
-                              className="px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[11px] font-bold cursor-pointer"
-                            >
-                              {t('actionCenter.btn_resolve', 'Resolve')}
-                            </button>
-                          </>
-                        )}
-                        {item.status === 'resolved' && (
-                          <span className="text-emerald-400 flex items-center gap-1 font-semibold text-[11px]">
-                            <CheckCircle2 className="w-3.5 h-3.5" /> {t('actionCenter.btn_resolved', 'Resolved')}
-                          </span>
-                        )}
+                  <div>
+                    <h4 className="font-bold text-sm text-white">{item.title}</h4>
+                    {item.description && (
+                      <p className="text-xs text-slate-400 mt-1">{item.description}</p>
+                    )}
+                    {item.resolution_notes && (
+                      <div className="text-[11px] text-emerald-400/90 italic mt-2 bg-emerald-950/20 p-2 rounded border border-emerald-900/30">
+                        Resolution: {item.resolution_notes}
                       </div>
-                    </td>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-800/60">
+                    <div className="text-[11px] text-slate-400">
+                      {item.assignee ? (
+                        <span className="text-slate-300 font-medium">Assigned: {item.assignee.name}</span>
+                      ) : (
+                        <span className="text-slate-500 italic">Unassigned</span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {item.status !== 'resolved' && (
+                        <>
+                          <button
+                            onClick={() => {
+                              setAssignModalItem(item);
+                              setSelectedStaffId(item.assignee?.id || '');
+                            }}
+                            className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 cursor-pointer min-h-[36px]"
+                          >
+                            {t('actionCenter.btn_assign', 'Assign')}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setResolveModalItem(item);
+                              setResolutionNotes('');
+                            }}
+                            className="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold cursor-pointer min-h-[36px]"
+                          >
+                            {t('actionCenter.btn_resolve', 'Resolve')}
+                          </button>
+                        </>
+                      )}
+                      {item.status === 'resolved' && (
+                        <span className="text-emerald-400 flex items-center gap-1 font-semibold text-xs">
+                          <CheckCircle2 className="w-4 h-4" /> {t('actionCenter.btn_resolved', 'Resolved')}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Table View (>= md) */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-900/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                  <tr>
+                    <th className="py-3 px-4">{t('actionCenter.col_severity_status', 'Severity & Status')}</th>
+                    <th className="py-3 px-4">{t('actionCenter.col_action_context', 'Action Item & Context')}</th>
+                    <th className="py-3 px-4">{t('actionCenter.col_category', 'Category')}</th>
+                    <th className="py-3 px-4">{t('actionCenter.col_assigned_staff', 'Assigned Staff')}</th>
+                    <th className="py-3 px-4">{t('actionCenter.col_due_date', 'Due Date')}</th>
+                    <th className="py-3 px-4 text-right">{t('actionCenter.col_actions', 'Actions')}</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60 text-slate-300">
+                  {filteredItems.map((item) => (
+                    <tr key={item.id} className="hover:bg-slate-800/30 transition-colors">
+                      {/* Severity & Status */}
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`w-2 h-2 rounded-full ${
+                              item.severity === 'critical'
+                                ? 'bg-rose-500 animate-pulse'
+                                : item.severity === 'warning'
+                                ? 'bg-amber-400'
+                                : 'bg-sky-400'
+                            }`}
+                          />
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                              item.severity === 'critical'
+                                ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                                : item.severity === 'warning'
+                                ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                                : 'bg-sky-500/10 text-sky-400 border border-sky-500/20'
+                            }`}
+                          >
+                            {item.severity}
+                          </span>
+                          <span
+                            className={`text-[10px] capitalize px-1.5 py-0.5 rounded ${
+                              item.status === 'resolved'
+                                ? 'bg-emerald-500/10 text-emerald-400'
+                                : 'bg-slate-800 text-slate-400'
+                            }`}
+                          >
+                            {item.status.replace('_', ' ')}
+                          </span>
+                        </div>
+                      </td>
+
+                      {/* Action Item & Context */}
+                      <td className="py-3.5 px-4 max-w-xs">
+                        <div className="font-semibold text-white truncate">{item.title}</div>
+                        {item.description && (
+                          <div className="text-[11px] text-slate-400 truncate mt-0.5">{item.description}</div>
+                        )}
+                        {item.resolution_notes && (
+                          <div className="text-[11px] text-emerald-400/90 italic mt-1 bg-emerald-950/20 p-1.5 rounded border border-emerald-900/30">
+                            Resolution: {item.resolution_notes}
+                          </div>
+                        )}
+                      </td>
+
+                      {/* Category */}
+                      <td className="py-3.5 px-4">
+                        <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono text-[10px]">
+                          {item.type}
+                        </span>
+                      </td>
+
+                      {/* Assigned Staff */}
+                      <td className="py-3.5 px-4">
+                        {item.assignee ? (
+                          <div className="flex items-center gap-1.5">
+                            <User className="w-3.5 h-3.5 text-slate-400" />
+                            <span className="font-medium text-slate-200">{item.assignee.name}</span>
+                            <span className="text-[10px] text-slate-500 capitalize">({item.assignee.role})</span>
+                          </div>
+                        ) : (
+                          <span className="text-slate-500 italic">{t('actionCenter.unassigned', 'Unassigned')}</span>
+                        )}
+                      </td>
+
+                      {/* Due Date */}
+                      <td className="py-3.5 px-4">
+                        <span className="text-slate-400 font-mono text-[11px]">
+                          {item.due_date || new Date(item.created_at).toLocaleDateString()}
+                        </span>
+                      </td>
+
+                      {/* Actions */}
+                      <td className="py-3.5 px-4 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          {item.status !== 'resolved' && (
+                            <>
+                              <button
+                                onClick={() => {
+                                  setAssignModalItem(item);
+                                  setSelectedStaffId(item.assignee?.id || '');
+                                }}
+                                className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-semibold border border-slate-700 cursor-pointer"
+                              >
+                                {t('actionCenter.btn_assign', 'Assign')}
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setResolveModalItem(item);
+                                  setResolutionNotes('');
+                                }}
+                                className="px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[11px] font-bold cursor-pointer"
+                              >
+                                {t('actionCenter.btn_resolve', 'Resolve')}
+                              </button>
+                            </>
+                          )}
+                          {item.status === 'resolved' && (
+                            <span className="text-emerald-400 flex items-center gap-1 font-semibold text-[11px]">
+                              <CheckCircle2 className="w-3.5 h-3.5" /> {t('actionCenter.btn_resolved', 'Resolved')}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
 

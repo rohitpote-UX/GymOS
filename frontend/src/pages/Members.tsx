@@ -507,120 +507,227 @@ export default function Members() {
         </div>
       </div>
 
-      {/* Members Table */}
+      {/* Members Table (Desktop) / Cards (Mobile) */}
       <div className="bg-[#0f172a] border border-slate-800 rounded-2xl overflow-hidden">
         {members.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-900/60 text-slate-400 uppercase tracking-wider text-[10px] border-b border-slate-800">
-                <tr>
-                  <th className="py-3.5 px-4">{t('members.full_name', 'Member')}</th>
-                  <th className="py-3.5 px-4">{t('auth.phone', 'Contact')}</th>
-                  <th className="py-3.5 px-4">{t('members.assigned_trainer', 'Trainer')}</th>
-                  <th className="py-3.5 px-4">{t('members.plan', 'Active Plan')}</th>
-                  <th className="py-3.5 px-4">{t('members.expires_on', 'Expiry Date')}</th>
-                  <th className="py-3.5 px-4">{t('members.balance', 'Outstanding Due')}</th>
-                  <th className="py-3.5 px-4">{t('common.status', 'Status')}</th>
-                  <th className="py-3.5 px-4 text-right">{t('common.actions', 'Actions')}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/60 text-slate-200">
-                {members.map((m) => {
-                  const hasActivePlan = Boolean(m.active_membership);
-                  const isFrozen = m.active_membership?.status === 'frozen';
-                  const due = Number(m.outstanding_balance || 0);
+          <>
+            {/* Mobile Cards View (< md) */}
+            <div className="md:hidden divide-y divide-slate-800/70">
+              {members.map((m) => {
+                const hasActivePlan = Boolean(m.active_membership);
+                const isFrozen = m.active_membership?.status === 'frozen';
+                const due = Number(m.outstanding_balance || 0);
 
-                  return (
-                    <tr
-                      key={m.id}
-                      className="hover:bg-slate-800/30 transition-colors cursor-pointer"
-                      onClick={() => openMemberDetail(m.id)}
-                    >
-                      <td className="py-3.5 px-4">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-xs text-emerald-400 overflow-hidden shrink-0">
-                            {m.photo_data ? (
-                              <img src={m.photo_data} alt="" className="w-full h-full object-cover" />
-                            ) : (
-                              `${m.first_name[0]}${m.last_name?.[0] || ''}`
-                            )}
-                          </div>
-                          <div>
-                            <span className="font-semibold text-white block hover:text-emerald-400 transition-colors">
-                              {m.first_name} {m.last_name}
-                            </span>
-                            <span className="text-[10px] font-mono text-slate-400">{m.member_code}</span>
-                          </div>
+                return (
+                  <div
+                    key={m.id}
+                    onClick={() => openMemberDetail(m.id)}
+                    className="p-4 hover:bg-slate-800/40 transition-colors cursor-pointer space-y-3"
+                  >
+                    {/* Top Row: Avatar, Name, Member Code, Status */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-xs text-emerald-400 overflow-hidden shrink-0">
+                          {m.photo_data ? (
+                            <img src={m.photo_data} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            `${m.first_name[0]}${m.last_name?.[0] || ''}`
+                          )}
                         </div>
-                      </td>
-                      <td className="py-3.5 px-4 text-slate-300 font-mono">{m.phone}</td>
-                      <td className="py-3.5 px-4 text-slate-300">
-                        {m.trainer?.name ? (
-                          <span className="text-emerald-400 font-medium flex items-center gap-1">
-                            <Dumbbell className="w-3 h-3" />
-                            {m.trainer.name}
-                          </span>
-                        ) : (
-                          <span className="text-slate-500 italic">—</span>
-                        )}
-                      </td>
-                      <td className="py-3.5 px-4">
-                        {hasActivePlan ? (
-                          <span className="font-medium text-emerald-400">
-                            {m.active_membership?.plan.name}
-                          </span>
-                        ) : (
-                          <span className="text-slate-500 italic">—</span>
-                        )}
-                      </td>
-                      <td className="py-3.5 px-4 text-slate-300 font-mono">
-                        {m.active_membership?.end_date ? formatDate(m.active_membership.end_date, i18n.language) : '—'}
-                      </td>
-                      <td className="py-3.5 px-4">
+                        <div className="min-w-0">
+                          <h4 className="font-bold text-sm text-white truncate">
+                            {m.first_name} {m.last_name}
+                          </h4>
+                          <span className="text-[10px] font-mono text-slate-400">{m.member_code}</span>
+                        </div>
+                      </div>
+
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase shrink-0 ${
+                          isFrozen
+                            ? 'bg-blue-500/15 text-blue-400 border border-blue-500/30'
+                            : m.status === 'active'
+                            ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                            : 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
+                        }`}
+                      >
+                        {isFrozen ? 'FROZEN' : m.status}
+                      </span>
+                    </div>
+
+                    {/* Middle Row: Plan details, Phone & Trainer */}
+                    <div className="grid grid-cols-2 gap-2 text-xs bg-slate-900/60 p-2.5 rounded-xl border border-slate-800/60">
+                      <div>
+                        <span className="text-[10px] text-slate-400 uppercase font-semibold block">Plan</span>
+                        <span className="text-white font-medium truncate block">
+                          {hasActivePlan ? m.active_membership?.plan.name : '—'}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-mono">
+                          Exp: {m.active_membership?.end_date ? formatDate(m.active_membership.end_date, i18n.language) : '—'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 uppercase font-semibold block">Contact / Trainer</span>
+                        <a
+                          href={`tel:${m.phone}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-emerald-400 font-mono text-xs flex items-center gap-1 hover:underline truncate"
+                        >
+                          <Phone className="w-3 h-3 shrink-0" />
+                          {m.phone}
+                        </a>
+                        <span className="text-[10px] text-slate-400 truncate block">
+                          {m.trainer?.name ? `Coach: ${m.trainer.name}` : 'No trainer'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Bottom Row: Due Status & Action Buttons */}
+                    <div className="flex items-center justify-between pt-1" onClick={(e) => e.stopPropagation()}>
+                      <div>
                         {due > 0 ? (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/30 font-mono">
+                          <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-500/15 text-rose-400 border border-rose-500/30 font-mono inline-block">
                             {t('dashboard.outstanding_dues', 'Due')}: {formatCurrency(due, i18n.language)}
                           </span>
                         ) : (
-                          <span className="text-slate-500 text-[10px] font-medium">Cleared</span>
+                          <span className="text-slate-500 text-xs font-medium">Fees Cleared</span>
                         )}
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase ${
-                            isFrozen
-                              ? 'bg-blue-500/15 text-blue-400'
-                              : m.status === 'active'
-                              ? 'bg-emerald-500/15 text-emerald-400'
-                              : 'bg-rose-500/15 text-rose-400'
-                          }`}
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => sendWelcome(m)}
+                          title="WhatsApp"
+                          className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-emerald-400 border border-slate-700 text-xs cursor-pointer min-h-[38px] min-w-[38px] flex items-center justify-center"
                         >
-                          {isFrozen ? 'FROZEN' : m.status}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4 text-right" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-end gap-1.5">
-                          <button
-                            onClick={() => sendWelcome(m)}
-                            title="Send WhatsApp Welcome"
-                            className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-emerald-400 border border-slate-700 text-xs inline-flex items-center gap-1 cursor-pointer"
+                          <MessageCircle className="w-4 h-4 text-emerald-400" />
+                        </button>
+                        <button
+                          onClick={() => openMemberDetail(m.id)}
+                          className="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold cursor-pointer min-h-[38px] flex items-center justify-center"
+                        >
+                          View Details
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Desktop Table View (>= md) */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-900/60 text-slate-400 uppercase tracking-wider text-[10px] border-b border-slate-800">
+                  <tr>
+                    <th className="py-3.5 px-4">{t('members.full_name', 'Member')}</th>
+                    <th className="py-3.5 px-4">{t('auth.phone', 'Contact')}</th>
+                    <th className="py-3.5 px-4">{t('members.assigned_trainer', 'Trainer')}</th>
+                    <th className="py-3.5 px-4">{t('members.plan', 'Active Plan')}</th>
+                    <th className="py-3.5 px-4">{t('members.expires_on', 'Expiry Date')}</th>
+                    <th className="py-3.5 px-4">{t('members.balance', 'Outstanding Due')}</th>
+                    <th className="py-3.5 px-4">{t('common.status', 'Status')}</th>
+                    <th className="py-3.5 px-4 text-right">{t('common.actions', 'Actions')}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60 text-slate-200">
+                  {members.map((m) => {
+                    const hasActivePlan = Boolean(m.active_membership);
+                    const isFrozen = m.active_membership?.status === 'frozen';
+                    const due = Number(m.outstanding_balance || 0);
+
+                    return (
+                      <tr
+                        key={m.id}
+                        className="hover:bg-slate-800/30 transition-colors cursor-pointer"
+                        onClick={() => openMemberDetail(m.id)}
+                      >
+                        <td className="py-3.5 px-4">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-xs text-emerald-400 overflow-hidden shrink-0">
+                              {m.photo_data ? (
+                                <img src={m.photo_data} alt="" className="w-full h-full object-cover" />
+                              ) : (
+                                `${m.first_name[0]}${m.last_name?.[0] || ''}`
+                              )}
+                            </div>
+                            <div>
+                              <span className="font-semibold text-white block hover:text-emerald-400 transition-colors">
+                                {m.first_name} {m.last_name}
+                              </span>
+                              <span className="text-[10px] font-mono text-slate-400">{m.member_code}</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-3.5 px-4 text-slate-300 font-mono">{m.phone}</td>
+                        <td className="py-3.5 px-4 text-slate-300">
+                          {m.trainer?.name ? (
+                            <span className="text-emerald-400 font-medium flex items-center gap-1">
+                              <Dumbbell className="w-3 h-3" />
+                              {m.trainer.name}
+                            </span>
+                          ) : (
+                            <span className="text-slate-500 italic">—</span>
+                          )}
+                        </td>
+                        <td className="py-3.5 px-4">
+                          {hasActivePlan ? (
+                            <span className="font-medium text-emerald-400">
+                              {m.active_membership?.plan.name}
+                            </span>
+                          ) : (
+                            <span className="text-slate-500 italic">—</span>
+                          )}
+                        </td>
+                        <td className="py-3.5 px-4 text-slate-300 font-mono">
+                          {m.active_membership?.end_date ? formatDate(m.active_membership.end_date, i18n.language) : '—'}
+                        </td>
+                        <td className="py-3.5 px-4">
+                          {due > 0 ? (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/30 font-mono">
+                              {t('dashboard.outstanding_dues', 'Due')}: {formatCurrency(due, i18n.language)}
+                            </span>
+                          ) : (
+                            <span className="text-slate-500 text-[10px] font-medium">Cleared</span>
+                          )}
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase ${
+                              isFrozen
+                                ? 'bg-blue-500/15 text-blue-400'
+                                : m.status === 'active'
+                                ? 'bg-emerald-500/15 text-emerald-400'
+                                : 'bg-rose-500/15 text-rose-400'
+                            }`}
                           >
-                            <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
-                          </button>
-                          <button
-                            onClick={() => openMemberDetail(m.id)}
-                            className="px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-semibold cursor-pointer"
-                          >
-                            View
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                            {isFrozen ? 'FROZEN' : m.status}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4 text-right" onClick={(e) => e.stopPropagation()}>
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              onClick={() => sendWelcome(m)}
+                              title="Send WhatsApp Welcome"
+                              className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-emerald-400 border border-slate-700 text-xs inline-flex items-center gap-1 cursor-pointer"
+                            >
+                              <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
+                            </button>
+                            <button
+                              onClick={() => openMemberDetail(m.id)}
+                              className="px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-semibold cursor-pointer"
+                            >
+                              View
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
         ) : (
           <div className="py-16 text-center flex flex-col items-center justify-center space-y-3">
             <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
@@ -714,7 +821,7 @@ export default function Members() {
             </div>
 
             {/* Drawer Tabs */}
-            <div className="flex border-b border-slate-800 px-5 gap-5 text-xs font-semibold bg-slate-900/30 overflow-x-auto">
+            <div className="flex border-b border-slate-800 px-5 gap-5 text-xs font-semibold bg-slate-900/30 overflow-x-auto no-scrollbar">
               <button
                 onClick={() => setDrawerTab('profile')}
                 className={`py-3 border-b-2 transition-colors cursor-pointer shrink-0 ${
