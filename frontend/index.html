@@ -5,6 +5,26 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('gym_theme_mode');
+        var isLight = saved === 'light' || (!saved && window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches);
+        var root = document.documentElement;
+        if (isLight) {
+          root.classList.remove('dark');
+          root.classList.add('light');
+          root.setAttribute('data-theme', 'light');
+          root.style.colorScheme = 'light';
+        } else {
+          root.classList.add('dark');
+          root.classList.remove('light');
+          root.setAttribute('data-theme', 'dark');
+          root.style.colorScheme = 'dark';
+        }
+      } catch (e) {}
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link

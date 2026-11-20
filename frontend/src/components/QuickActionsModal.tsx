@@ -30,7 +30,7 @@ export const QuickActionsModal: React.FC<QuickActionsModalProps> = ({ isOpen, on
       description: t('quickActions.add_member_desc', 'Register athlete profile, assign plan and issue ID'),
       icon: UserPlus,
       to: '/members?action=new',
-      color: 'emerald',
+      color: 'red',
     },
     {
       id: 'mark_attendance',
@@ -72,29 +72,29 @@ export const QuickActionsModal: React.FC<QuickActionsModalProps> = ({ isOpen, on
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-150">
       <div
-        className="w-full max-w-lg bg-[#0f172a] border border-slate-800 rounded-2xl shadow-2xl shadow-emerald-950/30 overflow-hidden"
+        className="w-full max-w-lg bg-white dark:bg-[#1C1C1C] border border-[#E8E8E8] dark:border-[#303030] rounded-2xl shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/60">
+        <div className="p-4 border-b border-[#E8E8E8] dark:border-[#303030] flex items-center justify-between bg-neutral-50 dark:bg-neutral-900/50">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
-              <Zap className="w-4 h-4 text-emerald-400" />
+            <div className="p-2 bg-[#D92332]/10 dark:bg-[#F02D3A]/15 border border-[#D92332]/20 dark:border-[#F02D3A]/20 rounded-xl">
+              <Zap className="w-4 h-4 text-[#D92332] dark:text-[#F02D3A]" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-white">
+              <h2 className="text-sm font-bold text-[#171717] dark:text-white">
                 {t('quickActions.title', 'Quick Actions')}
               </h2>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-[#707070] dark:text-[#A3A3A3]">
                 {t('quickActions.subtitle', 'Instant shortcuts for everyday reception and gym workflows')}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+            className="p-1.5 text-[#707070] dark:text-[#A3A3A3] hover:text-[#171717] dark:hover:text-white rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -108,16 +108,16 @@ export const QuickActionsModal: React.FC<QuickActionsModalProps> = ({ isOpen, on
               <button
                 key={act.id}
                 onClick={() => handleAction(act.to)}
-                className="w-full p-3 rounded-xl bg-slate-900/40 hover:bg-slate-800/80 border border-slate-800 hover:border-emerald-500/30 transition-all flex items-center gap-3.5 text-left group cursor-pointer"
+                className="w-full p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900/40 hover:bg-neutral-100 dark:hover:bg-neutral-800/80 border border-[#E8E8E8] dark:border-[#303030] hover:border-[#D92332]/30 dark:hover:border-[#F02D3A]/30 transition-all flex items-center gap-3.5 text-left group cursor-pointer"
               >
-                <div className={`p-2.5 rounded-xl bg-slate-800 group-hover:bg-emerald-500/10 border border-slate-700/60 group-hover:border-emerald-500/30 transition-colors shrink-0`}>
-                  <Icon className="w-5 h-5 text-emerald-400" />
+                <div className="p-2.5 rounded-xl bg-white dark:bg-neutral-800 group-hover:bg-[#D92332]/10 dark:group-hover:bg-[#F02D3A]/15 border border-[#E8E8E8] dark:border-[#303030] group-hover:border-[#D92332]/30 dark:group-hover:border-[#F02D3A]/30 transition-colors shrink-0">
+                  <Icon className="w-5 h-5 text-[#D92332] dark:text-[#F02D3A]" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="text-xs font-semibold text-white group-hover:text-emerald-400 transition-colors">
+                  <div className="text-xs font-semibold text-[#171717] dark:text-white group-hover:text-[#D92332] dark:group-hover:text-[#F02D3A] transition-colors">
                     {act.title}
                   </div>
-                  <div className="text-[11px] text-slate-400 truncate mt-0.5">
+                  <div className="text-[11px] text-[#707070] dark:text-[#A3A3A3] truncate mt-0.5">
                     {act.description}
                   </div>
                 </div>

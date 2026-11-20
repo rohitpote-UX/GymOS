@@ -363,7 +363,7 @@ export default function CashClosing() {
                 <button
                   type="submit"
                   disabled={submitting || actualCash === ''}
-                  className="w-full bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-slate-950 font-bold py-2.5 rounded-xl shadow-lg shadow-emerald-500/20 cursor-pointer transition-colors flex items-center justify-center gap-2 mt-4"
+                  className="w-full bg-[#D92332] hover:bg-[#B91C2B] dark:bg-[#F02D3A] dark:hover:bg-[#FF4652] disabled:opacity-50 text-white font-bold py-2.5 rounded-xl shadow-lg shadow-red-600/30 cursor-pointer transition-colors flex items-center justify-center gap-2 mt-4"
                 >
                   <Lock className="w-4 h-4" />
                   {submitting ? 'Locking Register...' : 'Lock & Close Register'}

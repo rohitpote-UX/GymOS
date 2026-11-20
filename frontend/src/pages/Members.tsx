@@ -629,7 +629,7 @@ export default function Members() {
             resetForm();
             setModalOpen(true);
           }}
-          className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold flex items-center gap-1.5 transition-colors shadow-lg shadow-emerald-950/40 cursor-pointer self-start sm:self-auto"
+          className="px-4 py-2 rounded-xl bg-[#D92332] hover:bg-[#B91C2B] dark:bg-[#F02D3A] dark:hover:bg-[#FF4652] text-white text-xs font-bold flex items-center gap-1.5 transition-colors shadow-lg shadow-red-600/30 cursor-pointer self-start sm:self-auto"
         >
           <Plus className="w-4 h-4" />
           <span>{t('members.add_member', 'Register Member')}</span>
@@ -922,7 +922,7 @@ export default function Members() {
                 resetForm();
                 setModalOpen(true);
               }}
-              className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold flex items-center gap-1.5 shadow-lg shadow-emerald-950/40 cursor-pointer mt-2"
+              className="px-4 py-2 rounded-xl bg-[#D92332] hover:bg-[#B91C2B] dark:bg-[#F02D3A] dark:hover:bg-[#FF4652] text-white text-xs font-bold flex items-center gap-1.5 shadow-lg shadow-red-600/30 cursor-pointer mt-2"
             >
               <Plus className="w-4 h-4" />
               <span>{t('members.add_member', 'Add First Member')}</span>
@@ -959,7 +959,7 @@ export default function Members() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={openRenewModal}
-                  className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs flex items-center gap-1.5 transition-colors shadow-md shadow-emerald-950/30 cursor-pointer"
+                  className="px-3 py-1.5 bg-[#D92332] hover:bg-[#B91C2B] dark:bg-[#F02D3A] dark:hover:bg-[#FF4652] text-white font-bold rounded-xl text-xs flex items-center gap-1.5 transition-colors shadow-md shadow-red-600/30 cursor-pointer"
                   title={t('members.renew_membership', 'Renew Membership')}
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
@@ -1564,7 +1564,7 @@ export default function Members() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="bg-emerald-500 hover:bg-emerald-400 font-bold px-4 py-2 rounded-xl text-slate-950 cursor-pointer shadow-lg shadow-emerald-950/40"
+                  className="bg-[#D92332] hover:bg-[#B91C2B] dark:bg-[#F02D3A] dark:hover:bg-[#FF4652] font-bold px-4 py-2 rounded-xl text-white cursor-pointer shadow-lg shadow-red-600/30"
                 >
                   {saving ? t('common.saving', 'Saving...') : t('members.renew_membership', 'Confirm Renewal & Collect')}
                 </button>
@@ -1879,7 +1879,7 @@ export default function Members() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold cursor-pointer shadow-lg shadow-emerald-950/40"
+                  className="px-5 py-2 rounded-xl bg-[#D92332] hover:bg-[#B91C2B] dark:bg-[#F02D3A] dark:hover:bg-[#FF4652] text-white font-bold cursor-pointer shadow-lg shadow-red-600/30"
                 >
                   {saving ? t('common.saving', 'Saving...') : t('members.add_member', 'Save Member')}
                 </button>

@@ -18,6 +18,7 @@ import {
 import api, { errorMessage } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
+import { ThemeSwitcher } from '../components/ThemeSwitcher';
 import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '../i18n';
 
 export const Settings: React.FC = () => {
@@ -320,6 +321,29 @@ export const Settings: React.FC = () => {
           </div>
         </div>
 
+        {/* Appearance & Global Brand Theme (Red & White / Red & Black) */}
+        <div className="bg-[#F7F7F7] dark:bg-[#1C1C1C] border border-[#E8E8E8] dark:border-[#303030] rounded-2xl p-5 space-y-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-bold text-[#171717] dark:text-white flex items-center gap-2">
+              <Palette className="w-4 h-4 text-[#D92332] dark:text-[#F02D3A]" />
+              <span>Appearance & Global Brand Theme</span>
+            </h3>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#D92332]/10 text-[#D92332] dark:text-[#F02D3A] border border-[#D92332]/20">
+              Red & White / Red & Black
+            </span>
+          </div>
+
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-white dark:bg-[#141414] border border-[#E8E8E8] dark:border-[#303030]">
+            <div>
+              <p className="text-xs font-bold text-[#171717] dark:text-white">Active Theme Mode</p>
+              <p className="text-[11px] text-[#707070] dark:text-[#A3A3A3] mt-0.5">
+                Switch between Red & White (Light Mode) and Red & Black (Dark Mode). Applied instantly across all modules.
+              </p>
+            </div>
+            <ThemeSwitcher variant="pill" />
+          </div>
+        </div>
+
         {/* Dynamic Branding & Theme */}
         <div className="bg-[#0f172a] border border-slate-800 rounded-2xl p-5 space-y-4">
           <h3 className="text-sm font-bold text-white flex items-center gap-2">
@@ -404,7 +428,7 @@ export const Settings: React.FC = () => {
                 type="button"
                 onClick={handleSaveModules}
                 disabled={modulesSaving}
-                className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-all shadow-md shadow-emerald-950/30 cursor-pointer disabled:opacity-50 self-start sm:self-auto"
+                className="px-4 py-2 rounded-xl bg-[#D92332] hover:bg-[#B91C2B] dark:bg-[#F02D3A] dark:hover:bg-[#FF4652] text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-md shadow-red-600/30 cursor-pointer disabled:opacity-50 self-start sm:self-auto"
               >
                 <Save className="w-3.5 h-3.5" />
                 <span>{modulesSaving ? 'Saving...' : 'Apply Module Changes'}</span>
@@ -503,7 +527,7 @@ export const Settings: React.FC = () => {
           <button
             type="submit"
             disabled={saving}
-            className="px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-2 cursor-pointer disabled:opacity-50 shadow-lg shadow-emerald-950/40"
+            className="px-6 py-2.5 rounded-xl bg-[#D92332] hover:bg-[#B91C2B] dark:bg-[#F02D3A] dark:hover:bg-[#FF4652] text-white font-bold text-xs flex items-center gap-2 cursor-pointer disabled:opacity-50 shadow-lg shadow-red-600/30"
           >
             <Save className="w-4 h-4" />
             <span>{saving ? 'Saving...' : 'Save Configuration'}</span>

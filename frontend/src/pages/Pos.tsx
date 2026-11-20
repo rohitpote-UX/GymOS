@@ -827,7 +827,7 @@ export const Pos: React.FC = () => {
               <button
                 type="submit"
                 disabled={cart.length === 0}
-                className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 font-extrabold text-sm rounded-xl shadow-lg shadow-emerald-500/25 transition-all cursor-pointer flex items-center justify-center gap-2 min-h-[44px]"
+                className="w-full py-3 bg-[#D92332] hover:bg-[#B91C2B] dark:bg-[#F02D3A] dark:hover:bg-[#FF4652] disabled:opacity-50 disabled:cursor-not-allowed text-white font-extrabold text-sm rounded-xl shadow-lg shadow-red-600/30 transition-all cursor-pointer flex items-center justify-center gap-2 min-h-[44px]"
               >
                 <CheckCircle2 className="w-5 h-5" />
                 Complete Sale & Print Receipt

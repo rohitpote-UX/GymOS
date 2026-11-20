@@ -219,30 +219,30 @@ export default function SelfCheckIn() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between selection:bg-emerald-500 selection:text-white">
+    <div className="min-h-screen bg-white dark:bg-[#101010] text-[#171717] dark:text-slate-100 flex flex-col justify-between selection:bg-[#D92332] selection:text-white">
       {/* Top Header / Brand Bar */}
-      <header className="border-b border-slate-800/80 bg-slate-900/90 backdrop-blur-md sticky top-0 z-30">
+      <header className="border-b border-[#E8E8E8] dark:border-[#303030] bg-[#F7F7F7]/90 dark:bg-[#1C1C1C]/90 backdrop-blur-md sticky top-0 z-30">
         <div className="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center font-black text-white text-base shadow-md shadow-emerald-500/20">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#D92332] to-[#B91C2B] dark:from-[#F02D3A] dark:to-[#B91C2B] flex items-center justify-center font-black text-white text-base shadow-md shadow-red-600/30">
               <Dumbbell className="w-5 h-5" />
             </div>
             <div>
-              <h1 className="font-bold text-white text-sm leading-tight">
+              <h1 className="font-bold text-[#171717] dark:text-white text-sm leading-tight">
                 {qrInfo?.gym?.name || 'GymOS'}
               </h1>
-              <p className="text-[11px] text-emerald-400 font-medium">
+              <p className="text-[11px] text-[#D92332] dark:text-[#F02D3A] font-medium">
                 {i18n.language === 'mr' ? 'सदस्य सेल्फ हजेरी' : i18n.language === 'hi' ? 'सदस्य सेल्फ अटेंडेंस' : 'Member Self Check-In'}
               </p>
             </div>
           </div>
 
           {/* Quick Language Switcher */}
-          <div className="flex items-center gap-1 bg-slate-800/80 rounded-lg p-0.5 border border-slate-700/60 text-xs">
+          <div className="flex items-center gap-1 bg-white dark:bg-neutral-800 rounded-lg p-0.5 border border-[#E8E8E8] dark:border-[#303030] text-xs">
             <button
               onClick={() => changeLanguage('en')}
               className={`px-2 py-1 rounded font-medium transition ${
-                i18n.language === 'en' ? 'bg-emerald-600 text-white font-bold' : 'text-slate-400 hover:text-white'
+                i18n.language === 'en' ? 'bg-[#D92332] dark:bg-[#F02D3A] text-white font-bold' : 'text-[#707070] dark:text-slate-400 hover:text-[#171717] dark:hover:text-white'
               }`}
             >
               EN
@@ -250,7 +250,7 @@ export default function SelfCheckIn() {
             <button
               onClick={() => changeLanguage('mr')}
               className={`px-2 py-1 rounded font-medium transition ${
-                i18n.language === 'mr' ? 'bg-emerald-600 text-white font-bold' : 'text-slate-400 hover:text-white'
+                i18n.language === 'mr' ? 'bg-[#D92332] dark:bg-[#F02D3A] text-white font-bold' : 'text-[#707070] dark:text-slate-400 hover:text-[#171717] dark:hover:text-white'
               }`}
             >
               मराठी
@@ -258,7 +258,7 @@ export default function SelfCheckIn() {
             <button
               onClick={() => changeLanguage('hi')}
               className={`px-2 py-1 rounded font-medium transition ${
-                i18n.language === 'hi' ? 'bg-emerald-600 text-white font-bold' : 'text-slate-400 hover:text-white'
+                i18n.language === 'hi' ? 'bg-[#D92332] dark:bg-[#F02D3A] text-white font-bold' : 'text-[#707070] dark:text-slate-400 hover:text-[#171717] dark:hover:text-white'
               }`}
             >
               हिंदी

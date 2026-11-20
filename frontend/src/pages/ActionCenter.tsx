@@ -206,17 +206,17 @@ export default function ActionCenter() {
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6">
       {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-slate-800">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-[#E8E8E8] dark:border-[#303030]">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
+            <h1 className="text-2xl font-black text-[#171717] dark:text-white tracking-tight flex items-center gap-2">
               <span>{t('actionCenter.title', 'Action Center')}</span>
-              <span className="text-xs px-2.5 py-0.5 rounded-full bg-rose-500/10 text-rose-400 font-bold border border-rose-500/20">
+              <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#D92332]/10 text-[#D92332] dark:text-[#F02D3A] font-bold border border-[#D92332]/20 dark:border-[#F02D3A]/20">
                 {t('actionCenter.live_radar', 'Live Radar')}
               </span>
             </h1>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-[#707070] dark:text-[#A3A3A3] mt-1">
             {t('actionCenter.subtitle', 'Central operations radar: triage expiring plans, dues and inactive members')}
           </p>
         </div>
@@ -224,14 +224,14 @@ export default function ActionCenter() {
         <div className="flex items-center gap-2.5">
           <button
             onClick={() => fetchActionCenterData()}
-            className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold flex items-center gap-1.5 transition-colors border border-slate-700 cursor-pointer"
+            className="px-3 py-2 rounded-xl bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-[#171717] dark:text-slate-300 text-xs font-semibold flex items-center gap-1.5 transition-colors border border-[#E8E8E8] dark:border-[#303030] cursor-pointer"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>{t('actionCenter.refresh', 'Refresh')}</span>
           </button>
           <button
             onClick={() => setCreateModalOpen(true)}
-            className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold flex items-center gap-1.5 transition-colors shadow-lg shadow-emerald-950/40 cursor-pointer"
+            className="px-4 py-2 rounded-xl bg-[#D92332] hover:bg-[#B91C2B] dark:bg-[#F02D3A] dark:hover:bg-[#FF4652] text-white text-xs font-bold flex items-center gap-1.5 transition-colors shadow-lg shadow-red-600/30 cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>{t('actionCenter.create_action', 'Create Action')}</span>
@@ -412,21 +412,21 @@ export default function ActionCenter() {
       )}
 
       {/* Control Bar: Search & Filters */}
-      <div className="bg-[#0f172a] border border-slate-800 p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="bg-[#F7F7F7] dark:bg-[#1C1C1C] border border-[#E8E8E8] dark:border-[#303030] p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-[#707070] dark:text-[#A3A3A3] absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t('actionCenter.search_placeholder', 'Search action items or assignees...')}
-            className="w-full pl-9 pr-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+            className="w-full pl-9 pr-3 py-2 bg-white dark:bg-[#141414] border border-[#E8E8E8] dark:border-[#303030] rounded-xl text-xs text-[#171717] dark:text-white placeholder-[#707070] dark:placeholder-[#A3A3A3] focus:outline-none focus:border-[#D92332] dark:focus:border-[#F02D3A]"
           />
         </div>
 
         <div className="flex items-center gap-3 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
           {/* Status Filter */}
-          <div className="flex items-center gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800 text-xs">
+          <div className="flex items-center gap-1 bg-white dark:bg-neutral-900 p-1 rounded-xl border border-[#E8E8E8] dark:border-[#303030] text-xs">
             {[
               { id: 'all', label: t('actionCenter.status_all', 'All') },
               { id: 'pending', label: t('actionCenter.status_pending', 'Pending') },
@@ -438,8 +438,8 @@ export default function ActionCenter() {
                 onClick={() => setStatusFilter(st.id)}
                 className={`px-3 py-1 rounded-lg capitalize font-medium transition-colors cursor-pointer ${
                   statusFilter === st.id
-                    ? 'bg-emerald-500 text-slate-950 font-bold'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-[#D92332] dark:bg-[#F02D3A] text-white font-bold shadow-sm'
+                    : 'text-[#707070] dark:text-[#A3A3A3] hover:text-[#171717] dark:hover:text-white'
                 }`}
               >
                 {st.label}
@@ -448,7 +448,7 @@ export default function ActionCenter() {
           </div>
 
           {/* Severity Filter */}
-          <div className="flex items-center gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800 text-xs">
+          <div className="flex items-center gap-1 bg-white dark:bg-neutral-900 p-1 rounded-xl border border-[#E8E8E8] dark:border-[#303030] text-xs">
             {[
               { id: 'all', label: t('actionCenter.severity_all', 'All') },
               { id: 'critical', label: t('actionCenter.severity_critical', 'Critical') },
@@ -460,8 +460,8 @@ export default function ActionCenter() {
                 onClick={() => setSeverityFilter(sev.id)}
                 className={`px-2.5 py-1 rounded-lg capitalize font-medium transition-colors cursor-pointer ${
                   severityFilter === sev.id
-                    ? 'bg-slate-700 text-white font-bold'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-neutral-800 text-white font-bold'
+                    : 'text-[#707070] dark:text-[#A3A3A3] hover:text-[#171717] dark:hover:text-white'
                 }`}
               >
                 {sev.label}
@@ -472,7 +472,7 @@ export default function ActionCenter() {
       </div>
 
       {/* Action Items List */}
-      <div className="bg-[#0f172a] border border-slate-800 rounded-2xl overflow-hidden">
+      <div className="bg-[#F7F7F7] dark:bg-[#1C1C1C] border border-[#E8E8E8] dark:border-[#303030] rounded-2xl overflow-hidden shadow-sm">
         {loading ? (
           <div className="p-12 text-center text-slate-400 text-xs flex flex-col items-center gap-2">
             <RefreshCw className="w-5 h-5 animate-spin text-emerald-400" />

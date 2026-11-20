@@ -430,25 +430,25 @@ export default function Attendance() {
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6">
       {/* Top Header & Tab Navigation */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-slate-800">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-[#E8E8E8] dark:border-[#303030]">
         <div>
-          <h2 className="text-xl md:text-2xl font-black text-white tracking-tight flex items-center gap-2">
-            <CalendarCheck className="w-6 h-6 text-emerald-400" />
+          <h2 className="text-xl md:text-2xl font-black text-[#171717] dark:text-white tracking-tight flex items-center gap-2">
+            <CalendarCheck className="w-6 h-6 text-[#D92332] dark:text-[#F02D3A]" />
             <span>{t('attendance.title', 'Attendance & Access Control')}</span>
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-[#707070] dark:text-[#A3A3A3] mt-0.5">
             {t('attendance.subtitle', 'Live branch occupancy, front-desk verification and self-attendance QR posters')}
           </p>
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex items-center gap-1.5 p-1 bg-slate-900 border border-slate-800 rounded-2xl self-start md:self-auto">
+        <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-neutral-900 border border-[#E8E8E8] dark:border-[#303030] rounded-2xl self-start md:self-auto">
           <button
             onClick={() => setActiveTab('daily')}
             className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
               activeTab === 'daily'
-                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-[#D92332] dark:bg-[#F02D3A] text-white shadow-md shadow-red-600/30'
+                : 'text-[#707070] dark:text-[#A3A3A3] hover:text-[#171717] dark:hover:text-white'
             }`}
           >
             <CalendarCheck className="w-4 h-4" />
@@ -458,13 +458,13 @@ export default function Attendance() {
             onClick={() => setActiveTab('self_qr')}
             className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer relative ${
               activeTab === 'self_qr'
-                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-[#D92332] dark:bg-[#F02D3A] text-white shadow-md shadow-red-600/30'
+                : 'text-[#707070] dark:text-[#A3A3A3] hover:text-[#171717] dark:hover:text-white'
             }`}
           >
             <QrCode className="w-4 h-4" />
             <span>{t('attendance.tab_self_qr', 'Member Self Check-In QR')}</span>
-            <span className="px-1.5 py-0.2 bg-teal-400/20 text-teal-300 text-[9px] font-black rounded-md border border-teal-400/30 uppercase">
+            <span className="px-1.5 py-0.2 bg-[#D92332]/10 dark:bg-[#F02D3A]/20 text-[#D92332] dark:text-[#F02D3A] text-[9px] font-black rounded-md border border-[#D92332]/30 uppercase">
               New
             </span>
           </button>
