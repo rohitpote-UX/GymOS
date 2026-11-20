@@ -97,3 +97,33 @@ export function formatDateTime(
     return date.toLocaleString('en-IN');
   }
 }
+
+/**
+ * Normalize mobile numbers, especially Indian (+91, spaces, hyphens, leading 0)
+ */
+export function normalizePhoneNumber(raw: string | null | undefined): string {
+  if (!raw) return '';
+  let digits = raw.replace(/\D/g, '');
+  // If Indian mobile number starts with 91 and has 12 digits (e.g. 919822011223)
+  if (digits.length === 12 && digits.startsWith('91')) {
+    digits = digits.slice(2);
+  }
+  // If starts with leading 0 (e.g. 09822011223)
+  if (digits.length === 11 && digits.startsWith('0')) {
+    digits = digits.slice(1);
+  }
+  return digits;
+}
+
+/**
+ * Split full contact name into first and last name tokens safely
+ */
+export function parseContactName(rawName: string | null | undefined): { firstName: string; lastName: string } {
+  if (!rawName) return { firstName: '', lastName: '' };
+  const parts = rawName.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return { firstName: '', lastName: '' };
+  const firstName = parts[0];
+  const lastName = parts.length > 1 ? parts.slice(1).join(' ') : '';
+  return { firstName, lastName };
+}
+

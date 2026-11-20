@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import {
   AlertCircle,
   AlertTriangle,
+  BookUser,
   Calendar,
   Camera,
   CheckCircle2,
@@ -11,6 +12,7 @@ import {
   Coins,
   CreditCard,
   Dumbbell,
+  ExternalLink,
   Filter,
   MessageCircle,
   PauseCircle,
@@ -21,6 +23,7 @@ import {
   Receipt,
   RotateCcw,
   Search,
+  Sparkles,
   Trash2,
   User,
   UserCheck,
@@ -31,7 +34,7 @@ import {
 import api, { errorMessage } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { openWhatsApp, WhatsAppTemplates } from '../lib/whatsapp';
-import { formatCurrency, formatDate, formatNumber } from '../lib/formatters';
+import { formatCurrency, formatDate, formatNumber, normalizePhoneNumber, parseContactName } from '../lib/formatters';
 
 interface MembershipPlan {
   id: number;
@@ -188,6 +191,15 @@ export default function Members() {
   const [discountAmount, setDiscountAmount] = useState('0');
   const [paymentMethod, setPaymentMethod] = useState('cash');
 
+  // Contact Picker & Duplicate / Lead Matching State
+  const [contactPickerNotice, setContactPickerNotice] = useState<string | null>(null);
+  const [duplicateMember, setDuplicateMember] = useState<Member | null>(null);
+  const [matchedLead, setMatchedLead] = useState<any | null>(null);
+  const [multiPhoneModal, setMultiPhoneModal] = useState<{
+    name: string;
+    numbers: string[];
+  } | null>(null);
+
   const fetchMembers = async () => {
     try {
       setLoading(true);
@@ -252,12 +264,25 @@ export default function Members() {
   const handleCreateMember = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (duplicateMember) {
+      setError(
+        t('members.duplicate_member_warning', {
+          name: `${duplicateMember.first_name} ${duplicateMember.last_name || ''}`.trim(),
+          code: duplicateMember.member_code,
+          defaultValue: `A member with this mobile number already exists: ${duplicateMember.first_name} ${duplicateMember.last_name || ''} (${duplicateMember.member_code})`,
+        })
+      );
+      return;
+    }
+
     setSaving(true);
     try {
+      const cleanPhone = normalizePhoneNumber(phone) || phone.trim();
       const payload: Record<string, unknown> = {
         first_name: firstName,
         last_name: lastName || null,
-        phone,
+        phone: cleanPhone,
         email: email || null,
         gender,
         assigned_trainer_id: assignedTrainerId ? parseInt(assignedTrainerId, 10) : null,
@@ -393,20 +418,167 @@ export default function Members() {
     }
   };
 
+  const isContactPickerSupported = (): boolean => {
+    return (
+      typeof window !== 'undefined' &&
+      typeof navigator !== 'undefined' &&
+      'contacts' in navigator &&
+      'ContactsManager' in window &&
+      typeof (navigator as any).contacts?.select === 'function'
+    );
+  };
+
+  const handleChooseContact = async () => {
+    setContactPickerNotice(null);
+
+    if (!isContactPickerSupported()) {
+      setContactPickerNotice(
+        t('members.contact_unsupported', "Contact selection isn't supported on this device. Please enter the details manually.")
+      );
+      return;
+    }
+
+    try {
+      const contacts = await (navigator as any).contacts.select(['name', 'tel'], {
+        multiple: false,
+      });
+
+      if (!contacts || contacts.length === 0) {
+        return; // User cancelled
+      }
+
+      const picked = contacts[0];
+      const rawName = picked.name && picked.name[0] ? picked.name[0].trim() : '';
+      const rawTels: string[] = (picked.tel || []).map((t: string) => t.trim()).filter(Boolean);
+
+      if (rawTels.length === 0) {
+        setContactPickerNotice(
+          t('members.contact_no_phone', 'The selected contact does not have a phone number. Please enter mobile manually.')
+        );
+        if (rawName) {
+          const { firstName: fName, lastName: lName } = parseContactName(rawName);
+          if (fName && !firstName) setFirstName(fName);
+          if (lName && !lastName) setLastName(lName);
+        }
+        return;
+      }
+
+      if (rawTels.length > 1) {
+        setMultiPhoneModal({
+          name: rawName,
+          numbers: rawTels,
+        });
+      } else {
+        await applyContactDetails(rawName, rawTels[0]);
+      }
+    } catch (err: any) {
+      if (err.name === 'AbortError' || err.name === 'SecurityError') {
+        return;
+      }
+      setContactPickerNotice(
+        t('members.contact_unsupported', "Contact selection isn't supported on this device. Please enter the details manually.")
+      );
+    }
+  };
+
+  const applyContactDetails = async (rawName: string, rawTel: string) => {
+    const cleanTel = normalizePhoneNumber(rawTel);
+
+    // Prompt before overwriting existing entered data if different
+    if (
+      (phone && normalizePhoneNumber(phone) !== cleanTel) ||
+      (firstName && rawName && !rawName.toLowerCase().includes(firstName.toLowerCase()))
+    ) {
+      const confirmMsg = t('members.overwrite_confirm', {
+        name: rawName || cleanTel,
+        defaultValue: `Form already has member data. Replace with details from ${rawName || cleanTel}?`,
+      });
+      if (!window.confirm(confirmMsg)) {
+        return;
+      }
+    }
+
+    // Populate name
+    if (rawName) {
+      const { firstName: fName, lastName: lName } = parseContactName(rawName);
+      setFirstName(fName);
+      setLastName(lName);
+    }
+
+    setPhone(cleanTel);
+    setDuplicateMember(null);
+    setMatchedLead(null);
+
+    // 1. Check if member already exists
+    try {
+      const memberRes = await api.get<{ data: Member[] }>(`/members?search=${encodeURIComponent(cleanTel)}`);
+      const existing = memberRes.data?.data?.find(
+        (m) => normalizePhoneNumber(m.phone) === cleanTel || m.phone === cleanTel
+      );
+      if (existing) {
+        setDuplicateMember(existing);
+        setMatchedLead(null);
+        return;
+      }
+    } catch {
+      // ignore
+    }
+
+    // 2. Check if matches enquiry lead
+    try {
+      const leadRes = await api.get<{ data: any[] }>(`/leads?search=${encodeURIComponent(cleanTel)}`);
+      if (leadRes.data?.data && leadRes.data.data.length > 0) {
+        const lead = leadRes.data.data[0];
+        setMatchedLead(lead);
+        if (!rawName && lead.name) {
+          const { firstName: lf, lastName: ll } = parseContactName(lead.name);
+          setFirstName(lf);
+          if (ll) setLastName(ll);
+        }
+        if (lead.email && !email) setEmail(lead.email);
+        if (lead.gender && (!gender || gender === 'male')) setGender(lead.gender);
+      }
+    } catch {
+      // ignore
+    }
+  };
+
   const handlePhoneBlur = async () => {
-    if (phone.trim().length >= 10 && !firstName) {
+    const cleanTel = normalizePhoneNumber(phone);
+    if (cleanTel.length >= 10) {
+      // Duplicate member lookup
       try {
-        const res = await api.get<{ data: any[] }>(`/leads?search=${encodeURIComponent(phone.trim())}`);
-        if (res.data?.data && res.data.data.length > 0) {
-          const lead = res.data.data[0];
-          const parts = (lead.name || '').trim().split(' ');
-          setFirstName(parts[0] || '');
-          if (parts.length > 1) setLastName(parts.slice(1).join(' '));
-          if (lead.email) setEmail(lead.email);
-          if (lead.gender) setGender(lead.gender);
+        const memberRes = await api.get<{ data: Member[] }>(`/members?search=${encodeURIComponent(cleanTel)}`);
+        const existing = memberRes.data?.data?.find(
+          (m) => normalizePhoneNumber(m.phone) === cleanTel || m.phone === cleanTel
+        );
+        if (existing) {
+          setDuplicateMember(existing);
+          setMatchedLead(null);
+          return;
+        } else {
+          setDuplicateMember(null);
         }
       } catch {
-        // ignore lookup failure
+        // ignore
+      }
+
+      // Lead auto-population
+      if (!firstName) {
+        try {
+          const res = await api.get<{ data: any[] }>(`/leads?search=${encodeURIComponent(cleanTel)}`);
+          if (res.data?.data && res.data.data.length > 0) {
+            const lead = res.data.data[0];
+            setMatchedLead(lead);
+            const { firstName: lf, lastName: ll } = parseContactName(lead.name || '');
+            setFirstName(lf);
+            if (ll) setLastName(ll);
+            if (lead.email) setEmail(lead.email);
+            if (lead.gender) setGender(lead.gender);
+          }
+        } catch {
+          // ignore lookup failure
+        }
       }
     }
   };
@@ -422,6 +594,10 @@ export default function Members() {
     setPaidAmount('');
     setDiscountAmount('0');
     setPaymentMethod('cash');
+    setContactPickerNotice(null);
+    setDuplicateMember(null);
+    setMatchedLead(null);
+    setMultiPhoneModal(null);
   };
 
   const sendWelcome = (m: Member) => {
@@ -1418,23 +1594,118 @@ export default function Members() {
               </div>
             )}
 
+            {contactPickerNotice && (
+              <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-xs text-amber-300 flex items-start justify-between gap-2">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                  <span>{contactPickerNotice}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setContactPickerNotice(null)}
+                  className="text-amber-400 hover:text-white cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+
+            {duplicateMember && (
+              <div className="p-3.5 bg-rose-950/40 border border-rose-500/40 rounded-xl text-xs text-rose-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold text-white block">
+                      {t('members.duplicate_member_warning', {
+                        name: `${duplicateMember.first_name} ${duplicateMember.last_name || ''}`.trim(),
+                        code: duplicateMember.member_code,
+                        defaultValue: `A member with this mobile number already exists: ${duplicateMember.first_name} ${duplicateMember.last_name || ''} (${duplicateMember.member_code})`,
+                      })}
+                    </span>
+                    <span className="text-[11px] text-rose-300">
+                      Avoid creating duplicate profiles for the same member.
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setModalOpen(false);
+                    openMemberDetail(duplicateMember.id);
+                  }}
+                  className="px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500 text-rose-200 hover:text-white font-bold text-xs transition cursor-pointer flex items-center gap-1.5 self-start sm:self-auto shrink-0"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>{t('members.view_existing_member', 'View Member Profile')}</span>
+                </button>
+              </div>
+            )}
+
+            {matchedLead && (
+              <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-xs text-emerald-300 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>
+                    {t('members.lead_matched', {
+                      name: matchedLead.name,
+                      defaultValue: `Found matching enquiry lead: ${matchedLead.name}. Lead information applied!`,
+                    })}
+                  </span>
+                </div>
+                <span className="px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-200 font-semibold uppercase">
+                  Lead Match
+                </span>
+              </div>
+            )}
+
             <form onSubmit={handleCreateMember} className="space-y-3.5 text-xs">
-              {/* Step 1: Mobile Number with Auto-Lookup */}
+              {/* Step 1: Mobile Number with Contact Picker & Auto-Lookup */}
               <div>
-                <label className="block text-slate-300 font-medium mb-1">
-                  {t('auth.phone', 'Mobile Number')} *
-                </label>
-                <input
-                  type="tel"
-                  required
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  onBlur={handlePhoneBlur}
-                  placeholder="98200XXXXX (10 digits)"
-                  className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white font-mono focus:outline-none focus:border-emerald-500"
-                />
-                <span className="text-[10px] text-slate-500 mt-0.5 block">
-                  Tip: Auto-detects enquiry leads and fills details
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-slate-300 font-medium">
+                    {t('auth.phone', 'Mobile Number')} *
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleChooseContact}
+                    className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 hover:text-emerald-200 border border-emerald-500/30 text-[11px] font-bold transition active:scale-95 cursor-pointer"
+                    title={t('members.choose_contact_desc', 'Pick directly from mobile phonebook')}
+                  >
+                    <BookUser className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>{t('members.choose_contact', 'Choose Contact')}</span>
+                  </button>
+                </div>
+
+                <div className="relative">
+                  <input
+                    type="tel"
+                    required
+                    value={phone}
+                    onChange={(e) => {
+                      setPhone(e.target.value);
+                      setDuplicateMember(null);
+                      setMatchedLead(null);
+                    }}
+                    onBlur={handlePhoneBlur}
+                    placeholder="98200XXXXX (10 digits)"
+                    className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white font-mono focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+
+                {/* Mobile-friendly full width Choose Contact button (< sm) */}
+                <div className="sm:hidden mt-2">
+                  <button
+                    type="button"
+                    onClick={handleChooseContact}
+                    className="w-full inline-flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-emerald-400 border border-emerald-500/30 text-xs font-bold transition shadow-sm cursor-pointer"
+                  >
+                    <BookUser className="w-4 h-4 text-emerald-400" />
+                    <span>{t('members.choose_contact', 'Choose from Contacts')}</span>
+                  </button>
+                </div>
+
+                <span className="text-[10px] text-slate-500 mt-1 block">
+                  Tip: Choose from phonebook or enter number (auto-detects leads)
                 </span>
               </div>
 
@@ -1614,6 +1885,76 @@ export default function Members() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* Multiple Phone Numbers Selection Modal */}
+      {multiPhoneModal && (
+        <div className="fixed inset-0 z-60 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#0f172a] border border-slate-700 rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+              <div className="flex items-center gap-2">
+                <Phone className="w-4 h-4 text-emerald-400" />
+                <h4 className="font-bold text-white text-sm">
+                  {t('members.select_phone_number', 'Select Phone Number')}
+                </h4>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMultiPhoneModal(null)}
+                className="text-slate-400 hover:text-white cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div>
+              <p className="text-xs text-slate-200 font-bold">
+                {multiPhoneModal.name || 'Selected Contact'}
+              </p>
+              <p className="text-[11px] text-slate-400 mt-0.5">
+                {t('members.select_phone_desc', 'This contact has multiple phone numbers. Choose which one to use:')}
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              {multiPhoneModal.numbers.map((num, idx) => {
+                const clean = normalizePhoneNumber(num);
+                return (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      applyContactDetails(multiPhoneModal.name, num);
+                      setMultiPhoneModal(null);
+                    }}
+                    className="w-full p-3 rounded-xl bg-slate-900 hover:bg-emerald-500/20 border border-slate-800 hover:border-emerald-500/40 text-left transition flex items-center justify-between group cursor-pointer"
+                  >
+                    <div>
+                      <span className="font-mono text-xs font-bold text-white group-hover:text-emerald-400 block">
+                        {num}
+                      </span>
+                      {clean !== num && (
+                        <span className="font-mono text-[10px] text-slate-500 block">
+                          Cleaned: {clean}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-xs font-semibold text-emerald-400 opacity-0 group-hover:opacity-100 transition">
+                      Select →
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setMultiPhoneModal(null)}
+              className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold cursor-pointer transition"
+            >
+              {t('common.close', 'Cancel')}
+            </button>
           </div>
         </div>
       )}

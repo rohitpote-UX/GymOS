@@ -290,7 +290,18 @@
     "renew_membership": "Renew Membership",
     "renew_desc": "Extend member's plan and record renewal payment",
     "empty_title": "No members added yet",
-    "empty_desc": "Start by registering your first gym member with their mobile number and plan."
+    "empty_desc": "Start by registering your first gym member with their mobile number and plan.",
+    "choose_contact": "Choose Contact",
+    "choose_contact_desc": "Pick directly from mobile phonebook",
+    "contact_unsupported": "Contact selection isn't supported on this device. Please enter the details manually.",
+    "contact_cancelled": "Contact selection was cancelled.",
+    "contact_no_phone": "The selected contact does not have a phone number. Please enter mobile manually.",
+    "select_phone_number": "Select Phone Number",
+    "select_phone_desc": "This contact has multiple phone numbers. Choose which one to use:",
+    "duplicate_member_warning": "A member with this mobile number already exists: {{name}} ({{code}}).",
+    "view_existing_member": "View Member Profile",
+    "lead_matched": "Found matching enquiry lead: {{name}}. Lead information applied!",
+    "overwrite_confirm": "Form already has member data. Replace with details from {{name}}?"
   },
   "attendance": {
     "title": "Gym Attendance",
