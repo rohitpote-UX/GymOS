@@ -194,10 +194,10 @@ export default function WorkoutPlans() {
         api.get('/members?per_page=100').catch(() => ({ data: { data: [] } })),
       ]);
 
-      setPlans(plansRes.data.data || plansRes.data || []);
-      setExercises(exRes.data || []);
-      setTemplates(tmplRes.data || []);
-      setMembers(memRes.data.data || memRes.data || []);
+      setPlans(Array.isArray(plansRes.data?.data) ? plansRes.data.data : Array.isArray(plansRes.data) ? plansRes.data : []);
+      setExercises(Array.isArray(exRes.data?.exercises) ? exRes.data.exercises : Array.isArray(exRes.data?.data) ? exRes.data.data : Array.isArray(exRes.data) ? exRes.data : []);
+      setTemplates(Array.isArray(tmplRes.data?.templates) ? tmplRes.data.templates : Array.isArray(tmplRes.data?.data) ? tmplRes.data.data : Array.isArray(tmplRes.data) ? tmplRes.data : []);
+      setMembers(Array.isArray(memRes.data?.data) ? memRes.data.data : Array.isArray(memRes.data) ? memRes.data : []);
     } catch (err) {
       setError(errorMessage(err));
     } finally {
@@ -441,7 +441,7 @@ export default function WorkoutPlans() {
             className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#1C1C1C] dark:hover:bg-[#252525] text-slate-800 dark:text-slate-200 text-xs font-bold flex items-center gap-2 border border-slate-300 dark:border-[#303030] cursor-pointer transition-all"
           >
             <Layers className="w-4 h-4 text-amber-500" />
-            <span>Templates ({templates.length})</span>
+            <span>Templates ({(Array.isArray(templates) ? templates : []).length})</span>
           </button>
 
           <button
@@ -495,7 +495,7 @@ export default function WorkoutPlans() {
             Ready Templates
           </span>
           <div className="flex items-center justify-between mt-2">
-            <span className="text-2xl font-black text-slate-900 dark:text-white">{templates.length}</span>
+            <span className="text-2xl font-black text-slate-900 dark:text-white">{(Array.isArray(templates) ? templates : []).length}</span>
             <Sparkles className="w-5 h-5 text-indigo-500" />
           </div>
         </div>
@@ -1257,7 +1257,7 @@ export default function WorkoutPlans() {
             </div>
 
             <div className="space-y-4">
-              {templates.map((tmpl) => (
+              {(Array.isArray(templates) ? templates : []).map((tmpl) => (
                 <div
                   key={tmpl.id}
                   className="p-5 rounded-2xl bg-slate-50 dark:bg-[#1C1C1C] border border-slate-200 dark:border-[#303030] flex flex-col md:flex-row md:items-center justify-between gap-4"
