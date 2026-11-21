@@ -269,11 +269,13 @@ class AdminExerciseLibraryController extends Controller
             return response()->json(['error' => 'CSV file is empty or invalid'], 422);
         }
 
-        $header = array_map(fn($col) => strtolower(trim(str_replace([' ', '-'], '_', $col))), $header);
+        // Clean headers and strip UTF-8 BOM on the first column if present
+        $header[0] = preg_replace('/^\xEF\xBB\xBF/', '', (string) $header[0]);
+        $header = array_map(fn($col) => strtolower(trim(str_replace([' ', '-'], '_', (string) $col))), $header);
 
         $imported = 0;
+        $videosCreated = 0;
         $skipped = 0;
-        $errors = [];
 
         DB::beginTransaction();
         try {
@@ -283,14 +285,49 @@ class AdminExerciseLibraryController extends Controller
                 }
                 $data = array_combine($header, $row);
 
-                $name = trim($data['name'] ?? $data['exercise_name'] ?? '');
+                // Detect exercise name from various header candidates
+                $name = trim(
+                    $data['exercise'] ??
+                    $data['name'] ??
+                    $data['exercise_name'] ??
+                    $data['workout'] ??
+                    $data['title'] ??
+                    ''
+                );
+
                 if (!$name) {
                     $skipped++;
                     continue;
                 }
 
-                $category = strtolower(trim($data['category'] ?? $data['muscle_group'] ?? 'chest'));
-                $code = trim($data['code'] ?? 'EX-' . strtoupper(substr($category, 0, 4)) . '-' . rand(1000, 9999));
+                // Detect category / muscle group
+                $rawMuscle = trim($data['muscle_group'] ?? $data['category'] ?? $data['target_muscle_group'] ?? $data['muscle'] ?? 'chest');
+                $lowerMuscle = strtolower($rawMuscle);
+
+                if (str_contains($lowerMuscle, 'chest')) {
+                    $category = 'chest';
+                } elseif (str_contains($lowerMuscle, 'back') || str_contains($lowerMuscle, 'lat')) {
+                    $category = 'back';
+                } elseif (str_contains($lowerMuscle, 'shoulder') || str_contains($lowerMuscle, 'trap') || str_contains($lowerMuscle, 'delt')) {
+                    $category = 'shoulders';
+                } elseif (str_contains($lowerMuscle, 'leg') || str_contains($lowerMuscle, 'quad') || str_contains($lowerMuscle, 'hamstring') || str_contains($lowerMuscle, 'glute') || str_contains($lowerMuscle, 'calv')) {
+                    $category = 'legs';
+                } elseif (str_contains($lowerMuscle, 'bicep') || str_contains($lowerMuscle, 'tricep') || str_contains($lowerMuscle, 'arm')) {
+                    $category = 'arms';
+                } elseif (str_contains($lowerMuscle, 'core') || str_contains($lowerMuscle, 'ab')) {
+                    $category = 'core';
+                } elseif (str_contains($lowerMuscle, 'cardio')) {
+                    $category = 'cardio';
+                } elseif (str_contains($lowerMuscle, 'warm') || str_contains($lowerMuscle, 'mobility') || str_contains($lowerMuscle, 'stretch') || str_contains($lowerMuscle, 'recovery')) {
+                    $category = 'mobility';
+                } else {
+                    $category = Str::slug($rawMuscle) ?: 'chest';
+                }
+
+                $code = trim($data['code'] ?? '');
+                if (empty($code) || Exercise::withoutGlobalScopes()->where('code', $code)->exists()) {
+                    $code = 'EX-' . strtoupper(substr($category, 0, 4)) . '-' . rand(1000, 9999);
+                }
 
                 $exercise = Exercise::withoutGlobalScopes()->updateOrCreate(
                     ['name' => $name],
@@ -299,9 +336,9 @@ class AdminExerciseLibraryController extends Controller
                         'name_mr' => trim($data['name_mr'] ?? ''),
                         'name_hi' => trim($data['name_hi'] ?? ''),
                         'category' => $category,
-                        'target_muscle_group' => trim($data['target_muscle_group'] ?? ucfirst($category)),
+                        'target_muscle_group' => trim($data['target_muscle_group'] ?? $rawMuscle ?: ucfirst($category)),
                         'exercise_type' => strtolower(trim($data['exercise_type'] ?? 'strength_training')),
-                        'equipment_required' => strtolower(trim($data['equipment_required'] ?? $data['equipment'] ?? 'barbells')),
+                        'equipment_required' => strtolower(trim($data['equipment'] ?? $data['equipment_required'] ?? 'barbells')),
                         'difficulty_level' => in_array(strtolower(trim($data['difficulty_level'] ?? '')), ['beginner', 'intermediate', 'advanced']) ? strtolower(trim($data['difficulty_level'])) : 'beginner',
                         'instructions' => trim($data['instructions'] ?? "Perform {$name} with controlled tempo and strict form."),
                         'safety_notes' => trim($data['safety_notes'] ?? 'Maintain safe posture and avoid hyperextension.'),
@@ -309,6 +346,93 @@ class AdminExerciseLibraryController extends Controller
                         'is_active' => true,
                     ]
                 );
+
+                // Detect video URL or video ID from row fields
+                $videoUrl = trim(
+                    $data['video_url_to_fill'] ??
+                    $data['video_url'] ??
+                    $data['youtube_url'] ??
+                    $data['video_link'] ??
+                    $data['tutorial_url'] ??
+                    $data['tutorial_video'] ??
+                    $data['youtube_link'] ??
+                    $data['video'] ??
+                    $data['url'] ??
+                    $data['link'] ??
+                    ''
+                );
+
+                // If not found in named columns, scan row values for a YouTube or Vimeo link
+                if (!$videoUrl) {
+                    foreach ($data as $colVal) {
+                        $valTrim = trim((string) $colVal);
+                        if (str_contains($valTrim, 'youtube.com/watch') || str_contains($valTrim, 'youtu.be/') || str_contains($valTrim, 'vimeo.com/')) {
+                            $videoUrl = $valTrim;
+                            break;
+                        }
+                    }
+                }
+
+                $videoId = trim(
+                    $data['video_id'] ??
+                    $data['youtube_id'] ??
+                    $data['youtube_video_id'] ??
+                    ''
+                );
+
+                if ($videoUrl || $videoId) {
+                    $provider = strtolower(trim($data['provider'] ?? 'youtube'));
+                    if (str_contains($videoUrl, 'vimeo')) {
+                        $provider = 'vimeo';
+                    }
+
+                    if (empty($videoId) && $provider === 'youtube') {
+                        $extracted = $this->resolverService->extractYouTubeId($videoUrl);
+                        if ($extracted) {
+                            $videoId = $extracted;
+                        }
+                    }
+
+                    $embedUrl = $this->resolverService->generateSafeEmbedUrl($provider, $videoId ?: $videoUrl, $videoUrl);
+                    $videoTitle = trim($data['video_title'] ?? $data['title'] ?? ($name . ' Tutorial'));
+                    $creator = trim($data['creator_name'] ?? $data['creator'] ?? $data['channel'] ?? $data['instructor'] ?? 'Master Trainer');
+                    $duration = (int) ($data['duration_seconds'] ?? $data['duration'] ?? 180);
+                    $thumb = trim($data['thumbnail_url'] ?? $data['thumbnail'] ?? '');
+                    if (!$thumb && $videoId && $provider === 'youtube') {
+                        $thumb = "https://img.youtube.com/vi/{$videoId}/hqdefault.jpg";
+                    }
+
+                    $video = ExerciseVideo::updateOrCreate(
+                        [
+                            'exercise_id' => $exercise->id,
+                            'gym_id' => null, // Global platform video
+                        ],
+                        [
+                            'title' => $videoTitle,
+                            'provider' => $provider,
+                            'video_id' => $videoId ?: substr(md5($videoUrl), 0, 16),
+                            'video_url' => $videoUrl ?: ($videoId ? "https://www.youtube.com/watch?v={$videoId}" : ''),
+                            'embed_url' => $embedUrl,
+                            'thumbnail_url' => $thumb,
+                            'duration_seconds' => $duration > 0 ? $duration : 180,
+                            'creator_name' => $creator,
+                            'attribution_text' => "Demonstration by {$creator}",
+                            'rights_status' => 'public_embed_allowed',
+                            'content_source' => 'youtube',
+                            'is_primary' => true,
+                            'status' => 'approved',
+                            'health_status' => 'healthy',
+                            'is_active' => true,
+                        ]
+                    );
+
+                    $exercise->update([
+                        'default_video_id' => $video->id,
+                        'thumbnail_url' => $thumb ?: $exercise->thumbnail_url,
+                    ]);
+
+                    $videosCreated++;
+                }
 
                 $imported++;
             }
@@ -319,6 +443,7 @@ class AdminExerciseLibraryController extends Controller
             return response()->json([
                 'success' => true,
                 'imported_count' => $imported,
+                'videos_count' => $videosCreated,
                 'skipped_count' => $skipped,
             ]);
         } catch (\Throwable $e) {

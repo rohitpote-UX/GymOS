@@ -76,6 +76,16 @@ class Gym extends Model
         return $this->hasMany(GymAsset::class);
     }
 
+    public function videoOverrides(): HasMany
+    {
+        return $this->hasMany(GymExerciseVideoOverride::class);
+    }
+
+    public function customVideos(): HasMany
+    {
+        return $this->hasMany(ExerciseVideo::class);
+    }
+
     public function isExpired(): bool
     {
         if ($this->status === self::STATUS_TRIAL) {

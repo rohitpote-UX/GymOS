@@ -265,7 +265,7 @@ export const AdminExerciseLibrary: React.FC = () => {
         },
       });
 
-      showToast(`Imported ${res.data.imported_count} exercises successfully!`);
+      showToast(`Imported ${res.data.imported_count} exercises and ${res.data.videos_count || 0} tutorial videos successfully!`);
       setShowCsvImportModal(false);
       setCsvFile(null);
       fetchData();
@@ -923,7 +923,7 @@ export const AdminExerciseLibrary: React.FC = () => {
                   <div className="text-xs font-bold text-gym-primary">
                     {csvFile ? csvFile.name : 'Click to select .CSV exercise file'}
                   </div>
-                  <div className="text-[11px] text-gym-secondary">Supported headers: name, name_mr, name_hi, category, equipment, difficulty, instructions</div>
+                  <div className="text-[11px] text-gym-secondary">Supported headers: exercise (or name), muscle_group (or category), equipment, video_url_to_fill (or video_url, youtube_url), instructions</div>
                 </label>
               </div>
 
