@@ -47,6 +47,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call(WorkoutAndNutritionSeeder::class);
+        $this->call(ExerciseVideoLibrarySeeder::class);
 
         // 1. Super Admin (Platform Owner)
         $superAdmin = User::create([
