@@ -955,8 +955,9 @@ export default function DietPlans() {
                     key={sIdx}
                     className="p-4 rounded-2xl bg-slate-50 dark:bg-[#1C1C1C] border border-slate-200 dark:border-[#303030] space-y-3"
                   >
-                    <div className="flex items-center justify-between gap-3 flex-wrap">
-                      <div className="flex items-center gap-2 flex-1">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2 border-b border-slate-200/80 dark:border-[#282828]">
+                      {/* Left: Meal Slot Name + Timing Pill */}
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
                         <input
                           type="text"
                           value={slot.slot_name}
@@ -965,10 +966,12 @@ export default function DietPlans() {
                             updated[sIdx].slot_name = e.target.value;
                             setMealSlots(updated);
                           }}
-                          className="px-3 py-1.5 rounded-lg bg-white dark:bg-[#101010] border border-slate-300 dark:border-[#303030] text-xs font-bold max-w-xs"
+                          placeholder="Meal name (e.g. Lunch)"
+                          className="flex-1 min-w-0 px-3 py-1.5 rounded-xl bg-white dark:bg-[#101010] border border-slate-300 dark:border-[#303030] text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
                         />
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5 text-slate-400" />
+
+                        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white dark:bg-[#101010] border border-slate-300 dark:border-[#303030] shrink-0">
+                          <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                           <input
                             type="text"
                             value={slot.time_hint}
@@ -977,17 +980,18 @@ export default function DietPlans() {
                               updated[sIdx].time_hint = e.target.value;
                               setMealSlots(updated);
                             }}
-                            placeholder="08:30 AM"
-                            className="px-2 py-1 rounded-lg bg-white dark:bg-[#101010] border border-slate-300 dark:border-[#303030] text-xs font-mono w-24 text-center"
+                            placeholder="01:30 PM"
+                            className="w-18 bg-transparent text-xs font-mono font-semibold text-slate-800 dark:text-slate-200 text-center focus:outline-none"
                           />
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2">
+                      {/* Right: Actions (+ Add Food & Delete Slot) */}
+                      <div className="flex items-center justify-end gap-2 shrink-0">
                         <button
                           type="button"
                           onClick={() => addItemToSlot(sIdx)}
-                          className="px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold flex items-center gap-1 cursor-pointer"
+                          className="px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
                         >
                           <Plus className="w-3.5 h-3.5" />
                           <span>Add Food</span>
@@ -997,9 +1001,10 @@ export default function DietPlans() {
                           <button
                             type="button"
                             onClick={() => removeMealSlot(sIdx)}
-                            className="p-1 rounded-lg text-rose-500 hover:bg-rose-500/10 cursor-pointer"
+                            className="p-1.5 rounded-xl text-rose-500 hover:bg-rose-500/10 dark:hover:bg-rose-500/20 cursor-pointer transition-colors"
+                            title="Delete meal slot"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         )}
                       </div>
