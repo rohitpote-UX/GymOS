@@ -135,6 +135,7 @@ export default function Attendance() {
   // Printable Poster Modal State
   const [posterModalOpen, setPosterModalOpen] = useState(false);
   const [posterLanguage, setPosterLanguage] = useState<'all' | 'mr' | 'hi' | 'en'>('all');
+  const [posterFormat, setPosterFormat] = useState<'a4' | 'a5'>('a4');
   const qrCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // Instant Verification Modal State (Front Desk)
@@ -1221,7 +1222,7 @@ export default function Attendance() {
               <div className="flex items-center gap-1 bg-slate-900 p-0.5 rounded-lg border border-slate-800 text-xs">
                 <button
                   onClick={() => setPosterLanguage('all')}
-                  className={`px-2 py-1 rounded font-medium transition ${
+                  className={`px-2 py-1 rounded font-medium transition cursor-pointer ${
                     posterLanguage === 'all' ? 'bg-emerald-600 text-white font-bold' : 'text-slate-400 hover:text-white'
                   }`}
                 >
@@ -1229,7 +1230,7 @@ export default function Attendance() {
                 </button>
                 <button
                   onClick={() => setPosterLanguage('en')}
-                  className={`px-2 py-1 rounded font-medium transition ${
+                  className={`px-2 py-1 rounded font-medium transition cursor-pointer ${
                     posterLanguage === 'en' ? 'bg-emerald-600 text-white font-bold' : 'text-slate-400 hover:text-white'
                   }`}
                 >
@@ -1237,7 +1238,7 @@ export default function Attendance() {
                 </button>
                 <button
                   onClick={() => setPosterLanguage('mr')}
-                  className={`px-2 py-1 rounded font-medium transition ${
+                  className={`px-2 py-1 rounded font-medium transition cursor-pointer ${
                     posterLanguage === 'mr' ? 'bg-emerald-600 text-white font-bold' : 'text-slate-400 hover:text-white'
                   }`}
                 >
@@ -1245,11 +1246,31 @@ export default function Attendance() {
                 </button>
                 <button
                   onClick={() => setPosterLanguage('hi')}
-                  className={`px-2 py-1 rounded font-medium transition ${
+                  className={`px-2 py-1 rounded font-medium transition cursor-pointer ${
                     posterLanguage === 'hi' ? 'bg-emerald-600 text-white font-bold' : 'text-slate-400 hover:text-white'
                   }`}
                 >
                   हिंदी
+                </button>
+              </div>
+
+              {/* Format Toggle A4 / A5 */}
+              <div className="flex items-center gap-1 bg-slate-900 p-0.5 rounded-lg border border-slate-800 text-xs">
+                <button
+                  onClick={() => setPosterFormat('a4')}
+                  className={`px-2.5 py-1 rounded font-bold transition cursor-pointer ${
+                    posterFormat === 'a4' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  A4
+                </button>
+                <button
+                  onClick={() => setPosterFormat('a5')}
+                  className={`px-2.5 py-1 rounded font-bold transition cursor-pointer ${
+                    posterFormat === 'a5' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  A5
                 </button>
               </div>
 
@@ -1259,7 +1280,7 @@ export default function Attendance() {
                   className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 transition cursor-pointer shadow-md shadow-emerald-600/30"
                 >
                   <Printer className="w-4 h-4" />
-                  <span>Print (A4)</span>
+                  <span>Print ({posterFormat.toUpperCase()})</span>
                 </button>
                 <button
                   onClick={() => setPosterModalOpen(false)}
@@ -1274,8 +1295,10 @@ export default function Attendance() {
             <div className="p-6 md:p-10 overflow-y-auto bg-slate-950 flex justify-center print:p-0 print:bg-white print:overflow-visible">
               <div
                 id="printable-poster"
-                className="w-full max-w-[500px] bg-white text-slate-900 rounded-2xl p-8 border-2 border-slate-200 shadow-2xl flex flex-col justify-between items-center text-center print:border-none print:shadow-none print:rounded-none print:max-w-none print:w-full print:p-8"
-                style={{ minHeight: '680px' }}
+                className={`w-full ${
+                  posterFormat === 'a4' ? 'max-w-[520px]' : 'max-w-[420px]'
+                } bg-white text-slate-900 rounded-2xl p-8 border-2 border-slate-200 shadow-2xl flex flex-col justify-between items-center text-center print:border-none print:shadow-none print:rounded-none print:max-w-none print:w-full print:p-8`}
+                style={{ minHeight: posterFormat === 'a4' ? '700px' : '580px' }}
               >
                 {/* Gym Logo & Header */}
                 <div className="space-y-2 mb-4 w-full">
@@ -1300,21 +1323,36 @@ export default function Attendance() {
                 </div>
 
                 {/* Banner Call To Action */}
-                <div className="my-3 space-y-1 w-full bg-slate-900 text-white py-3 px-4 rounded-xl shadow-md">
+                <div className="my-3 space-y-1.5 w-full bg-slate-900 text-white py-3.5 px-4 rounded-xl shadow-md">
                   {(posterLanguage === 'all' || posterLanguage === 'en') && (
-                    <h2 className="text-base font-black tracking-wide text-white">
-                      SCAN TO MARK ATTENDANCE
-                    </h2>
+                    <div>
+                      <h2 className="text-base font-black tracking-wide text-white uppercase">
+                        SCAN TO CHECK IN
+                      </h2>
+                      <p className="text-[11px] text-slate-300 font-bold tracking-wider uppercase">
+                        Existing Members | Visitors
+                      </p>
+                    </div>
                   )}
                   {(posterLanguage === 'all' || posterLanguage === 'mr') && (
-                    <h2 className="text-base font-black text-emerald-400">
-                      हजेरी नोंदवण्यासाठी स्कॅन करा
-                    </h2>
+                    <div className="pt-0.5">
+                      <h2 className="text-base font-black text-emerald-400">
+                        हजेरी व वन-डे पाससाठी स्कॅन करा
+                      </h2>
+                      <p className="text-[10px] text-slate-300 font-semibold">
+                        विद्यमान सदस्य | व्हिजिटर्स
+                      </p>
+                    </div>
                   )}
                   {(posterLanguage === 'all' || posterLanguage === 'hi') && (
-                    <h3 className="text-sm font-bold text-slate-200">
-                      उपस्थिति दर्ज करने के लिए स्कैन करें
-                    </h3>
+                    <div className="pt-0.5">
+                      <h3 className="text-sm font-bold text-slate-200">
+                        उपस्थिति और वन-डे पास के लिए स्कैन करें
+                      </h3>
+                      <p className="text-[10px] text-slate-300 font-semibold">
+                        मौजूदा सदस्य | विजिटर्स
+                      </p>
+                    </div>
                   )}
                 </div>
 
@@ -1328,7 +1366,7 @@ export default function Attendance() {
 
                   <QRCodeSVG
                     value={publicUrl}
-                    size={220}
+                    size={posterFormat === 'a4' ? 220 : 180}
                     level="H"
                     marginSize={1}
                   />
@@ -1348,15 +1386,15 @@ export default function Attendance() {
                   </div>
                   <div className="p-2 bg-slate-50 rounded-xl border border-slate-200/80">
                     <span className="text-base block mb-0.5">✅</span>
-                    <span className="text-[10px] font-bold text-slate-900 block">3. Confirm In</span>
-                    <span className="text-[9px] text-slate-500 block">हजेरी नोंदवा</span>
+                    <span className="text-[10px] font-bold text-slate-900 block">3. Member / Pass</span>
+                    <span className="text-[9px] text-slate-500 block">हजेरी / पास</span>
                   </div>
                 </div>
 
                 {/* Footer notes */}
                 <div className="pt-3 border-t border-slate-200 w-full text-center space-y-1">
                   <p className="text-[10px] font-semibold text-slate-600">
-                    Open your smartphone camera, scan the QR code and enter your registered phone number.
+                    Scan with your phone camera • Works on Android & iPhone • No app required
                   </p>
                   <p className="text-[9px] text-slate-400 font-mono">
                     Facility Code: {selectedQr.code} • Powered by GymOS

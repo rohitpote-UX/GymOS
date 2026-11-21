@@ -39,6 +39,7 @@ use App\Http\Controllers\Api\SupplierController;
 use App\Http\Controllers\Api\SupportTicketController;
 use App\Http\Controllers\Api\TrainerController;
 use App\Http\Controllers\Api\TrainerPortalController;
+use App\Http\Controllers\Api\VisitorPassController;
 use App\Http\Controllers\Api\WhatsAppController;
 use App\Http\Controllers\Api\WorkoutPlanController;
 use Illuminate\Support\Facades\Route;
@@ -58,12 +59,18 @@ Route::get('/gyms/{slug}/branding', [BrandingController::class, 'gym']);
 Route::get('/gyms/{slug}/manifest.webmanifest', [BrandingController::class, 'gymManifest']);
 Route::get('/gyms/{slug}/icons/{kind}.png', [BrandingController::class, 'icon']);
 
-// Member Self Check-in via QR Poster (Public / Rate-limited)
+// Member & Visitor Self Check-in via Branch QR Poster / Public URL (Public / Rate-limited)
 Route::prefix('self-check-in')->middleware('throttle:60,1')->group(function () {
+    Route::get('/resolve/{gymSlug}/{branchCode}', [SelfCheckInController::class, 'resolveBySlug']);
     Route::get('/info/{token}', [SelfCheckInController::class, 'info']);
     Route::post('/verify-member', [SelfCheckInController::class, 'verifyMember'])->middleware('throttle:30,1');
     Route::post('/confirm', [SelfCheckInController::class, 'confirm'])->middleware('throttle:20,1');
+    Route::post('/visitor-order', [SelfCheckInController::class, 'visitorOrder'])->middleware('throttle:20,1');
+    Route::post('/visitor-verify-payment', [SelfCheckInController::class, 'visitorVerifyPayment'])->middleware('throttle:20,1');
 });
+
+// Razorpay Webhooks (Public)
+Route::post('/webhooks/razorpay/visitor-pass', [SelfCheckInController::class, 'razorpayWebhook']);
 
 // -------------------------------------------------------------
 // 2. AUTHENTICATED COMMON ROUTES
@@ -210,6 +217,16 @@ Route::middleware(['auth:sanctum', 'gym', 'branch'])->group(function () {
         Route::post('/attendance/qr-codes/{id}/regenerate', [GymQrCodeController::class, 'regenerate']);
         Route::post('/attendance/qr-codes/{id}/toggle-status', [GymQrCodeController::class, 'toggleStatus']);
         Route::get('/attendance/qr-codes/{id}/activity', [GymQrCodeController::class, 'activity']);
+
+        // Front-Desk / Turnstile QR Member Pass Scanner
+        Route::post('/attendance/scan-member-pass', [SelfCheckInController::class, 'scanMemberPass']);
+
+        // One-Day Visitor Pass Management & Front Desk Walk-In Issuance
+        Route::prefix('visitor-passes')->group(function () {
+            Route::get('/', [VisitorPassController::class, 'index']);
+            Route::post('/manual-register', [VisitorPassController::class, 'manualRegister']);
+            Route::get('/{id}', [VisitorPassController::class, 'show']);
+        });
     });
 
     // Module 4: Financial Management & Cash Flow

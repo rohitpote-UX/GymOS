@@ -86,6 +86,11 @@ class Gym extends Model
         return $this->hasMany(ExerciseVideo::class);
     }
 
+    public function visitorPasses(): HasMany
+    {
+        return $this->hasMany(VisitorPass::class);
+    }
+
     public function isExpired(): bool
     {
         if ($this->status === self::STATUS_TRIAL) {

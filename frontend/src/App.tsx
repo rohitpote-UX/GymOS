@@ -34,6 +34,7 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import WorkoutPlans from './pages/WorkoutPlans';
 import DietPlans from './pages/DietPlans';
 import ExerciseLibrary from './pages/ExerciseLibrary';
+import VisitorPasses from './pages/VisitorPasses';
 
 const AppRoutes: React.FC = () => {
   const { user } = useAuth();
@@ -41,6 +42,9 @@ const AppRoutes: React.FC = () => {
   return (
     <Routes>
       {/* Public QR Self-Attendance Endpoints (Camera Scan / PWA) */}
+      <Route path="/checkin/:gymSlug/:branchCode" element={<SelfCheckIn />} />
+      <Route path="/check-in/:gymSlug/:branchCode" element={<SelfCheckIn />} />
+      <Route path="/checkin/:token" element={<SelfCheckIn />} />
       <Route path="/check-in/:token" element={<SelfCheckIn />} />
       <Route path="/self-check-in/:token" element={<SelfCheckIn />} />
 
@@ -91,6 +95,7 @@ const AppRoutes: React.FC = () => {
 
           {/* Operational Modules */}
           <Route path="/attendance" element={<Attendance />} />
+          <Route path="/visitor-passes" element={<VisitorPasses />} />
           <Route path="/members" element={<Members />} />
           <Route path="/workouts" element={<WorkoutPlans />} />
           <Route path="/diets" element={<DietPlans />} />

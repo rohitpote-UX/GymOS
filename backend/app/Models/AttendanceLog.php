@@ -23,6 +23,10 @@ class AttendanceLog extends Model
         'latitude',
         'longitude',
         'verified_by_user_id',
+        'person_type',
+        'visitor_pass_id',
+        'qr_reference',
+        'notes',
     ];
 
     protected function casts(): array
@@ -38,6 +42,11 @@ class AttendanceLog extends Model
     public function member(): BelongsTo
     {
         return $this->belongsTo(Member::class);
+    }
+
+    public function visitorPass(): BelongsTo
+    {
+        return $this->belongsTo(VisitorPass::class, 'visitor_pass_id');
     }
 
     public function branch(): BelongsTo

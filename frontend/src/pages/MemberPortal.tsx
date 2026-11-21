@@ -173,7 +173,7 @@ interface ProgressLogItem {
 }
 
 export default function MemberPortal() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
 
   // Active Top Tab
@@ -412,6 +412,17 @@ export default function MemberPortal() {
   const isExpired = profile?.active_membership
     ? new Date(profile.active_membership.end_date) < new Date()
     : true;
+
+  const memberPassQrData = profile
+    ? JSON.stringify({
+        type: 'member_pass',
+        code: profile.member_code,
+        id: profile.id,
+        gym_id: user?.gym?.id,
+        name: `${profile.first_name} ${profile.last_name}`,
+        phone: profile.phone,
+      })
+    : 'GYM-MEMBER';
 
   const latestLog = progressLogs[0];
   const initialLog = progressLogs[progressLogs.length - 1];
@@ -935,7 +946,9 @@ export default function MemberPortal() {
                   <div>
                     <span className="text-[10px] uppercase text-slate-400 block font-semibold">Valid Until</span>
                     <span className="font-bold text-emerald-400 text-sm font-mono">
-                      {profile?.active_membership?.end_date || 'N/A'}
+                      {profile?.active_membership?.end_date
+                        ? formatDate(profile.active_membership.end_date, i18n.language)
+                        : 'N/A'}
                     </span>
                   </div>
                 </div>
@@ -955,7 +968,7 @@ export default function MemberPortal() {
                   className="bg-white p-2.5 rounded-xl cursor-pointer hover:scale-105 transition-transform"
                 >
                   <QRCodeSVG
-                    value={profile?.member_code || 'GYM-MEMBER'}
+                    value={memberPassQrData}
                     size={110}
                     level="H"
                     includeMargin={false}
@@ -1425,7 +1438,7 @@ export default function MemberPortal() {
             <h3 className="text-base font-bold text-slate-900 dark:text-white">Scan at Gym Entrance</h3>
             <div className="bg-white p-4 rounded-2xl inline-block shadow-lg">
               <QRCodeSVG
-                value={profile?.member_code || 'GYM-MEMBER'}
+                value={memberPassQrData}
                 size={220}
                 level="H"
                 includeMargin={false}
