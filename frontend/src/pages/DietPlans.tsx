@@ -1013,84 +1013,112 @@ export default function DietPlans() {
                         slot.items.map((it, iIdx) => (
                           <div
                             key={iIdx}
-                            className="p-3 rounded-xl bg-white dark:bg-[#101010] border border-slate-200 dark:border-[#303030] grid grid-cols-1 sm:grid-cols-12 gap-2 items-center"
+                            className="p-3.5 rounded-2xl bg-white dark:bg-[#141414] border border-slate-200/90 dark:border-[#282828] shadow-xs hover:border-slate-300 dark:hover:border-[#383838] transition-all space-y-2.5"
                           >
-                            <div className="sm:col-span-4">
-                              <input
-                                type="text"
-                                value={it.food_name}
-                                onChange={(e) => updateMealItem(sIdx, iIdx, 'food_name', e.target.value)}
-                                placeholder="Food item (e.g. 2 Boiled Eggs)"
-                                className="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-[#1C1C1C] border border-slate-200 dark:border-[#303030] text-xs font-bold"
-                              />
-                            </div>
-
-                            <div className="sm:col-span-2">
-                              <input
-                                type="text"
-                                value={it.quantity}
-                                onChange={(e) => updateMealItem(sIdx, iIdx, 'quantity', e.target.value)}
-                                placeholder="Portion / Qty"
-                                className="w-full px-2 py-1.5 rounded-lg bg-slate-50 dark:bg-[#1C1C1C] border border-slate-200 dark:border-[#303030] text-xs font-medium text-center"
-                              />
-                            </div>
-
-                            <div className="sm:col-span-2">
-                              <div className="flex items-center gap-1">
-                                <span className="text-[10px] text-slate-400 uppercase">Cal</span>
+                            {/* Row 1: Food Name + Quantity / Portion + Delete Button */}
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                              <div className="flex-1 min-w-0">
                                 <input
-                                  type="number"
-                                  value={it.calories}
-                                  onChange={(e) => updateMealItem(sIdx, iIdx, 'calories', Number(e.target.value))}
-                                  className="w-full px-2 py-1 rounded-lg bg-slate-50 dark:bg-[#1C1C1C] border border-slate-200 dark:border-[#303030] text-xs font-bold text-center"
+                                  type="text"
+                                  value={it.food_name}
+                                  onChange={(e) => updateMealItem(sIdx, iIdx, 'food_name', e.target.value)}
+                                  placeholder="Food item (e.g. 2 Boiled Eggs, Oats & Almonds)"
+                                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#1C1C1C] border border-slate-200 dark:border-[#303030] text-xs font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                                 />
+                              </div>
+
+                              <div className="w-full sm:w-40 shrink-0 flex items-center gap-1.5">
+                                <input
+                                  type="text"
+                                  value={it.quantity}
+                                  onChange={(e) => updateMealItem(sIdx, iIdx, 'quantity', e.target.value)}
+                                  placeholder="Portion (e.g. 100g)"
+                                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#1C1C1C] border border-slate-200 dark:border-[#303030] text-xs font-medium text-slate-800 dark:text-slate-200 placeholder:text-slate-400 text-center focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => removeItemFromSlot(sIdx, iIdx)}
+                                  className="p-2 rounded-xl text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 dark:hover:bg-rose-500/20 cursor-pointer shrink-0 transition-colors"
+                                  title="Remove food item"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
                               </div>
                             </div>
 
-                            <div className="sm:col-span-1">
-                              <div className="flex items-center gap-0.5">
-                                <span className="text-[9px] text-emerald-500 font-bold">P</span>
-                                <input
-                                  type="number"
-                                  value={it.protein}
-                                  onChange={(e) => updateMealItem(sIdx, iIdx, 'protein', Number(e.target.value))}
-                                  className="w-full px-1 py-1 rounded-lg bg-slate-50 dark:bg-[#1C1C1C] border border-slate-200 dark:border-[#303030] text-[11px] font-bold text-center"
-                                />
+                            {/* Row 2: Macros & Calories Pill Grid */}
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-0.5">
+                              {/* Calories Pill */}
+                              <div className="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-slate-50 dark:bg-[#1C1C1C] border border-slate-200/80 dark:border-[#2D2D2D]">
+                                <span className="text-[10px] font-bold text-amber-500 uppercase tracking-wider flex items-center gap-1">
+                                  <span>🔥</span>
+                                  <span>Cal</span>
+                                </span>
+                                <div className="flex items-center gap-1">
+                                  <input
+                                    type="number"
+                                    value={it.calories || ''}
+                                    onChange={(e) => updateMealItem(sIdx, iIdx, 'calories', Number(e.target.value))}
+                                    placeholder="0"
+                                    className="w-14 px-1.5 py-0.5 rounded-lg bg-white dark:bg-[#101010] border border-slate-200 dark:border-[#363636] text-xs font-black text-center text-slate-900 dark:text-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:outline-none focus:border-amber-500"
+                                  />
+                                  <span className="text-[10px] text-slate-400 font-semibold">kcal</span>
+                                </div>
                               </div>
-                            </div>
 
-                            <div className="sm:col-span-1">
-                              <div className="flex items-center gap-0.5">
-                                <span className="text-[9px] text-blue-500 font-bold">C</span>
-                                <input
-                                  type="number"
-                                  value={it.carbs}
-                                  onChange={(e) => updateMealItem(sIdx, iIdx, 'carbs', Number(e.target.value))}
-                                  className="w-full px-1 py-1 rounded-lg bg-slate-50 dark:bg-[#1C1C1C] border border-slate-200 dark:border-[#303030] text-[11px] font-bold text-center"
-                                />
+                              {/* Protein Pill */}
+                              <div className="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-slate-50 dark:bg-[#1C1C1C] border border-slate-200/80 dark:border-[#2D2D2D]">
+                                <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-wider flex items-center gap-1">
+                                  <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
+                                  <span>Protein</span>
+                                </span>
+                                <div className="flex items-center gap-1">
+                                  <input
+                                    type="number"
+                                    value={it.protein || ''}
+                                    onChange={(e) => updateMealItem(sIdx, iIdx, 'protein', Number(e.target.value))}
+                                    placeholder="0"
+                                    className="w-12 px-1.5 py-0.5 rounded-lg bg-white dark:bg-[#101010] border border-slate-200 dark:border-[#363636] text-xs font-black text-center text-emerald-600 dark:text-emerald-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:outline-none focus:border-emerald-500"
+                                  />
+                                  <span className="text-[10px] text-slate-400 font-semibold">g</span>
+                                </div>
                               </div>
-                            </div>
 
-                            <div className="sm:col-span-1">
-                              <div className="flex items-center gap-0.5">
-                                <span className="text-[9px] text-rose-500 font-bold">F</span>
-                                <input
-                                  type="number"
-                                  value={it.fat}
-                                  onChange={(e) => updateMealItem(sIdx, iIdx, 'fat', Number(e.target.value))}
-                                  className="w-full px-1 py-1 rounded-lg bg-slate-50 dark:bg-[#1C1C1C] border border-slate-200 dark:border-[#303030] text-[11px] font-bold text-center"
-                                />
+                              {/* Carbs Pill */}
+                              <div className="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-slate-50 dark:bg-[#1C1C1C] border border-slate-200/80 dark:border-[#2D2D2D]">
+                                <span className="text-[10px] font-bold text-sky-500 uppercase tracking-wider flex items-center gap-1">
+                                  <span className="w-2 h-2 rounded-full bg-sky-500 inline-block"></span>
+                                  <span>Carbs</span>
+                                </span>
+                                <div className="flex items-center gap-1">
+                                  <input
+                                    type="number"
+                                    value={it.carbs || ''}
+                                    onChange={(e) => updateMealItem(sIdx, iIdx, 'carbs', Number(e.target.value))}
+                                    placeholder="0"
+                                    className="w-12 px-1.5 py-0.5 rounded-lg bg-white dark:bg-[#101010] border border-slate-200 dark:border-[#363636] text-xs font-black text-center text-sky-600 dark:text-sky-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:outline-none focus:border-sky-500"
+                                  />
+                                  <span className="text-[10px] text-slate-400 font-semibold">g</span>
+                                </div>
                               </div>
-                            </div>
 
-                            <div className="sm:col-span-1 text-right">
-                              <button
-                                type="button"
-                                onClick={() => removeItemFromSlot(sIdx, iIdx)}
-                                className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-500/10 cursor-pointer"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
+                              {/* Fats Pill */}
+                              <div className="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-slate-50 dark:bg-[#1C1C1C] border border-slate-200/80 dark:border-[#2D2D2D]">
+                                <span className="text-[10px] font-bold text-rose-500 uppercase tracking-wider flex items-center gap-1">
+                                  <span className="w-2 h-2 rounded-full bg-rose-500 inline-block"></span>
+                                  <span>Fats</span>
+                                </span>
+                                <div className="flex items-center gap-1">
+                                  <input
+                                    type="number"
+                                    value={it.fat || ''}
+                                    onChange={(e) => updateMealItem(sIdx, iIdx, 'fat', Number(e.target.value))}
+                                    placeholder="0"
+                                    className="w-12 px-1.5 py-0.5 rounded-lg bg-white dark:bg-[#101010] border border-slate-200 dark:border-[#363636] text-xs font-black text-center text-rose-600 dark:text-rose-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:outline-none focus:border-rose-500"
+                                  />
+                                  <span className="text-[10px] text-slate-400 font-semibold">g</span>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         ))
