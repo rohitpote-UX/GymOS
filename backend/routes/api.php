@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\ActionCenterController;
+use App\Http\Controllers\Api\Admin\AdminExerciseLibraryController;
 use App\Http\Controllers\Api\Admin\GymController as AdminGymController;
 use App\Http\Controllers\Api\Admin\PlanController as AdminPlanController;
 use App\Http\Controllers\Api\AiAdvisorController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\Api\DietPlanController;
 use App\Http\Controllers\Api\ExerciseController;
 use App\Http\Controllers\Api\ExpenseController;
 use App\Http\Controllers\Api\GlobalSearchController;
+use App\Http\Controllers\Api\GymExerciseLibraryController;
 use App\Http\Controllers\Api\GymQrCodeController;
 use App\Http\Controllers\Api\InventoryController;
 use App\Http\Controllers\Api\LeadController;
@@ -98,6 +100,31 @@ Route::middleware(['auth:sanctum', 'super.admin'])->prefix('admin')->group(funct
     Route::put('/support-tickets/{id}/status', [AdminGymController::class, 'updateTicketStatus']);
 
     Route::apiResource('plans', AdminPlanController::class);
+
+    // Centralized Exercise Video Library (Platform Super Admin)
+    Route::prefix('exercise-library')->group(function () {
+        Route::get('/overview', [AdminExerciseLibraryController::class, 'overview']);
+        Route::get('/categories', [AdminExerciseLibraryController::class, 'categories']);
+        Route::post('/categories', [AdminExerciseLibraryController::class, 'storeCategory']);
+        Route::put('/categories/{id}', [AdminExerciseLibraryController::class, 'updateCategory']);
+        Route::delete('/categories/{id}', [AdminExerciseLibraryController::class, 'deleteCategory']);
+
+        Route::get('/exercises', [AdminExerciseLibraryController::class, 'exercises']);
+        Route::post('/exercises', [AdminExerciseLibraryController::class, 'storeExercise']);
+        Route::put('/exercises/{id}', [AdminExerciseLibraryController::class, 'updateExercise']);
+        Route::post('/exercises/bulk-import', [AdminExerciseLibraryController::class, 'bulkImport']);
+
+        Route::get('/videos', [AdminExerciseLibraryController::class, 'videos']);
+        Route::post('/videos', [AdminExerciseLibraryController::class, 'storeVideo']);
+        Route::put('/videos/{id}', [AdminExerciseLibraryController::class, 'updateVideo']);
+        Route::delete('/videos/{id}', [AdminExerciseLibraryController::class, 'deleteVideo']);
+        Route::post('/videos/{id}/health-check', [AdminExerciseLibraryController::class, 'checkHealth']);
+        Route::post('/videos/batch-health-check', [AdminExerciseLibraryController::class, 'batchHealthCheck']);
+        Route::put('/videos/{id}/approve', [AdminExerciseLibraryController::class, 'approveVideo']);
+
+        Route::get('/providers', [AdminExerciseLibraryController::class, 'providers']);
+        Route::put('/providers/{id}', [AdminExerciseLibraryController::class, 'updateProvider']);
+    });
 });
 
 // -------------------------------------------------------------
@@ -154,6 +181,18 @@ Route::middleware(['auth:sanctum', 'gym', 'branch'])->group(function () {
     Route::put('/diet-plans/{id}', [DietPlanController::class, 'update']);
     Route::post('/diet-plans/{id}/duplicate', [DietPlanController::class, 'duplicate']);
     Route::patch('/diet-plans/{id}/status', [DietPlanController::class, 'updateStatus']);
+
+    // Gym-Specific Exercise Video Library & Overrides
+    Route::prefix('exercise-library')->group(function () {
+        Route::get('/', [GymExerciseLibraryController::class, 'index']);
+        Route::get('/categories', [GymExerciseLibraryController::class, 'categories']);
+        Route::get('/settings/config', [GymExerciseLibraryController::class, 'getSettings']);
+        Route::put('/settings/config', [GymExerciseLibraryController::class, 'updateSettings']);
+        Route::get('/{id}', [GymExerciseLibraryController::class, 'show']);
+        Route::post('/{id}/custom-video', [GymExerciseLibraryController::class, 'storeCustomVideo']);
+        Route::post('/{id}/toggle-override', [GymExerciseLibraryController::class, 'toggleOverride']);
+        Route::post('/{id}/restore-default', [GymExerciseLibraryController::class, 'restoreDefault']);
+    });
 
     // Module 3: Attendance & Access Control
     Route::middleware('module:attendance')->group(function () {
@@ -277,6 +316,7 @@ Route::middleware(['auth:sanctum', 'gym', 'branch'])->group(function () {
 
     // Member Experience Portal (Core)
     Route::get('/member-portal/profile', [MemberPortalController::class, 'profile']);
+    Route::get('/member-portal/exercise-library', [MemberPortalController::class, 'exerciseLibrary']);
     Route::get('/member-portal/attendance', [MemberPortalController::class, 'attendance']);
     Route::get('/member-portal/payments', [MemberPortalController::class, 'payments']);
     Route::get('/member-portal/workouts', [MemberPortalController::class, 'workouts']);

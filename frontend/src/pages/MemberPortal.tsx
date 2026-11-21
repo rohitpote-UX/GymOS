@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import {
   Activity,
   AlertCircle,
+  AlertTriangle,
   Apple,
   Calendar,
   CheckCircle2,
@@ -11,6 +12,7 @@ import {
   CreditCard,
   Dumbbell,
   Flame,
+  Play,
   PlayCircle,
   Plus,
   QrCode,
@@ -103,6 +105,12 @@ interface TodayWorkoutData {
     target_weight_kg?: number;
     rest_seconds?: number;
     notes?: string;
+    video_url?: string;
+    has_playable_video?: boolean;
+    video_source?: string;
+    video_source_label?: string;
+    video_thumbnail?: string;
+    video_info?: any;
   }>;
   coach_notes?: string;
   status: string;
@@ -182,6 +190,15 @@ export default function MemberPortal() {
 
   // Live Workout Session Modal
   const [workoutTrackerOpen, setWorkoutTrackerOpen] = useState(false);
+  const [activeExerciseVideo, setActiveExerciseVideo] = useState<{
+    name: string;
+    video_url?: string;
+    has_playable_video?: boolean;
+    video_source?: string;
+    video_source_label?: string;
+    instructions?: string;
+    safety_notes?: string;
+  } | null>(null);
   const [loggingSet, setLoggingSet] = useState(false);
   const [completingWorkout, setCompletingWorkout] = useState(false);
   const [sessionRating, setSessionRating] = useState<number>(5);
@@ -587,7 +604,29 @@ export default function MemberPortal() {
                         <span className="text-xs font-black text-slate-900 dark:text-white block">
                           {idx + 1}. {item.name}
                         </span>
-                        {item.notes && <span className="text-[10px] text-slate-400 italic">"{item.notes}"</span>}
+                        {item.notes && <span className="text-[10px] text-slate-400 italic block mb-1">"{item.notes}"</span>}
+                        <button
+                          onClick={() =>
+                            setActiveExerciseVideo({
+                              name: item.name,
+                              video_url: item.video_url || item.video_info?.embed_url,
+                              has_playable_video: item.has_playable_video,
+                              video_source: item.video_source,
+                              video_source_label: item.video_source_label,
+                              instructions: item.video_info?.instructions,
+                              safety_notes: item.video_info?.safety_notes,
+                            })
+                          }
+                          className="mt-1 flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-slate-100 dark:bg-[#1E1E1E] hover:bg-[#D92332]/10 hover:text-[#D92332] text-slate-700 dark:text-slate-300 text-[10px] font-bold transition-all cursor-pointer"
+                        >
+                          <Play className="w-2.5 h-2.5 fill-current text-[#D92332]" />
+                          <span>{item.has_playable_video ? 'Watch Tutorial' : 'Form Guide'}</span>
+                          {item.video_source === 'gym_custom' && (
+                            <span className="text-[8px] px-1 py-0.1 rounded-full bg-[#D92332] text-white font-black">
+                              Gym
+                            </span>
+                          )}
+                        </button>
                       </div>
 
                       <div className="text-right">
@@ -1457,6 +1496,108 @@ export default function MemberPortal() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* Exercise Video Tutorial & Form Guide Modal */}
+      {activeExerciseVideo && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+          <div className="bg-white dark:bg-[#101010] border border-slate-200 dark:border-[#303030] rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-[#252525] flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-black text-slate-900 dark:text-white">
+                    {activeExerciseVideo.name}
+                  </h3>
+                  {activeExerciseVideo.video_source === 'gym_custom' ? (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-[#D92332] text-white">
+                      Gym Video
+                    </span>
+                  ) : activeExerciseVideo.has_playable_video ? (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-slate-800 text-slate-200 border border-slate-700">
+                      Platform Tutorial
+                    </span>
+                  ) : (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-500/15 text-amber-500 border border-amber-500/30">
+                      Instructions
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Verified exercise demonstration & form guidance
+                </p>
+              </div>
+              <button
+                onClick={() => setActiveExerciseVideo(null)}
+                className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-[#202020] text-slate-400 hover:text-white cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Video Player */}
+            {activeExerciseVideo.has_playable_video && activeExerciseVideo.video_url ? (
+              <div className="relative aspect-video bg-black">
+                <iframe
+                  src={activeExerciseVideo.video_url}
+                  title={activeExerciseVideo.name}
+                  className="w-full h-full border-0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            ) : (
+              <div className="p-8 bg-slate-50 dark:bg-[#181818] text-center space-y-2">
+                <Dumbbell className="w-10 h-10 text-slate-400 mx-auto opacity-50" />
+                <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                  Technique Guidance
+                </h4>
+                <p className="text-xs text-slate-500">
+                  Follow prescribed repetitions with controlled form and full range of motion.
+                </p>
+              </div>
+            )}
+
+            {/* Steps & Safety Notes */}
+            <div className="p-5 space-y-3 max-h-60 overflow-y-auto text-xs">
+              {activeExerciseVideo.instructions && (
+                <div>
+                  <h4 className="font-bold text-slate-900 dark:text-white uppercase tracking-wider text-[10px] mb-1">
+                    Correct Execution Form
+                  </h4>
+                  <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                    {activeExerciseVideo.instructions}
+                  </p>
+                </div>
+              )}
+
+              {activeExerciseVideo.safety_notes && (
+                <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400">
+                  <div className="font-bold flex items-center gap-1.5 mb-0.5">
+                    <AlertTriangle className="w-3.5 h-3.5" />
+                    <span>Safety Tip</span>
+                  </div>
+                  <p className="text-[11px] leading-relaxed">
+                    {activeExerciseVideo.safety_notes}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="p-4 bg-slate-50 dark:bg-[#151515] border-t border-slate-200 dark:border-[#252525] flex items-center justify-between">
+              <span className="text-[11px] text-slate-400 font-medium">
+                {activeExerciseVideo.video_source === 'gym_custom'
+                  ? 'Exclusively curated by your gym trainers'
+                  : 'Platform verified tutorial video'}
+              </span>
+              <button
+                onClick={() => setActiveExerciseVideo(null)}
+                className="px-5 py-2 rounded-xl bg-[#D92332] text-white text-xs font-bold hover:bg-[#B91C2B] transition-all cursor-pointer"
+              >
+                Got It
+              </button>
+            </div>
           </div>
         </div>
       )}

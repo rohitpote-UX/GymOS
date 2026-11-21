@@ -26,6 +26,7 @@ import {
   User,
   Users,
   Utensils,
+  Video,
 } from 'lucide-react';
 import { UserInfo } from '../context/AuthContext';
 
@@ -117,6 +118,14 @@ export const NAVIGATION_DESTINATIONS: NavDestination[] = [
         defaultLabel: 'Diet & Nutrition',
         to: '/diets',
         icon: Utensils,
+        roles: ['super_admin', 'gym_owner', 'branch_manager', 'trainer'],
+      },
+      {
+        id: 'members_exercise_library',
+        labelKey: 'fitness.exercise_library',
+        defaultLabel: 'Exercise Video Library',
+        to: '/exercise-library',
+        icon: Video,
         roles: ['super_admin', 'gym_owner', 'branch_manager', 'trainer'],
       },
       {

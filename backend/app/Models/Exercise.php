@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Exercise extends Model
 {
@@ -15,12 +17,16 @@ class Exercise extends Model
 
     protected $fillable = [
         'gym_id',
+        'code',
         'name',
         'name_mr',
         'name_hi',
         'category',
         'target_muscle_group',
+        'secondary_muscles',
+        'exercise_type',
         'equipment_required',
+        'equipment_types',
         'difficulty_level',
         'instructions',
         'common_mistakes',
@@ -28,7 +34,9 @@ class Exercise extends Model
         'default_sets',
         'default_reps',
         'default_rest_seconds',
+        'default_video_id',
         'image_url',
+        'thumbnail_url',
         'video_url',
         'is_system',
         'is_active',
@@ -39,6 +47,8 @@ class Exercise extends Model
         return [
             'default_sets' => 'integer',
             'default_rest_seconds' => 'integer',
+            'secondary_muscles' => 'array',
+            'equipment_types' => 'array',
             'is_system' => 'boolean',
             'is_active' => 'boolean',
         ];
@@ -53,13 +63,11 @@ class Exercise extends Model
                     $q->whereNull($query->qualifyColumn('gym_id'))
                       ->orWhere($query->qualifyColumn('gym_id'), $gymId);
                 });
-            } else {
-                $query->whereNull($query->qualifyColumn('gym_id'));
             }
         });
 
         static::creating(function ($model) {
-            if (!$model->is_system && empty($model->gym_id)) {
+            if (!$model->is_system && empty($model->gym_id) && CurrentGym::id()) {
                 $model->gym_id = CurrentGym::require();
             }
         });
@@ -68,5 +76,35 @@ class Exercise extends Model
     public function gym(): BelongsTo
     {
         return $this->belongsTo(Gym::class);
+    }
+
+    public function categories(): BelongsToMany
+    {
+        return $this->belongsToMany(ExerciseCategory::class, 'exercise_category_mappings', 'exercise_id', 'category_id');
+    }
+
+    public function videos(): HasMany
+    {
+        return $this->hasMany(ExerciseVideo::class);
+    }
+
+    public function globalVideos(): HasMany
+    {
+        return $this->hasMany(ExerciseVideo::class)->whereNull('gym_id');
+    }
+
+    public function gymVideos(): HasMany
+    {
+        return $this->hasMany(ExerciseVideo::class)->whereNotNull('gym_id');
+    }
+
+    public function defaultVideo(): BelongsTo
+    {
+        return $this->belongsTo(ExerciseVideo::class, 'default_video_id');
+    }
+
+    public function overrides(): HasMany
+    {
+        return $this->hasMany(GymExerciseVideoOverride::class);
     }
 }

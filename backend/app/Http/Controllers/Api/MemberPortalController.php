@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\ActionItem;
 use App\Models\AttendanceLog;
 use App\Models\AuditLog;
+use App\Models\Exercise;
+use App\Models\ExerciseCategory;
 use App\Models\Member;
 use App\Models\MemberDietPlan;
 use App\Models\MemberMealLog;
@@ -17,6 +19,7 @@ use App\Models\MembershipPlan;
 use App\Models\Payment;
 use App\Models\PosOrder;
 use App\Models\PtSession;
+use App\Services\ExerciseVideoResolverService;
 use App\Support\CurrentGym;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -224,6 +227,9 @@ class MemberPortalController extends Controller
                 ->whereDate('session_date', $today->toDateString())
                 ->first();
 
+            $rawExercises = $matchedDay['exercises'] ?? $matchedDay['items'] ?? [];
+            $resolvedExercises = app(ExerciseVideoResolverService::class)->resolveBulkForWorkout($rawExercises, $member->gym_id);
+
             $todayWorkout = [
                 'plan_id' => $activeWorkoutPlan->id,
                 'plan_title' => $activeWorkoutPlan->title,
@@ -232,7 +238,7 @@ class MemberPortalController extends Controller
                 'trainer' => $activeWorkoutPlan->trainer,
                 'day_name' => $matchedDay['day_name'] ?? $matchedDay['day'] ?? 'Today\'s Routine',
                 'is_rest_day' => !empty($matchedDay['is_rest_day']),
-                'exercises' => $matchedDay['exercises'] ?? $matchedDay['items'] ?? [],
+                'exercises' => $resolvedExercises,
                 'coach_notes' => $activeWorkoutPlan->notes,
                 'session' => $todaySession,
                 'status' => $todaySession ? $todaySession->status : 'not_started',
@@ -601,6 +607,89 @@ class MemberPortalController extends Controller
         return response()->json([
             'message' => 'Profile updated successfully',
             'member' => $member->fresh(),
+        ]);
+    }
+
+    /**
+     * Standalone Exercise Library for Member Portal Exploration
+     */
+    public function exerciseLibrary(Request $request)
+    {
+        $member = $this->resolveMember($request);
+        $gym = $member->gym;
+
+        $settings = $gym->video_library_settings ?? [];
+        $isEnabled = $settings['enable_member_library'] ?? true;
+
+        if (!$isEnabled) {
+            return response()->json([
+                'enabled' => false,
+                'message' => 'The exercise video library is currently disabled by your gym.',
+                'categories' => [],
+                'exercises' => [],
+            ]);
+        }
+
+        $search = $request->query('search');
+        $muscleGroup = $request->query('muscle_group');
+        $equipment = $request->query('equipment');
+
+        $query = Exercise::withoutGlobalScopes()
+            ->with(['categories', 'defaultVideo'])
+            ->where('is_active', true)
+            ->orderBy('name');
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('name_mr', 'like', "%{$search}%")
+                    ->orWhere('name_hi', 'like', "%{$search}%")
+                    ->orWhere('target_muscle_group', 'like', "%{$search}%");
+            });
+        }
+
+        if ($muscleGroup) {
+            $query->where(function ($q) use ($muscleGroup) {
+                $q->where('category', $muscleGroup)
+                    ->orWhereHas('categories', function ($cq) use ($muscleGroup) {
+                        $cq->where('slug', $muscleGroup);
+                    });
+            });
+        }
+
+        if ($equipment) {
+            $query->where('equipment_required', $equipment);
+        }
+
+        $exercises = $query->take(100)->get();
+        $resolver = app(ExerciseVideoResolverService::class);
+
+        $results = $exercises->map(function ($exercise) use ($resolver, $member) {
+            $resolved = $resolver->resolveExerciseVideo($exercise->id, $member->gym_id);
+            return [
+                'id' => $exercise->id,
+                'name' => $exercise->name,
+                'name_mr' => $exercise->name_mr,
+                'name_hi' => $exercise->name_hi,
+                'code' => $exercise->code,
+                'category' => $exercise->category,
+                'target_muscle_group' => $exercise->target_muscle_group,
+                'exercise_type' => $exercise->exercise_type,
+                'equipment_required' => $exercise->equipment_required,
+                'difficulty_level' => $exercise->difficulty_level,
+                'instructions' => $exercise->instructions,
+                'common_mistakes' => $exercise->common_mistakes,
+                'safety_notes' => $exercise->safety_notes,
+                'resolved_video' => $resolved,
+            ];
+        });
+
+        $categories = ExerciseCategory::where('is_active', true)->orderBy('sort_order')->get();
+
+        return response()->json([
+            'enabled' => true,
+            'categories' => $categories,
+            'exercises' => $results,
         ]);
     }
 }

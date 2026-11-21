@@ -49,8 +49,10 @@ import {
   Upload,
   UserCheck,
   Users,
+  Video,
   X,
 } from 'lucide-react';
+import AdminExerciseLibrary from './AdminExerciseLibrary';
 import api, { errorMessage } from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -251,13 +253,15 @@ export interface PlatformTicket {
   }>;
 }
 
-export const AdminDashboard: React.FC = () => {
+export type AdminTabType = 'dashboard' | 'gyms' | 'exercise-library' | 'plans' | 'payments' | 'tickets' | 'audit';
+
+export const AdminDashboard: React.FC<{ initialTab?: AdminTabType }> = ({ initialTab = 'dashboard' }) => {
   const { t, i18n } = useTranslation();
   const { user, impersonate, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
-  // Navigation Tabs: 'dashboard' | 'gyms' | 'plans' | 'payments' | 'tickets' | 'audit'
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'gyms' | 'plans' | 'payments' | 'tickets' | 'audit'>('dashboard');
+  // Navigation Tabs: 'dashboard' | 'gyms' | 'exercise-library' | 'plans' | 'payments' | 'tickets' | 'audit'
+  const [activeTab, setActiveTab] = useState<AdminTabType>(initialTab);
 
   // Core Data
   const [metrics, setMetrics] = useState<PlatformMetrics | null>(null);
@@ -927,6 +931,7 @@ export const AdminDashboard: React.FC = () => {
             {[
               { id: 'dashboard', label: 'Dashboard', icon: LayoutGrid, count: null },
               { id: 'gyms', label: 'Gyms', icon: Building2, count: metrics?.total_gyms ?? gyms.length },
+              { id: 'exercise-library', label: 'Exercise Videos', icon: Video, count: null },
               { id: 'plans', label: 'Subscription Plans', icon: Layers, count: plans.length },
               { id: 'payments', label: 'Payments', icon: CreditCard, count: null },
               { id: 'tickets', label: 'Support Tickets', icon: LifeBuoy, count: tickets.length },
@@ -2180,6 +2185,12 @@ export const AdminDashboard: React.FC = () => {
               </table>
             </div>
           </div>
+        )}
+        {/* ========================================================= */}
+        {/* TAB 7: CENTRALIZED EXERCISE VIDEO LIBRARY                 */}
+        {/* ========================================================= */}
+        {activeTab === 'exercise-library' && (
+          <AdminExerciseLibrary />
         )}
       </main>
 

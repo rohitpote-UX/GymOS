@@ -33,6 +33,7 @@ import SelfCheckIn from './pages/SelfCheckIn';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import WorkoutPlans from './pages/WorkoutPlans';
 import DietPlans from './pages/DietPlans';
+import ExerciseLibrary from './pages/ExerciseLibrary';
 
 const AppRoutes: React.FC = () => {
   const { user } = useAuth();
@@ -48,6 +49,7 @@ const AppRoutes: React.FC = () => {
       ) : user.role === 'super_admin' ? (
         <>
           <Route path="/super-admin" element={<AdminDashboard />} />
+          <Route path="/super-admin/exercise-library" element={<AdminDashboard initialTab="exercise-library" />} />
           <Route path="/admin" element={<Navigate to="/super-admin" replace />} />
           <Route path="*" element={<Navigate to="/super-admin" replace />} />
         </>
@@ -67,6 +69,7 @@ const AppRoutes: React.FC = () => {
           <Route path="/trainer-portal" element={<TrainerPortal />} />
           <Route path="/workouts" element={<WorkoutPlans />} />
           <Route path="/diets" element={<DietPlans />} />
+          <Route path="/exercise-library" element={<ExerciseLibrary />} />
           <Route path="/attendance" element={<Attendance />} />
           <Route path="/members" element={<Members />} />
           <Route path="/support" element={<SupportTickets />} />
@@ -91,6 +94,7 @@ const AppRoutes: React.FC = () => {
           <Route path="/members" element={<Members />} />
           <Route path="/workouts" element={<WorkoutPlans />} />
           <Route path="/diets" element={<DietPlans />} />
+          <Route path="/exercise-library" element={<ExerciseLibrary />} />
           <Route path="/pos" element={<Pos />} />
           <Route path="/inventory" element={<Inventory />} />
           <Route path="/purchases" element={<Purchases />} />
