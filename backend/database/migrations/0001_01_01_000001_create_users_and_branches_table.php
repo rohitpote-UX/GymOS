@@ -23,7 +23,10 @@ return new class extends Migration
                 'gym_owner',
                 'branch_manager',
                 'trainer',
-                'front_desk'
+                'front_desk',
+                'accountant',
+                'inventory_manager',
+                'member'
             ])->default('gym_owner')->index();
             $table->json('permissions')->nullable();
             $table->boolean('is_active')->default(true)->index();

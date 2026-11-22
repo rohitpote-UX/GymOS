@@ -4,11 +4,15 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
+use App\Models\DiscountAudit;
+use App\Models\Invoice;
 use App\Models\Member;
 use App\Models\MemberLedger;
 use App\Models\MemberMembership;
 use App\Models\MembershipPlan;
 use App\Models\Payment;
+use App\Models\PaymentAllocation;
+use App\Services\FinanceService;
 use App\Support\CurrentBranch;
 use App\Support\CurrentGym;
 use Illuminate\Http\Request;
@@ -79,7 +83,9 @@ class PaymentController extends Controller
             // Optional membership renewal/assignment
             'membership_plan_id' => ['nullable', 'exists:membership_plans,id'],
             'member_membership_id' => ['nullable', 'exists:member_memberships,id'],
+            'invoice_id' => ['nullable', 'exists:invoices,id'],
             'discount_amount' => ['nullable', 'numeric', 'min:0'],
+            'due_date' => ['nullable', 'date'],
         ]);
 
         // Idempotency: If client_uuid was already processed, return existing payment
@@ -95,7 +101,23 @@ class PaymentController extends Controller
             $branchId = $validated['branch_id'] ?? CurrentBranch::id() ?? $member->primary_branch_id;
 
             $membershipId = $validated['member_membership_id'] ?? null;
+            $invoiceId = $validated['invoice_id'] ?? null;
             $discount = (float) ($validated['discount_amount'] ?? 0);
+
+            // If paying towards an existing invoice directly
+            if ($invoiceId) {
+                $financeResult = app(FinanceService::class)->collectInstallment(
+                    invoiceId: (int) $invoiceId,
+                    amount: (float) $validated['amount'],
+                    paymentMethod: $validated['payment_method'],
+                    paymentDate: $validated['payment_date'] ?? null,
+                    referenceId: $validated['reference_id'] ?? null,
+                    notes: $validated['notes'] ?? null,
+                    user: $request->user(),
+                    clientUuid: $validated['client_uuid'] ?? null
+                );
+                return response()->json($financeResult['payment'], 201);
+            }
 
             // If renewing/purchasing a membership plan
             if (!empty($validated['membership_plan_id'])) {
@@ -130,6 +152,48 @@ class PaymentController extends Controller
                     'completed_pt_sessions' => 0,
                 ]);
 
+                // Create Invoice
+                $resolvedDueDate = !empty($validated['due_date'])
+                    ? Carbon::parse($validated['due_date'])->toDateString()
+                    : now()->addDays(7)->toDateString();
+
+                $lastInvoice = Invoice::withoutGlobalScopes()->where('gym_id', $member->gym_id)->latest('id')->first();
+                $nextInvSeq = $lastInvoice ? ($lastInvoice->id + 1) : 1;
+                $invoiceNumber = 'INV-' . date('Y') . '-' . str_pad((string) $nextInvSeq, 5, '0', STR_PAD_LEFT);
+
+                $invStatus = 'unpaid';
+                if ($balanceDue <= 0.001) {
+                    $invStatus = 'paid';
+                } elseif ((float) $validated['amount'] > 0) {
+                    $invStatus = 'partially_paid';
+                }
+                if ($balanceDue > 0 && Carbon::parse($resolvedDueDate)->isPast() && !Carbon::parse($resolvedDueDate)->isToday()) {
+                    $invStatus = 'overdue';
+                }
+
+                $invoice = Invoice::create([
+                    'gym_id' => CurrentGym::require(),
+                    'branch_id' => $branchId,
+                    'member_id' => $member->id,
+                    'member_membership_id' => $membership->id,
+                    'invoice_number' => $invoiceNumber,
+                    'invoice_date' => now()->toDateString(),
+                    'due_date' => $resolvedDueDate,
+                    'subtotal' => $plan->price,
+                    'discount_type' => $discount > 0 ? 'fixed' : 'none',
+                    'discount_value' => $discount,
+                    'discount_amount' => $discount,
+                    'tax_rate' => 0,
+                    'tax_amount' => 0,
+                    'total_amount' => $finalPrice,
+                    'paid_amount' => $validated['amount'],
+                    'balance_due' => $balanceDue,
+                    'status' => $invStatus,
+                    'notes' => $validated['notes'] ?? null,
+                    'created_by_user_id' => $request->user()->id,
+                ]);
+                $invoiceId = $invoice->id;
+
                 MemberLedger::create([
                     'gym_id' => CurrentGym::require(),
                     'branch_id' => $branchId,
@@ -137,7 +201,7 @@ class PaymentController extends Controller
                     'type' => 'charge',
                     'reference_type' => 'membership',
                     'reference_id' => $membership->id,
-                    'description' => "Enrolment: {$plan->name}",
+                    'description' => "Enrolment: {$plan->name} [Inv #{$invoiceNumber}]",
                     'debit' => $finalPrice,
                     'credit' => 0,
                     'running_balance' => $member->outstanding_balance + $finalPrice,
@@ -153,6 +217,12 @@ class PaymentController extends Controller
                 $membership->price_paid += (float) $validated['amount'];
                 $membership->balance_due = max(0, (float) $membership->balance_due - (float) $validated['amount']);
                 $membership->save();
+
+                // If membership has an invoice, update it too
+                $invoice = Invoice::where('member_membership_id', $membershipId)->first();
+                if ($invoice) {
+                    $invoiceId = $invoice->id;
+                }
             }
 
             // Generate sequential receipt number
@@ -165,6 +235,7 @@ class PaymentController extends Controller
                 'branch_id' => $branchId,
                 'member_id' => $member->id,
                 'member_membership_id' => $membershipId,
+                'invoice_id' => $invoiceId,
                 'receipt_number' => $receiptNumber,
                 'type' => 'payment',
                 'client_uuid' => $validated['client_uuid'] ?? null,
@@ -178,6 +249,21 @@ class PaymentController extends Controller
                 'notes' => $validated['notes'] ?? null,
                 'collected_by_user_id' => $request->user()->id,
             ]);
+
+            if ($invoiceId) {
+                PaymentAllocation::create([
+                    'gym_id' => CurrentGym::require(),
+                    'payment_id' => $payment->id,
+                    'invoice_id' => $invoiceId,
+                    'amount' => $validated['amount'],
+                    'allocated_at' => now(),
+                    'allocated_by_user_id' => $request->user()->id,
+                ]);
+                $inv = Invoice::find($invoiceId);
+                if ($inv) {
+                    $inv->syncFromAllocations();
+                }
+            }
 
             // Record Credit in Member Financial Ledger
             MemberLedger::create([

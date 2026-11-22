@@ -143,6 +143,28 @@ class Member extends Model
         return $this->hasOne(MemberProgressLog::class)->latestOfMany('log_date');
     }
 
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
+    public function waterLogs(): HasMany
+    {
+        return $this->hasMany(MemberWaterLog::class);
+    }
+
+    public function fitnessGoals(): HasMany
+    {
+        return $this->hasMany(MemberFitnessGoal::class);
+    }
+
+    public function activeFitnessGoal(): HasOne
+    {
+        return $this->hasOne(MemberFitnessGoal::class)
+            ->where('status', 'in_progress')
+            ->latestOfMany();
+    }
+
     public function getFullNameAttribute(): string
     {
         return trim("{$this->first_name} {$this->last_name}");

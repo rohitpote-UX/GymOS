@@ -18,6 +18,7 @@ import MemberPortal from './pages/MemberPortal';
 import Members from './pages/Members';
 import MembershipPlans from './pages/MembershipPlans';
 import Payments from './pages/Payments';
+import PendingPayments from './pages/PendingPayments';
 import PlanExpired from './pages/PlanExpired';
 import Pos from './pages/Pos';
 import Profitability from './pages/Profitability';
@@ -106,6 +107,8 @@ const AppRoutes: React.FC = () => {
           <Route path="/profitability" element={<Profitability />} />
           <Route path="/leads" element={<Leads />} />
           <Route path="/payments" element={<Payments />} />
+          <Route path="/pending-payments" element={<PendingPayments />} />
+          <Route path="/invoices" element={<PendingPayments />} />
           <Route path="/cash-closing" element={<CashClosing />} />
           <Route path="/expenses" element={<Expenses />} />
           <Route path="/plans" element={<MembershipPlans />} />

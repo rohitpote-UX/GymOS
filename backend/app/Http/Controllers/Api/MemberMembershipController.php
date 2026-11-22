@@ -4,12 +4,16 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
+use App\Models\DiscountAudit;
+use App\Models\Invoice;
 use App\Models\Member;
 use App\Models\MemberLedger;
 use App\Models\MemberMembership;
 use App\Models\MemberMembershipFreeze;
 use App\Models\MembershipPlan;
 use App\Models\Payment;
+use App\Models\PaymentAllocation;
+use App\Services\FinanceService;
 use App\Support\CurrentBranch;
 use App\Support\CurrentGym;
 use Carbon\Carbon;
@@ -27,8 +31,12 @@ class MemberMembershipController extends Controller
             'member_id' => ['required', 'exists:members,id'],
             'membership_plan_id' => ['required', 'exists:membership_plans,id'],
             'paid_amount' => ['required', 'numeric', 'min:0'],
+            'discount_type' => ['nullable', 'in:fixed,percentage,none'],
+            'discount_value' => ['nullable', 'numeric', 'min:0'],
             'discount_amount' => ['nullable', 'numeric', 'min:0'],
-            'payment_method' => ['required', 'in:cash,upi,card,bank_transfer,cheque'],
+            'discount_reason' => ['nullable', 'string', 'max:255'],
+            'due_date' => ['nullable', 'date'],
+            'payment_method' => ['required', 'in:cash,upi,card,online,bank_transfer,cheque'],
             'reference_id' => ['nullable', 'string', 'max:100'],
             'start_date' => ['nullable', 'date'],
             'notes' => ['nullable', 'string'],
@@ -51,9 +59,21 @@ class MemberMembershipController extends Controller
             $endDate = $startDate->copy()->addDays($plan->duration_days);
 
             $totalPrice = (float) $plan->price;
-            $discount = (float) ($validated['discount_amount'] ?? 0);
+
+            // Discount validation using FinanceService
+            $financeService = app(FinanceService::class);
+            $discountType = $validated['discount_type'] ?? (!empty($validated['discount_amount']) ? 'fixed' : 'none');
+            $discountVal = isset($validated['discount_value']) ? (float) $validated['discount_value'] : (float) ($validated['discount_amount'] ?? 0);
+            $discountData = $financeService->validateDiscount(
+                $request->user(),
+                $totalPrice,
+                $discountType,
+                $discountVal,
+                $validated['discount_reason'] ?? null
+            );
+            $discount = $discountData['discount_amount'];
             $finalPrice = max(0, $totalPrice - $discount);
-            $paidAmount = (float) $validated['paid_amount'];
+            $paidAmount = min($finalPrice, max(0, (float) $validated['paid_amount']));
             $balanceDue = max(0, $finalPrice - $paidAmount);
 
             // Prevent duplicate active membership of the identical plan on exact same dates
@@ -87,6 +107,63 @@ class MemberMembershipController extends Controller
                 'notes' => $validated['notes'] ?? null,
             ]);
 
+            // Create Invoice
+            $resolvedDueDate = !empty($validated['due_date'])
+                ? Carbon::parse($validated['due_date'])->toDateString()
+                : now()->addDays(7)->toDateString();
+
+            $lastInvoice = Invoice::withoutGlobalScopes()->where('gym_id', $member->gym_id)->latest('id')->first();
+            $nextInvSeq = $lastInvoice ? ($lastInvoice->id + 1) : 1;
+            $invoiceNumber = 'INV-' . date('Y') . '-' . str_pad((string) $nextInvSeq, 5, '0', STR_PAD_LEFT);
+
+            $invStatus = 'unpaid';
+            if ($balanceDue <= 0.001) {
+                $invStatus = 'paid';
+            } elseif ($paidAmount > 0) {
+                $invStatus = 'partially_paid';
+            }
+            if ($balanceDue > 0 && Carbon::parse($resolvedDueDate)->isPast() && !Carbon::parse($resolvedDueDate)->isToday()) {
+                $invStatus = 'overdue';
+            }
+
+            $invoice = Invoice::create([
+                'gym_id' => CurrentGym::require(),
+                'branch_id' => $branchId,
+                'member_id' => $member->id,
+                'member_membership_id' => $membership->id,
+                'invoice_number' => $invoiceNumber,
+                'invoice_date' => now()->toDateString(),
+                'due_date' => $resolvedDueDate,
+                'subtotal' => $totalPrice,
+                'discount_type' => $discountData['discount_type'],
+                'discount_value' => $discountData['discount_value'],
+                'discount_amount' => $discount,
+                'discount_reason' => $validated['discount_reason'] ?? null,
+                'discount_approved_by_user_id' => $discountData['approved_by_user_id'] ?? null,
+                'tax_rate' => 0,
+                'tax_amount' => 0,
+                'total_amount' => $finalPrice,
+                'paid_amount' => $paidAmount,
+                'balance_due' => $balanceDue,
+                'status' => $invStatus,
+                'notes' => $validated['notes'] ?? null,
+                'created_by_user_id' => $request->user()->id,
+            ]);
+
+            if ($discount > 0) {
+                DiscountAudit::create([
+                    'gym_id' => CurrentGym::require(),
+                    'user_id' => $request->user()->id,
+                    'invoice_id' => $invoice->id,
+                    'discount_type' => $discountData['discount_type'],
+                    'discount_value' => $discountData['discount_value'],
+                    'discount_amount' => $discount,
+                    'reason' => $validated['discount_reason'] ?? null,
+                    'approved_by_user_id' => $discountData['approved_by_user_id'] ?? null,
+                    'status' => $discountData['status'],
+                ]);
+            }
+
             // Record Debit in Member Financial Ledger for the plan fee
             MemberLedger::create([
                 'gym_id' => CurrentGym::require(),
@@ -95,7 +172,7 @@ class MemberMembershipController extends Controller
                 'type' => 'charge',
                 'reference_type' => 'membership',
                 'reference_id' => $membership->id,
-                'description' => "Enrolment: {$plan->name} ({$plan->duration_days} Days)",
+                'description' => "Enrolment: {$plan->name} ({$plan->duration_days} Days) [Inv #{$invoiceNumber}]",
                 'debit' => $finalPrice,
                 'credit' => 0,
                 'running_balance' => $member->outstanding_balance + $finalPrice,
@@ -105,7 +182,7 @@ class MemberMembershipController extends Controller
 
             // Record payment if paidAmount > 0
             if ($paidAmount > 0) {
-                $lastPayment = Payment::latest('id')->first();
+                $lastPayment = Payment::withoutGlobalScopes()->where('gym_id', $member->gym_id)->latest('id')->first();
                 $receiptNumber = 'REC-' . date('Y') . '-' . str_pad((string) (($lastPayment?->id ?? 0) + 1), 5, '0', STR_PAD_LEFT);
 
                 $payment = Payment::create([
@@ -113,6 +190,7 @@ class MemberMembershipController extends Controller
                     'branch_id' => $branchId,
                     'member_id' => $member->id,
                     'member_membership_id' => $membership->id,
+                    'invoice_id' => $invoice->id,
                     'receipt_number' => $receiptNumber,
                     'type' => 'payment',
                     'client_uuid' => $validated['client_uuid'] ?? null,
@@ -124,6 +202,15 @@ class MemberMembershipController extends Controller
                     'reference_id' => $validated['reference_id'] ?? null,
                     'status' => 'completed',
                     'collected_by_user_id' => $request->user()->id,
+                ]);
+
+                PaymentAllocation::create([
+                    'gym_id' => CurrentGym::require(),
+                    'payment_id' => $payment->id,
+                    'invoice_id' => $invoice->id,
+                    'amount' => $paidAmount,
+                    'allocated_at' => now(),
+                    'allocated_by_user_id' => $request->user()->id,
                 ]);
 
                 // Record Credit in Member Financial Ledger

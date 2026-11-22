@@ -270,7 +270,7 @@ class SmartGymQrCheckInTest extends TestCase
             'branch_id' => $this->branch->id,
             'member_id' => $this->member->id,
             'person_type' => 'member',
-            'check_in_at' => now()->subHours(2),
+            'check_in_at' => now(),
             'method' => 'manual',
         ]);
 

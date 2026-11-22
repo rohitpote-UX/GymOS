@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\GlobalSearchController;
 use App\Http\Controllers\Api\GymExerciseLibraryController;
 use App\Http\Controllers\Api\GymQrCodeController;
 use App\Http\Controllers\Api\InventoryController;
+use App\Http\Controllers\Api\InvoiceController;
 use App\Http\Controllers\Api\LeadController;
 use App\Http\Controllers\Api\MemberController;
 use App\Http\Controllers\Api\MemberMembershipController;
@@ -27,6 +28,7 @@ use App\Http\Controllers\Api\MemberPortalController;
 use App\Http\Controllers\Api\MembershipPlanController;
 use App\Http\Controllers\Api\OwnerDashboardController;
 use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\PendingPaymentController;
 use App\Http\Controllers\Api\PosController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProfitabilityController;
@@ -160,6 +162,7 @@ Route::middleware(['auth:sanctum', 'gym', 'branch'])->group(function () {
     // Module 2: Membership Plans & Subscriptions Lifecycle (Core)
     Route::apiResource('membership-plans', MembershipPlanController::class);
     Route::post('/member-memberships/renew', [MemberMembershipController::class, 'renew']);
+    Route::post('/memberships/renew', [MemberMembershipController::class, 'renew']);
     Route::post('/member-memberships/{id}/freeze', [MemberMembershipController::class, 'freeze']);
     Route::post('/member-memberships/{id}/unfreeze', [MemberMembershipController::class, 'unfreeze']);
     Route::post('/member-memberships/{id}/extend', [MemberMembershipController::class, 'extend']);
@@ -234,6 +237,17 @@ Route::middleware(['auth:sanctum', 'gym', 'branch'])->group(function () {
         Route::apiResource('payments', PaymentController::class)->only(['index', 'store', 'show']);
         Route::post('/payments/{id}/refund', [PaymentController::class, 'refund']);
 
+        // Invoices & Pending Payments (Udhar)
+        Route::get('/invoices', [InvoiceController::class, 'index']);
+        Route::get('/invoices/{id}', [InvoiceController::class, 'show']);
+        Route::post('/invoices/{id}/cancel', [InvoiceController::class, 'cancel']);
+
+        Route::get('/pending-payments', [PendingPaymentController::class, 'index']);
+        Route::post('/pending-payments/{id}/collect', [PendingPaymentController::class, 'collect']);
+        Route::post('/pending-payments/{id}/reminder', [PendingPaymentController::class, 'reminder']);
+        Route::get('/pending-payments/aging', [PendingPaymentController::class, 'aging']);
+        Route::get('/pending-payments/discounts', [PendingPaymentController::class, 'discounts']);
+
         Route::get('/cash-closings/current', [CashClosingController::class, 'current']);
         Route::post('/cash-closings/close', [CashClosingController::class, 'close']);
         Route::get('/cash-closings/history', [CashClosingController::class, 'history']);
@@ -248,6 +262,9 @@ Route::middleware(['auth:sanctum', 'gym', 'branch'])->group(function () {
         Route::get('/reports/dues', [ReportController::class, 'dues']);
         Route::get('/reports/expenses', [ReportController::class, 'expenses']);
         Route::get('/reports/branch-revenue', [ReportController::class, 'branchRevenue']);
+        Route::get('/reports/aging', [ReportController::class, 'aging']);
+        Route::get('/reports/discounts', [ReportController::class, 'discounts']);
+        Route::get('/reports/sales-vs-collections', [ReportController::class, 'salesVsCollections']);
         Route::get('/reports/export/{type}', [ReportController::class, 'exportCsv']);
     });
 
@@ -336,8 +353,14 @@ Route::middleware(['auth:sanctum', 'gym', 'branch'])->group(function () {
     Route::get('/member-portal/exercise-library', [MemberPortalController::class, 'exerciseLibrary']);
     Route::get('/member-portal/attendance', [MemberPortalController::class, 'attendance']);
     Route::get('/member-portal/payments', [MemberPortalController::class, 'payments']);
+    Route::post('/member-portal/invoices/{id}/create-order', [MemberPortalController::class, 'createDuePaymentOrder']);
+    Route::post('/member-portal/invoices/{id}/verify-payment', [MemberPortalController::class, 'verifyDuePayment']);
     Route::get('/member-portal/workouts', [MemberPortalController::class, 'workouts']);
     Route::get('/member-portal/fitness-today', [MemberPortalController::class, 'fitnessToday']);
+    Route::post('/member-portal/water-log', [MemberPortalController::class, 'logWater']);
+    Route::get('/member-portal/goals', [MemberPortalController::class, 'goals']);
+    Route::post('/member-portal/goals', [MemberPortalController::class, 'storeGoal']);
+    Route::get('/member-portal/summary-30-days', [MemberPortalController::class, 'summary30Days']);
     Route::post('/member-portal/workout-session/log-set', [MemberPortalController::class, 'logWorkoutSet']);
     Route::post('/member-portal/workout-session/complete', [MemberPortalController::class, 'completeWorkoutSession']);
     Route::post('/member-portal/meal-log/toggle', [MemberPortalController::class, 'toggleMealLog']);

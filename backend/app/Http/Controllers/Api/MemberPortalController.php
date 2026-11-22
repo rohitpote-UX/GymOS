@@ -8,11 +8,14 @@ use App\Models\AttendanceLog;
 use App\Models\AuditLog;
 use App\Models\Exercise;
 use App\Models\ExerciseCategory;
+use App\Models\Invoice;
 use App\Models\Member;
 use App\Models\MemberDietPlan;
+use App\Models\MemberFitnessGoal;
 use App\Models\MemberMealLog;
 use App\Models\MemberMembership;
 use App\Models\MemberProgressLog;
+use App\Models\MemberWaterLog;
 use App\Models\MemberWorkoutPlan;
 use App\Models\MemberWorkoutSession;
 use App\Models\MembershipPlan;
@@ -20,9 +23,11 @@ use App\Models\Payment;
 use App\Models\PosOrder;
 use App\Models\PtSession;
 use App\Services\ExerciseVideoResolverService;
+use App\Services\FinanceService;
 use App\Support\CurrentGym;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class MemberPortalController extends Controller
 {
@@ -102,16 +107,70 @@ class MemberPortalController extends Controller
         $logs = AttendanceLog::with('branch:id,name')
             ->where('member_id', $member->id)
             ->latest('check_in_at')
-            ->take(30)
+            ->take(50)
             ->get();
 
-        $thisMonthCheckins = AttendanceLog::where('member_id', $member->id)
-            ->whereBetween('check_in_at', [now()->startOfMonth(), now()->endOfMonth()])
+        $startOfMonth = now()->startOfMonth();
+        $endOfMonth = now()->endOfMonth();
+
+        $monthLogs = AttendanceLog::where('member_id', $member->id)
+            ->whereBetween('check_in_at', [$startOfMonth, $endOfMonth])
+            ->get();
+
+        $visitedDates = $monthLogs->map(fn ($l) => Carbon::parse($l->check_in_at)->toDateString())->unique()->values()->all();
+        $thisMonthVisits = count($visitedDates);
+
+        $startOfWeek = now()->startOfWeek();
+        $thisWeekVisits = AttendanceLog::where('member_id', $member->id)
+            ->where('check_in_at', '>=', $startOfWeek)
+            ->get()
+            ->map(fn ($l) => Carbon::parse($l->check_in_at)->toDateString())
+            ->unique()
             ->count();
 
+        // Calculate consecutive daily attendance streak
+        $allDates = AttendanceLog::where('member_id', $member->id)
+            ->where('check_in_at', '>=', now()->subDays(60))
+            ->get()
+            ->map(fn ($l) => Carbon::parse($l->check_in_at)->toDateString())
+            ->unique()
+            ->sortDesc()
+            ->values();
+
+        $streakDays = 0;
+        $todayStr = now()->toDateString();
+        $yesterdayStr = now()->subDay()->toDateString();
+
+        if ($allDates->contains($todayStr) || $allDates->contains($yesterdayStr)) {
+            $curr = $allDates->contains($todayStr) ? now() : now()->subDay();
+            while ($allDates->contains($curr->toDateString())) {
+                $streakDays++;
+                $curr->subDay();
+            }
+        }
+
+        $lastLog = $logs->first();
+        $lastVisitText = 'No check-in yet';
+        if ($lastLog) {
+            $lastDate = Carbon::parse($lastLog->check_in_at);
+            if ($lastDate->isToday()) {
+                $lastVisitText = 'Today at ' . $lastDate->format('h:i A');
+            } elseif ($lastDate->isYesterday()) {
+                $lastVisitText = 'Yesterday';
+            } else {
+                $lastVisitText = $lastDate->format('d M Y');
+            }
+        }
+
         return response()->json([
-            'streak_this_month' => $thisMonthCheckins,
+            'streak_this_month' => $thisMonthVisits,
+            'total_visits_this_month' => $thisMonthVisits,
+            'visits_this_week' => $thisWeekVisits,
+            'streak_days' => $streakDays,
+            'last_check_in' => $lastVisitText,
+            'visited_dates' => $visitedDates,
             'attendance' => $logs,
+            'recent_logs' => $logs->take(15),
         ]);
     }
 
@@ -119,12 +178,23 @@ class MemberPortalController extends Controller
     {
         $member = $this->resolveMember($request);
 
+        app(FinanceService::class)->ensureInvoicesForMemberships($member->gym_id);
+
         $payments = Payment::with('branch:id,name')
             ->where('member_id', $member->id)
             ->where('status', 'completed')
             ->latest('payment_date')
             ->take(20)
             ->get();
+
+        $invoices = Invoice::with(['branch:id,name', 'membership.plan:id,name', 'allocations.payment'])
+            ->where('member_id', $member->id)
+            ->latest('due_date')
+            ->get()
+            ->map(function ($inv) {
+                $inv->effective_status = $inv->calculateDynamicStatus();
+                return $inv;
+            });
 
         $posOrders = PosOrder::with('items.product')
             ->where('member_id', $member->id)
@@ -136,8 +206,74 @@ class MemberPortalController extends Controller
             'total_billed' => (float) $member->total_fees_billed,
             'total_paid' => (float) $member->total_fees_paid,
             'outstanding_balance' => (float) $member->outstanding_balance,
+            'invoices' => $invoices,
             'membership_payments' => $payments,
             'supplement_orders' => $posOrders,
+        ]);
+    }
+
+    public function createDuePaymentOrder(Request $request, int $invoiceId)
+    {
+        $member = $this->resolveMember($request);
+        $invoice = Invoice::where('member_id', $member->id)->findOrFail($invoiceId);
+
+        if ($invoice->balance_due <= 0 || $invoice->status === 'cancelled') {
+            return response()->json(['message' => 'No outstanding balance for this invoice.'], 422);
+        }
+
+        $amount = $request->input('amount') ? min((float) $invoice->balance_due, (float) $request->input('amount')) : (float) $invoice->balance_due;
+
+        $orderId = 'order_' . Str::random(16);
+        $invoice->update(['razorpay_order_id' => $orderId]);
+
+        $keyId = config('services.razorpay.key_id') ?: env('RAZORPAY_KEY_ID', 'rzp_test_public_demo');
+
+        return response()->json([
+            'order_id' => $orderId,
+            'amount' => $amount,
+            'currency' => 'INR',
+            'razorpay_key_id' => $keyId,
+            'invoice_number' => $invoice->invoice_number,
+        ]);
+    }
+
+    public function verifyDuePayment(Request $request, int $invoiceId)
+    {
+        $member = $this->resolveMember($request);
+        $invoice = Invoice::where('member_id', $member->id)->findOrFail($invoiceId);
+
+        $validated = $request->validate([
+            'amount' => ['required', 'numeric', 'min:1'],
+            'razorpay_payment_id' => ['required', 'string'],
+            'razorpay_order_id' => ['nullable', 'string'],
+            'razorpay_signature' => ['nullable', 'string'],
+        ]);
+
+        // Signature check if secret configured
+        $keySecret = config('services.razorpay.key_secret') ?: env('RAZORPAY_KEY_SECRET');
+        if ($keySecret && !empty($validated['razorpay_signature']) && !empty($validated['razorpay_order_id'])) {
+            $expectedSignature = hash_hmac('sha256', $validated['razorpay_order_id'] . '|' . $validated['razorpay_payment_id'], $keySecret);
+            if (!hash_equals($expectedSignature, $validated['razorpay_signature'])) {
+                return response()->json(['message' => 'Payment signature verification failed.'], 400);
+            }
+        }
+
+        $financeService = app(FinanceService::class);
+        $result = $financeService->collectInstallment(
+            invoiceId: $invoice->id,
+            amount: (float) $validated['amount'],
+            paymentMethod: 'online',
+            paymentDate: now()->toDateString(),
+            referenceId: $validated['razorpay_payment_id'],
+            notes: "Online payment via Razorpay ({$validated['razorpay_payment_id']})",
+            user: $request->user(),
+            clientUuid: $validated['razorpay_payment_id']
+        );
+
+        return response()->json([
+            'message' => 'Payment confirmed and receipt generated.',
+            'payment' => $result['payment'],
+            'invoice' => $result['invoice'],
         ]);
     }
 
@@ -296,10 +432,74 @@ class MemberPortalController extends Controller
             ];
         }
 
-        // 3. Streak & Attendance
-        $streak = AttendanceLog::where('member_id', $member->id)
-            ->whereBetween('check_in_at', [now()->subDays(30), now()])
-            ->count();
+        // 3. Water Intake Tracking
+        $waterTarget = $activeDietPlan?->water_target_ml ?: 2500;
+        $waterLog = MemberWaterLog::firstOrCreate(
+            [
+                'gym_id' => $member->gym_id,
+                'member_id' => $member->id,
+                'log_date' => $today->toDateString(),
+            ],
+            [
+                'target_ml' => $waterTarget,
+                'consumed_ml' => 0,
+            ]
+        );
+
+        // 4. Fitness Goal & Weight Progress
+        $activeGoal = MemberFitnessGoal::where('member_id', $member->id)
+            ->where('status', 'in_progress')
+            ->latest('id')
+            ->first();
+
+        $progLogs = MemberProgressLog::where('member_id', $member->id)->orderBy('log_date', 'asc')->get();
+        $initialWeight = $progLogs->first()?->weight_kg;
+        $currentWeight = $progLogs->last()?->weight_kg;
+        $weightChange = ($currentWeight && $initialWeight) ? round($currentWeight - $initialWeight, 1) : null;
+
+        // 5. Attendance Summary & Streak
+        $thisMonthLogs = AttendanceLog::where('member_id', $member->id)
+            ->whereBetween('check_in_at', [now()->startOfMonth(), now()->endOfMonth()])
+            ->get();
+        $monthVisits = $thisMonthLogs->map(fn ($l) => Carbon::parse($l->check_in_at)->toDateString())->unique()->count();
+
+        $allDates = AttendanceLog::where('member_id', $member->id)
+            ->where('check_in_at', '>=', now()->subDays(60))
+            ->get()
+            ->map(fn ($l) => Carbon::parse($l->check_in_at)->toDateString())
+            ->unique()
+            ->sortDesc()
+            ->values();
+
+        $streakDays = 0;
+        $todayStr = now()->toDateString();
+        $yesterdayStr = now()->subDay()->toDateString();
+        if ($allDates->contains($todayStr) || $allDates->contains($yesterdayStr)) {
+            $curr = $allDates->contains($todayStr) ? now() : now()->subDay();
+            while ($allDates->contains($curr->toDateString())) {
+                $streakDays++;
+                $curr->subDay();
+            }
+        }
+
+        $lastAtt = AttendanceLog::where('member_id', $member->id)->latest('check_in_at')->first();
+        $lastVisitText = 'No check-in yet';
+        if ($lastAtt) {
+            $d = Carbon::parse($lastAtt->check_in_at);
+            $lastVisitText = $d->isToday() ? 'Today' : ($d->isYesterday() ? 'Yesterday' : $d->format('d M'));
+        }
+
+        // 6. Assigned Trainer
+        $trainer = $member->trainer;
+        $trainerInfo = $trainer ? [
+            'id' => $trainer->id,
+            'name' => $trainer->name,
+            'phone' => $trainer->phone,
+            'avatar_url' => $trainer->avatar_url,
+            'specialization' => $trainer->specialization ?: 'Personal Trainer',
+            'plan_status' => $activeWorkoutPlan ? 'Active Plan Assigned' : 'Awaiting Plan',
+            'last_plan_update' => $activeWorkoutPlan?->updated_at?->diffForHumans() ?? 'No active plan',
+        ] : null;
 
         return response()->json([
             'today_date' => $today->toDateString(),
@@ -309,10 +509,180 @@ class MemberPortalController extends Controller
                 'first_name' => $member->first_name,
                 'full_name' => $member->full_name,
                 'avatar_url' => $member->avatar_url,
+                'membership_status' => $member->status,
+                'member_code' => $member->member_code,
             ],
-            'streak_score' => $streak,
             'today_workout' => $todayWorkout,
             'today_diet' => $todayDiet,
+            'water' => [
+                'target_ml' => $waterLog->target_ml,
+                'consumed_ml' => $waterLog->consumed_ml,
+                'percent' => min(100, (int) round(($waterLog->consumed_ml / max(1, $waterLog->target_ml)) * 100)),
+            ],
+            'progress_overview' => [
+                'initial_weight' => $initialWeight,
+                'current_weight' => $currentWeight,
+                'weight_change' => $weightChange,
+                'goal_title' => $activeGoal?->title ?? 'Weight Target',
+                'goal_target' => $activeGoal?->target_value ?? ($initialWeight ? max(40, $initialWeight - 5) : null),
+                'goal_percent' => $activeGoal?->progress_percent ?? 50,
+                'total_workouts_completed' => MemberWorkoutSession::where('member_id', $member->id)->where('status', 'completed')->count(),
+            ],
+            'attendance_summary' => [
+                'month_visits' => $monthVisits,
+                'streak_days' => $streakDays,
+                'last_check_in' => $lastVisitText,
+            ],
+            'trainer' => $trainerInfo,
+        ]);
+    }
+
+    /**
+     * Member logs or increments water intake (+250ml tap).
+     */
+    public function logWater(Request $request)
+    {
+        $member = $this->resolveMember($request);
+        $today = now()->toDateString();
+        $amount = (int) ($request->input('amount_ml', 250));
+        $action = $request->input('action', 'add'); // add, subtract, set
+
+        $waterLog = MemberWaterLog::firstOrCreate(
+            [
+                'gym_id' => $member->gym_id,
+                'member_id' => $member->id,
+                'log_date' => $today,
+            ],
+            [
+                'target_ml' => $member->activeDietPlan?->water_target_ml ?: 2500,
+                'consumed_ml' => 0,
+            ]
+        );
+
+        if ($action === 'set') {
+            $waterLog->consumed_ml = max(0, $amount);
+        } elseif ($action === 'subtract') {
+            $waterLog->consumed_ml = max(0, $waterLog->consumed_ml - $amount);
+        } else {
+            $waterLog->consumed_ml += $amount;
+        }
+
+        $waterLog->save();
+
+        return response()->json([
+            'message' => 'Water intake updated successfully',
+            'water' => [
+                'target_ml' => $waterLog->target_ml,
+                'consumed_ml' => $waterLog->consumed_ml,
+                'percent' => min(100, (int) round(($waterLog->consumed_ml / max(1, $waterLog->target_ml)) * 100)),
+            ],
+        ]);
+    }
+
+    /**
+     * Get member goals.
+     */
+    public function goals(Request $request)
+    {
+        $member = $this->resolveMember($request);
+
+        $goals = MemberFitnessGoal::where('member_id', $member->id)
+            ->latest('id')
+            ->get()
+            ->map(function ($g) {
+                $g->progress_percent = $g->progress_percent;
+                return $g;
+            });
+
+        return response()->json([
+            'goals' => $goals,
+            'active_goal' => $goals->firstWhere('status', 'in_progress'),
+        ]);
+    }
+
+    /**
+     * Create or update member goal.
+     */
+    public function storeGoal(Request $request)
+    {
+        $member = $this->resolveMember($request);
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:120',
+            'category' => 'nullable|string|max:40',
+            'start_value' => 'nullable|numeric',
+            'target_value' => 'nullable|numeric',
+            'current_value' => 'nullable|numeric',
+            'unit' => 'nullable|string|max:20',
+            'target_date' => 'nullable|date',
+            'notes' => 'nullable|string|max:500',
+        ]);
+
+        $latestLog = MemberProgressLog::where('member_id', $member->id)->latest('log_date')->first();
+        $startVal = $validated['start_value'] ?? $latestLog?->weight_kg;
+        $currVal = $validated['current_value'] ?? $latestLog?->weight_kg ?? $startVal;
+
+        $goal = MemberFitnessGoal::create([
+            'gym_id' => $member->gym_id,
+            'member_id' => $member->id,
+            'created_by_user_id' => $request->user()?->id,
+            'title' => $validated['title'],
+            'category' => $validated['category'] ?? 'weight',
+            'start_value' => $startVal,
+            'target_value' => $validated['target_value'] ?? null,
+            'current_value' => $currVal,
+            'unit' => $validated['unit'] ?? 'kg',
+            'start_date' => now()->toDateString(),
+            'target_date' => $validated['target_date'] ?? now()->addWeeks(8)->toDateString(),
+            'status' => 'in_progress',
+            'notes' => $validated['notes'] ?? null,
+        ]);
+
+        return response()->json([
+            'message' => 'Fitness goal saved successfully!',
+            'goal' => $goal,
+        ], 201);
+    }
+
+    /**
+     * 30-Day Factual Progress Summary Report
+     */
+    public function summary30Days(Request $request)
+    {
+        $member = $this->resolveMember($request);
+        $since = now()->subDays(30);
+
+        $visits = AttendanceLog::where('member_id', $member->id)
+            ->where('check_in_at', '>=', $since)
+            ->count();
+
+        $workoutsCompleted = MemberWorkoutSession::where('member_id', $member->id)
+            ->where('session_date', '>=', $since->toDateString())
+            ->where('status', 'completed')
+            ->count();
+
+        $logs = MemberProgressLog::where('member_id', $member->id)
+            ->orderBy('log_date', 'asc')
+            ->get();
+
+        $initialWeight = $logs->first()?->weight_kg;
+        $currentWeight = $logs->last()?->weight_kg;
+        $weightChange = ($currentWeight && $initialWeight) ? round($currentWeight - $initialWeight, 1) : null;
+
+        $activeGoal = MemberFitnessGoal::where('member_id', $member->id)
+            ->where('status', 'in_progress')
+            ->latest('id')
+            ->first();
+
+        return response()->json([
+            'days' => 30,
+            'gym_visits' => $visits,
+            'workouts_completed' => $workoutsCompleted,
+            'initial_weight' => $initialWeight,
+            'current_weight' => $currentWeight,
+            'weight_change' => $weightChange,
+            'current_goal_target' => $activeGoal?->target_value,
+            'current_goal_title' => $activeGoal?->title ?? 'Fitness Target',
         ]);
     }
 

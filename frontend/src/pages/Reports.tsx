@@ -28,7 +28,7 @@ import { formatCurrency, formatNumber } from '../lib/formatters';
 export default function Reports() {
   const { t, i18n } = useTranslation();
   const { activeBranchId } = useAuth();
-  const [activeTab, setActiveTab] = useState<'daily' | 'monthly' | 'memberships' | 'attendance' | 'dues' | 'branches' | 'export'>('daily');
+  const [activeTab, setActiveTab] = useState<'daily' | 'monthly' | 'memberships' | 'attendance' | 'dues' | 'aging' | 'discounts' | 'reconciliation' | 'branches' | 'export'>('daily');
 
   const [loading, setLoading] = useState(true);
   const [dailyData, setDailyData] = useState<any>(null);
@@ -36,6 +36,9 @@ export default function Reports() {
   const [membershipData, setMembershipData] = useState<any>(null);
   const [attendanceData, setAttendanceData] = useState<any>(null);
   const [duesData, setDuesData] = useState<any>(null);
+  const [agingData, setAgingData] = useState<any>(null);
+  const [discountData, setDiscountData] = useState<any>(null);
+  const [salesVsColsData, setSalesVsColsData] = useState<any>(null);
   const [branchRevenueData, setBranchRevenueData] = useState<any>(null);
 
   const fetchReports = async () => {
@@ -43,13 +46,16 @@ export default function Reports() {
       setLoading(true);
       const params = activeBranchId ? { branch_id: activeBranchId } : {};
 
-      const [resDaily, resMonthly, resMem, resAtt, resDues, resBranch] = await Promise.all([
+      const [resDaily, resMonthly, resMem, resAtt, resDues, resBranch, resAging, resDisc, resSales] = await Promise.all([
         api.get('/reports/daily', { params }),
         api.get('/reports/monthly', { params }),
         api.get('/reports/memberships', { params }),
         api.get('/reports/attendance', { params }),
         api.get('/reports/dues', { params }),
         api.get('/reports/branch-revenue'),
+        api.get('/reports/aging', { params }).catch(() => ({ data: null })),
+        api.get('/reports/discounts', { params }).catch(() => ({ data: null })),
+        api.get('/reports/sales-vs-collections', { params }).catch(() => ({ data: null })),
       ]);
 
       setDailyData(resDaily.data);
@@ -58,6 +64,9 @@ export default function Reports() {
       setAttendanceData(resAtt.data);
       setDuesData(resDues.data);
       setBranchRevenueData(resBranch.data);
+      setAgingData(resAging.data);
+      setDiscountData(resDisc.data);
+      setSalesVsColsData(resSales.data);
     } catch (err: any) {
       console.error('Failed to load reports', err);
     } finally {
@@ -171,6 +180,39 @@ export default function Reports() {
         >
           <AlertTriangle className="w-4 h-4 text-amber-400" />
           Outstanding Dues
+        </button>
+        <button
+          onClick={() => setActiveTab('aging')}
+          className={`pb-3 border-b-2 whitespace-nowrap transition-colors cursor-pointer flex items-center gap-1.5 ${
+            activeTab === 'aging'
+              ? 'border-emerald-500 text-emerald-400'
+              : 'border-transparent text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <Clock className="w-4 h-4 text-rose-400" />
+          Debt Aging (उधारी वयोमान)
+        </button>
+        <button
+          onClick={() => setActiveTab('discounts')}
+          className={`pb-3 border-b-2 whitespace-nowrap transition-colors cursor-pointer flex items-center gap-1.5 ${
+            activeTab === 'discounts'
+              ? 'border-emerald-500 text-emerald-400'
+              : 'border-transparent text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <FileText className="w-4 h-4 text-indigo-400" />
+          Discount Audit
+        </button>
+        <button
+          onClick={() => setActiveTab('reconciliation')}
+          className={`pb-3 border-b-2 whitespace-nowrap transition-colors cursor-pointer flex items-center gap-1.5 ${
+            activeTab === 'reconciliation'
+              ? 'border-emerald-500 text-emerald-400'
+              : 'border-transparent text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <DollarSign className="w-4 h-4 text-emerald-400" />
+          Sales vs Collections
         </button>
         <button
           onClick={() => setActiveTab('branches')}
@@ -534,6 +576,311 @@ export default function Reports() {
               </table>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Tab: Debt Aging Analysis */}
+      {!loading && activeTab === 'aging' && (
+        <div className="space-y-6">
+          <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 backdrop-blur-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <span className="text-[10px] font-semibold text-rose-400 uppercase tracking-wider">
+                Audited Debt Aging Overview (थकीत उधारी वयोमान)
+              </span>
+              <div className="text-3xl font-black text-rose-400 mt-1 font-mono">
+                ₹{Number(agingData?.summary?.total_outstanding || 0).toLocaleString('en-IN')}
+              </div>
+              <p className="text-xs text-slate-400 mt-1">
+                Aging analysis categorizing outstanding dues from not-yet-due to 60+ days critically overdue.
+              </p>
+            </div>
+            <button
+              onClick={() => handleDownloadCsv('dues')}
+              className="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-4 py-2 rounded-xl flex items-center gap-2 cursor-pointer transition-colors"
+            >
+              <Download className="w-4 h-4 text-emerald-400" />
+              Download Debt Aging CSV
+            </button>
+          </div>
+
+          {/* 5 Aging Bucket Cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            <div className="p-4 rounded-xl bg-slate-900/50 border border-slate-800">
+              <span className="text-[10px] font-bold uppercase text-slate-400 block">Not Yet Due</span>
+              <span className="text-lg font-black text-white font-mono mt-1 block">
+                ₹{Number(agingData?.summary?.current_not_due || 0).toLocaleString('en-IN')}
+              </span>
+              <span className="text-[10px] text-emerald-400">Within payment terms</span>
+            </div>
+            <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
+              <span className="text-[10px] font-bold uppercase text-amber-400 block">1–7 Days</span>
+              <span className="text-lg font-black text-amber-300 font-mono mt-1 block">
+                ₹{Number(agingData?.summary?.days_1_to_7 || 0).toLocaleString('en-IN')}
+              </span>
+              <span className="text-[10px] text-amber-400/80">Gentle Reminder</span>
+            </div>
+            <div className="p-4 rounded-xl bg-orange-500/10 border border-orange-500/20">
+              <span className="text-[10px] font-bold uppercase text-orange-400 block">8–30 Days</span>
+              <span className="text-lg font-black text-orange-300 font-mono mt-1 block">
+                ₹{Number(agingData?.summary?.days_8_to_30 || 0).toLocaleString('en-IN')}
+              </span>
+              <span className="text-[10px] text-orange-400/80">Follow-up Call</span>
+            </div>
+            <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20">
+              <span className="text-[10px] font-bold uppercase text-rose-400 block">31–60 Days</span>
+              <span className="text-lg font-black text-rose-300 font-mono mt-1 block">
+                ₹{Number(agingData?.summary?.days_31_to_60 || 0).toLocaleString('en-IN')}
+              </span>
+              <span className="text-[10px] text-rose-400/80">Urgent Notice</span>
+            </div>
+            <div className="p-4 rounded-xl bg-red-950/40 border border-red-500/30">
+              <span className="text-[10px] font-bold uppercase text-red-400 block">&gt; 60 Days</span>
+              <span className="text-lg font-black text-red-400 font-mono mt-1 block">
+                ₹{Number(agingData?.summary?.days_over_60 || 0).toLocaleString('en-IN')}
+              </span>
+              <span className="text-[10px] text-red-400">Critical Overdue</span>
+            </div>
+          </div>
+
+          {/* Aging Invoices Table */}
+          <div className="bg-slate-900/40 border border-slate-800 rounded-2xl overflow-hidden backdrop-blur-sm">
+            <div className="p-4 border-b border-slate-800">
+              <h3 className="font-bold text-white text-xs uppercase tracking-wider">
+                Unsettled Membership Invoices by Age
+              </h3>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="border-b border-slate-800 text-slate-400 bg-slate-900/60 font-medium">
+                    <th className="py-2.5 px-4">Invoice No</th>
+                    <th className="py-2.5 px-4">Member</th>
+                    <th className="py-2.5 px-4">Phone</th>
+                    <th className="py-2.5 px-4">Due Date</th>
+                    <th className="py-2.5 px-4">Aging Bracket</th>
+                    <th className="py-2.5 px-4">Original Fee</th>
+                    <th className="py-2.5 px-4">Paid</th>
+                    <th className="py-2.5 px-4 text-right">Balance Due</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60">
+                  {agingData?.invoices?.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="p-8 text-center text-slate-500">
+                        Zero overdue invoices. All balances are fully cleared!
+                      </td>
+                    </tr>
+                  ) : (
+                    agingData?.invoices?.map((inv: any) => (
+                      <tr key={inv.id} className="hover:bg-slate-800/30 transition-colors">
+                        <td className="py-2.5 px-4 font-mono font-semibold text-white">{inv.invoice_number}</td>
+                        <td className="py-2.5 px-4 font-semibold text-slate-200">
+                          {inv.member?.first_name} {inv.member?.last_name}
+                        </td>
+                        <td className="py-2.5 px-4 text-slate-300 font-mono">{inv.member?.phone}</td>
+                        <td className="py-2.5 px-4 text-slate-400 font-mono">{inv.due_date}</td>
+                        <td className="py-2.5 px-4">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase border ${
+                            inv.aging_bracket === 'days_over_60'
+                              ? 'bg-red-500/20 text-red-400 border-red-500/40'
+                              : inv.aging_bracket === 'days_31_to_60'
+                              ? 'bg-rose-500/15 text-rose-400 border-rose-500/30'
+                              : inv.aging_bracket === 'days_8_to_30'
+                              ? 'bg-orange-500/15 text-orange-400 border-orange-500/30'
+                              : inv.aging_bracket === 'days_1_to_7'
+                              ? 'bg-amber-500/15 text-amber-400 border-amber-500/30'
+                              : 'bg-slate-800 text-slate-400 border-slate-700'
+                          }`}>
+                            {inv.aging_bracket?.replace(/_/g, ' ')} ({inv.age_days}d)
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-4 text-slate-300 font-mono">₹{Number(inv.final_amount).toLocaleString('en-IN')}</td>
+                        <td className="py-2.5 px-4 text-emerald-400 font-mono">₹{Number(inv.paid_amount).toLocaleString('en-IN')}</td>
+                        <td className="py-2.5 px-4 text-right font-mono font-bold text-rose-400">
+                          ₹{Number(inv.balance_due).toLocaleString('en-IN')}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tab: Discount Audit Report */}
+      {!loading && activeTab === 'discounts' && (
+        <div className="space-y-6">
+          <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 backdrop-blur-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <span className="text-[10px] font-semibold text-indigo-400 uppercase tracking-wider">
+                Membership Discount Audit Trail & Compliance
+              </span>
+              <div className="text-3xl font-black text-indigo-400 mt-1 font-mono">
+                ₹{Number(discountData?.summary?.total_discount_amount || 0).toLocaleString('en-IN')}
+              </div>
+              <p className="text-xs text-slate-400 mt-1">
+                Complete audit log of all discounts granted by Owners, Managers, and Front Desk staff.
+              </p>
+            </div>
+            <div className="flex gap-4 text-xs font-mono">
+              <div className="bg-slate-900/80 border border-slate-800 p-3 rounded-xl">
+                <span className="text-[10px] text-slate-400 block uppercase">Discounts Granted</span>
+                <span className="font-bold text-white text-base">{discountData?.summary?.discounted_invoices_count || 0}</span>
+              </div>
+              <div className="bg-slate-900/80 border border-slate-800 p-3 rounded-xl">
+                <span className="text-[10px] text-slate-400 block uppercase">Avg Discount</span>
+                <span className="font-bold text-indigo-400 text-base">₹{Number(discountData?.summary?.average_discount || 0).toLocaleString('en-IN')}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Breakdown by Staff Role */}
+          {discountData?.summary?.by_staff_role && (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {Object.entries(discountData.summary.by_staff_role).map(([role, stats]: [string, any]) => (
+                <div key={role} className="p-4 rounded-xl bg-slate-900/40 border border-slate-800 flex justify-between items-center">
+                  <div>
+                    <span className="text-[10px] font-bold uppercase text-slate-400 block">{role.replace(/_/g, ' ')}</span>
+                    <span className="text-xs text-slate-500">{stats.count} approved discounts</span>
+                  </div>
+                  <span className="text-base font-black text-indigo-400 font-mono">
+                    ₹{Number(stats.total).toLocaleString('en-IN')}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Discounts Audit Table */}
+          <div className="bg-slate-900/40 border border-slate-800 rounded-2xl overflow-hidden backdrop-blur-sm">
+            <div className="p-4 border-b border-slate-800">
+              <h3 className="font-bold text-white text-xs uppercase tracking-wider">
+                Discount Incident Audit Records
+              </h3>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="border-b border-slate-800 text-slate-400 bg-slate-900/60 font-medium">
+                    <th className="py-2.5 px-4">Date</th>
+                    <th className="py-2.5 px-4">Member</th>
+                    <th className="py-2.5 px-4">Invoice / Plan</th>
+                    <th className="py-2.5 px-4">Staff Member</th>
+                    <th className="py-2.5 px-4">Authorizer</th>
+                    <th className="py-2.5 px-4">Reason</th>
+                    <th className="py-2.5 px-4 text-right">Discount (₹)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60">
+                  {discountData?.audits?.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="p-8 text-center text-slate-500">
+                        No discounts granted in the selected timeframe.
+                      </td>
+                    </tr>
+                  ) : (
+                    discountData?.audits?.map((aud: any) => (
+                      <tr key={aud.id} className="hover:bg-slate-800/30 transition-colors">
+                        <td className="py-2.5 px-4 font-mono text-slate-400">{aud.created_at?.split('T')[0]}</td>
+                        <td className="py-2.5 px-4 font-semibold text-white">
+                          {aud.member?.first_name} {aud.member?.last_name}
+                        </td>
+                        <td className="py-2.5 px-4 font-mono text-slate-300">
+                          {aud.invoice?.invoice_number || 'Membership'}
+                        </td>
+                        <td className="py-2.5 px-4 text-slate-300">
+                          {aud.staff?.name || 'Staff'} <span className="text-[10px] text-slate-500 capitalize">({aud.staff_role})</span>
+                        </td>
+                        <td className="py-2.5 px-4 text-emerald-400 font-medium">
+                          {aud.approver?.name || 'Self-Approved'}
+                        </td>
+                        <td className="py-2.5 px-4 text-slate-400 italic">
+                          {aud.reason || 'Standard concession'}
+                        </td>
+                        <td className="py-2.5 px-4 text-right font-mono font-bold text-indigo-400">
+                          ₹{Number(aud.discount_amount).toLocaleString('en-IN')}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tab: Sales vs Cash Collections Reconciliation */}
+      {!loading && activeTab === 'reconciliation' && (
+        <div className="space-y-6">
+          <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 backdrop-blur-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <span className="text-[10px] font-semibold text-emerald-400 uppercase tracking-wider">
+                Invoiced Sales vs Actual Cash Collections
+              </span>
+              <div className="text-3xl font-black text-emerald-400 mt-1 font-mono">
+                {salesVsColsData?.summary?.collection_efficiency || 100}%
+              </div>
+              <p className="text-xs text-slate-400 mt-1">
+                Accrual accounting reconciliation: Total fee commitments vs actual cash in hand.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 font-mono">
+            <div className="p-4 rounded-xl bg-slate-900/50 border border-slate-800">
+              <span className="text-[10px] font-bold uppercase text-slate-400 block font-sans">Invoiced Sales (Accrual)</span>
+              <span className="text-xl font-black text-white mt-1 block">
+                ₹{Number(salesVsColsData?.summary?.invoiced_sales || 0).toLocaleString('en-IN')}
+              </span>
+              <span className="text-[10px] text-slate-500 font-sans">Total memberships booked</span>
+            </div>
+            <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+              <span className="text-[10px] font-bold uppercase text-emerald-400 block font-sans">Actual Cash Collections</span>
+              <span className="text-xl font-black text-emerald-400 mt-1 block">
+                ₹{Number(salesVsColsData?.summary?.cash_collections || 0).toLocaleString('en-IN')}
+              </span>
+              <span className="text-[10px] text-emerald-400/80 font-sans">Real bank & cash receipts</span>
+            </div>
+            <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20">
+              <span className="text-[10px] font-bold uppercase text-rose-400 block font-sans">Uncollected Balance</span>
+              <span className="text-xl font-black text-rose-400 mt-1 block">
+                ₹{Number(salesVsColsData?.summary?.net_variance || 0).toLocaleString('en-IN')}
+              </span>
+              <span className="text-[10px] text-rose-400/80 font-sans">Pending Udhar</span>
+            </div>
+            <div className="p-4 rounded-xl bg-indigo-500/10 border border-indigo-500/20">
+              <span className="text-[10px] font-bold uppercase text-indigo-400 block font-sans">Collection Efficiency</span>
+              <span className="text-xl font-black text-indigo-300 mt-1 block">
+                {salesVsColsData?.summary?.collection_efficiency || 100}%
+              </span>
+              <span className="text-[10px] text-indigo-400/80 font-sans">Cash conversion rate</span>
+            </div>
+          </div>
+
+          {/* Collections by Payment Method */}
+          {salesVsColsData?.collections_by_method && (
+            <div className="bg-slate-900/40 border border-slate-800 rounded-2xl overflow-hidden backdrop-blur-sm">
+              <div className="p-4 border-b border-slate-800">
+                <h3 className="font-bold text-white text-xs uppercase tracking-wider">
+                  Cash Inflow Breakdown by Payment Method
+                </h3>
+              </div>
+              <div className="p-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {Object.entries(salesVsColsData.collections_by_method).map(([method, stats]: [string, any]) => (
+                  <div key={method} className="p-3 bg-slate-900/80 rounded-xl border border-slate-800">
+                    <span className="text-[10px] font-bold uppercase text-slate-400 block">{method.replace(/_/g, ' ')}</span>
+                    <span className="text-base font-black text-emerald-400 font-mono mt-1 block">
+                      ₹{Number(stats.total).toLocaleString('en-IN')}
+                    </span>
+                    <span className="text-[10px] text-slate-500">{stats.count} transactions</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

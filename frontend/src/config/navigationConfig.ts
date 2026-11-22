@@ -186,6 +186,14 @@ export const NAVIGATION_DESTINATIONS: NavDestination[] = [
         icon: Receipt,
       },
       {
+        id: 'finance_pending_payments',
+        labelKey: 'nav.pending_payments',
+        defaultLabel: 'Pending Payments / Udhar',
+        to: '/pending-payments',
+        icon: CreditCard,
+        roles: ['super_admin', 'gym_owner', 'branch_manager', 'accountant', 'receptionist', 'front_desk'],
+      },
+      {
         id: 'finance_cash_closing',
         labelKey: 'nav.cash_closing',
         defaultLabel: 'Daily Cash Closing',

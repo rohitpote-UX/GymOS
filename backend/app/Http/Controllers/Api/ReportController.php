@@ -6,12 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\AttendanceLog;
 use App\Models\Branch;
 use App\Models\DailyCashClosing;
+use App\Models\DiscountAudit;
 use App\Models\Expense;
+use App\Models\Invoice;
 use App\Models\Lead;
 use App\Models\Member;
 use App\Models\MemberMembership;
 use App\Models\Payment;
 use App\Models\User;
+use App\Services\FinanceService;
 use App\Support\CurrentBranch;
 use App\Support\CurrentGym;
 use Carbon\Carbon;
@@ -414,6 +417,127 @@ class ReportController extends Controller
             'to' => $to,
             'matrix' => $matrix,
             'totals' => $totals,
+        ]);
+    }
+
+    /**
+     * Debt Aging Report (Current, 1-7d, 8-30d, 31-60d, >60d)
+     */
+    public function aging(Request $request)
+    {
+        $gymId = CurrentGym::require();
+        $branchId = $request->query('branch_id') ?: CurrentBranch::id();
+
+        $financeService = app(FinanceService::class);
+        $financeService->ensureInvoicesForMemberships($gymId);
+        $report = $financeService->getAgingReport($gymId, $branchId);
+
+        return response()->json($report);
+    }
+
+    /**
+     * Discount Audit & Concessions Report
+     */
+    public function discounts(Request $request)
+    {
+        $gymId = CurrentGym::require();
+        $branchId = $request->query('branch_id') ?: CurrentBranch::id();
+        $from = $request->input('from', now()->startOfMonth()->toDateString());
+        $to = $request->input('to', now()->toDateString());
+
+        $query = Invoice::where('gym_id', $gymId)
+            ->where('discount_amount', '>', 0)
+            ->whereDate('invoice_date', '>=', $from)
+            ->whereDate('invoice_date', '<=', $to)
+            ->with(['member:id,first_name,last_name,phone', 'creator:id,name', 'discountApprover:id,name', 'membership.plan:id,name']);
+
+        if ($branchId) {
+            $query->where('branch_id', $branchId);
+        }
+
+        $totalDiscounts = (float) (clone $query)->sum('discount_amount');
+        $invoices = (clone $query)->latest('id')->paginate($request->input('per_page', 25));
+
+        $byType = (clone $query)->selectRaw('discount_type, SUM(discount_amount) as total')
+            ->groupBy('discount_type')
+            ->pluck('total', 'discount_type');
+
+        return response()->json([
+            'from' => $from,
+            'to' => $to,
+            'total_discount_amount' => $totalDiscounts,
+            'by_type' => $byType,
+            'invoices' => $invoices,
+        ]);
+    }
+
+    /**
+     * Membership Sales vs Actual Collections Reconciliation
+     */
+    public function salesVsCollections(Request $request)
+    {
+        $gymId = CurrentGym::require();
+        $branchId = $request->query('branch_id') ?: CurrentBranch::id();
+        $from = $request->input('from', now()->startOfMonth()->toDateString());
+        $to = $request->input('to', now()->toDateString());
+
+        // Invoiced Sales during this period
+        $invQuery = Invoice::where('gym_id', $gymId)
+            ->where('status', '!=', 'cancelled')
+            ->whereDate('invoice_date', '>=', $from)
+            ->whereDate('invoice_date', '<=', $to);
+        if ($branchId) {
+            $invQuery->where('branch_id', $branchId);
+        }
+
+        $grossSales = (float) (clone $invQuery)->sum('subtotal');
+        $totalDiscounts = (float) (clone $invQuery)->sum('discount_amount');
+        $netInvoicedSales = (float) (clone $invQuery)->sum('total_amount');
+        $pendingOnPeriodInvoices = (float) (clone $invQuery)->sum('balance_due');
+
+        // Actual Collections Received during this period (regardless of when invoice was issued)
+        $payQuery = Payment::where('gym_id', $gymId)
+            ->where('status', 'completed')
+            ->whereDate('payment_date', '>=', $from)
+            ->whereDate('payment_date', '<=', $to);
+        if ($branchId) {
+            $payQuery->where('branch_id', $branchId);
+        }
+
+        $cashCollected = (float) (clone $payQuery)->where('type', 'payment')->where('payment_method', 'cash')->sum('amount');
+        $upiCollected = (float) (clone $payQuery)->where('type', 'payment')->where('payment_method', 'upi')->sum('amount');
+        $cardCollected = (float) (clone $payQuery)->where('type', 'payment')->where('payment_method', 'card')->sum('amount');
+        $onlineCollected = (float) (clone $payQuery)->where('type', 'payment')->whereIn('payment_method', ['online', 'bank_transfer', 'cheque'])->sum('amount');
+        $totalCollected = (float) (clone $payQuery)->where('type', 'payment')->sum('amount');
+        $totalRefunded = (float) (clone $payQuery)->where('type', 'refund')->sum('amount');
+        $netMoneyReceived = $totalCollected - $totalRefunded;
+
+        // Overall Active Outstanding
+        $overallOutstanding = (float) Invoice::where('gym_id', $gymId)
+            ->where('status', '!=', 'cancelled')
+            ->sum('balance_due');
+
+        return response()->json([
+            'from' => $from,
+            'to' => $to,
+            'invoiced_sales' => [
+                'gross_subtotal' => $grossSales,
+                'total_discounts' => $totalDiscounts,
+                'net_invoiced_value' => $netInvoicedSales,
+                'uncollected_from_period_invoices' => $pendingOnPeriodInvoices,
+            ],
+            'actual_collections' => [
+                'total_collected' => $totalCollected,
+                'total_refunded' => $totalRefunded,
+                'net_collected' => $netMoneyReceived,
+                'by_method' => [
+                    'cash' => $cashCollected,
+                    'upi' => $upiCollected,
+                    'card' => $cardCollected,
+                    'online_and_other' => $onlineCollected,
+                ],
+            ],
+            'total_outstanding_receivables' => $overallOutstanding,
         ]);
     }
 

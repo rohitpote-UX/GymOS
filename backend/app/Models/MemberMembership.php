@@ -91,4 +91,14 @@ class MemberMembership extends Model
     {
         return $this->hasMany(PtSession::class);
     }
+
+    public function invoice(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Invoice::class, 'member_membership_id');
+    }
+
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class, 'member_membership_id');
+    }
 }

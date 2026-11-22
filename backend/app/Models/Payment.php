@@ -17,6 +17,7 @@ class Payment extends Model
         'branch_id',
         'member_id',
         'member_membership_id',
+        'invoice_id',
         'receipt_number',
         'type',
         'refund_payment_id',
@@ -55,6 +56,16 @@ class Payment extends Model
     public function membership(): BelongsTo
     {
         return $this->belongsTo(MemberMembership::class, 'member_membership_id');
+    }
+
+    public function invoice(): BelongsTo
+    {
+        return $this->belongsTo(Invoice::class);
+    }
+
+    public function allocations(): HasMany
+    {
+        return $this->hasMany(PaymentAllocation::class);
     }
 
     public function collector(): BelongsTo

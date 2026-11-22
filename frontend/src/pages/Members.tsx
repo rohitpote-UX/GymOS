@@ -176,6 +176,8 @@ export default function Members() {
   const [renewPlanId, setRenewPlanId] = useState('');
   const [renewPaidAmount, setRenewPaidAmount] = useState('');
   const [renewDiscountAmount, setRenewDiscountAmount] = useState('0');
+  const [renewDiscountReason, setRenewDiscountReason] = useState('');
+  const [renewPaymentDueDate, setRenewPaymentDueDate] = useState('');
   const [renewPaymentMethod, setRenewPaymentMethod] = useState('upi');
   const [renewNotes, setRenewNotes] = useState('Membership renewal');
 
@@ -189,7 +191,16 @@ export default function Members() {
   const [planId, setPlanId] = useState('');
   const [paidAmount, setPaidAmount] = useState('');
   const [discountAmount, setDiscountAmount] = useState('0');
+  const [discountReason, setDiscountReason] = useState('');
+  const [paymentDueDate, setPaymentDueDate] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('cash');
+
+  // Drawer Collect Payment State
+  const [collectModalOpen, setCollectModalOpen] = useState(false);
+  const [collectAmount, setCollectAmount] = useState('');
+  const [collectMethod, setCollectMethod] = useState('upi');
+  const [collectNotes, setCollectNotes] = useState('');
+  const [collectingPayment, setCollectingPayment] = useState(false);
 
   // Contact Picker & Duplicate / Lead Matching State
   const [contactPickerNotice, setContactPickerNotice] = useState<string | null>(null);
@@ -293,7 +304,11 @@ export default function Members() {
         payload.membership_plan_id = parseInt(planId, 10);
         payload.paid_amount = parseFloat(paidAmount || '0');
         payload.discount_amount = parseFloat(discountAmount || '0');
+        payload.discount_reason = discountReason || null;
         payload.payment_method = paymentMethod;
+        if (paymentDueDate) {
+          payload.payment_due_date = paymentDueDate;
+        }
       }
 
       await api.post('/members', payload);
@@ -403,6 +418,8 @@ export default function Members() {
         membership_plan_id: parseInt(renewPlanId, 10),
         paid_amount: parseFloat(renewPaidAmount || '0'),
         discount_amount: parseFloat(renewDiscountAmount || '0'),
+        discount_reason: renewDiscountReason || null,
+        payment_due_date: renewPaymentDueDate || null,
         payment_method: renewPaymentMethod,
         notes: renewNotes,
       });
@@ -415,6 +432,42 @@ export default function Members() {
       alert(errorMessage(err));
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleCollectMemberPayment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedMember || !collectAmount) return;
+    setCollectingPayment(true);
+    try {
+      const invs = (selectedMember as any).invoices || [];
+      const pendingInvoice = invs.find((i: any) => Number(i.balance_due) > 0);
+      if (pendingInvoice) {
+        await api.post(`/pending-payments/${pendingInvoice.id}/collect`, {
+          amount: parseFloat(collectAmount),
+          payment_method: collectMethod,
+          notes: collectNotes || 'Drawer installment collection',
+        });
+      } else {
+        await api.post('/payments', {
+          member_id: selectedMember.id,
+          amount: parseFloat(collectAmount),
+          payment_method: collectMethod,
+          type: 'membership_due',
+          notes: collectNotes || 'Drawer installment collection',
+        });
+      }
+      setCollectModalOpen(false);
+      setCollectAmount('');
+      setCollectNotes('');
+      openMemberDetail(selectedMember.id);
+      fetchMembers();
+      setSuccess('Payment installment collected successfully!');
+      setTimeout(() => setSuccess(null), 4000);
+    } catch (err: any) {
+      alert(errorMessage(err));
+    } finally {
+      setCollectingPayment(false);
     }
   };
 
@@ -593,6 +646,8 @@ export default function Members() {
     setPlanId('');
     setPaidAmount('');
     setDiscountAmount('0');
+    setDiscountReason('');
+    setPaymentDueDate('');
     setPaymentMethod('cash');
     setContactPickerNotice(null);
     setDuplicateMember(null);
@@ -988,11 +1043,24 @@ export default function Members() {
                   ₹{Number(selectedMember.total_fees_paid || 0).toLocaleString('en-IN')}
                 </span>
               </div>
-              <div>
-                <span className="text-[10px] text-slate-400 uppercase font-semibold block">Outstanding Due</span>
-                <span className={`font-mono font-bold text-sm ${Number(selectedMember.outstanding_balance) > 0 ? 'text-rose-400' : 'text-slate-400'}`}>
-                  ₹{Number(selectedMember.outstanding_balance || 0).toLocaleString('en-IN')}
-                </span>
+              <div className="flex items-center justify-between col-span-1">
+                <div>
+                  <span className="text-[10px] text-slate-400 uppercase font-semibold block">Outstanding Due</span>
+                  <span className={`font-mono font-bold text-sm ${Number(selectedMember.outstanding_balance) > 0 ? 'text-rose-400' : 'text-slate-400'}`}>
+                    ₹{Number(selectedMember.outstanding_balance || 0).toLocaleString('en-IN')}
+                  </span>
+                </div>
+                {Number(selectedMember.outstanding_balance) > 0 && (
+                  <button
+                    onClick={() => {
+                      setCollectAmount(String(selectedMember.outstanding_balance || ''));
+                      setCollectModalOpen(true);
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] shadow-sm transition-colors cursor-pointer shrink-0"
+                  >
+                    Collect Due
+                  </button>
+                )}
               </div>
             </div>
 
@@ -1537,6 +1605,82 @@ export default function Members() {
                 </div>
               </div>
 
+              {/* Dynamic Renewal Breakdown & Udhar Calculation */}
+              {renewPlanId && (() => {
+                const p = plans.find((x) => x.id === parseInt(renewPlanId, 10));
+                const basePrice = p ? Number(p.price) : 0;
+                const disc = parseFloat(renewDiscountAmount || '0') || 0;
+                const finalPrice = Math.max(0, basePrice - disc);
+                const paid = parseFloat(renewPaidAmount || '0') || 0;
+                const pendingDue = Math.max(0, finalPrice - paid);
+
+                return (
+                  <div className="p-3 bg-slate-900/80 border border-slate-800 rounded-xl space-y-1.5 text-xs">
+                    <div className="flex justify-between text-slate-400">
+                      <span>Base Plan Fee:</span>
+                      <span className="font-mono text-white">₹{basePrice.toLocaleString('en-IN')}</span>
+                    </div>
+                    {disc > 0 && (
+                      <div className="flex justify-between text-emerald-400">
+                        <span>Discount:</span>
+                        <span className="font-mono font-bold">-₹{disc.toLocaleString('en-IN')}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between font-bold text-slate-200 pt-1 border-t border-slate-800">
+                      <span>Final Net Payable:</span>
+                      <span className="font-mono text-white">₹{finalPrice.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div className="flex justify-between text-emerald-400">
+                      <span>Collected Today:</span>
+                      <span className="font-mono font-bold">₹{paid.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div className={`flex justify-between font-bold p-2 rounded-lg ${pendingDue > 0 ? 'bg-red-500/15 text-red-400 border border-red-500/30' : 'bg-emerald-500/15 text-emerald-400'}`}>
+                      <span>{pendingDue > 0 ? 'Pending Balance (बाकी रक्कम):' : 'Status:'}</span>
+                      <span className="font-mono text-sm">{pendingDue > 0 ? `₹${pendingDue.toLocaleString('en-IN')}` : 'PAID IN FULL'}</span>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {parseFloat(renewDiscountAmount || '0') > 0 && (
+                <div>
+                  <label className="block text-slate-300 font-medium mb-1">
+                    Discount Reason (सूट देण्याचे कारण)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Concession / Festival offer"
+                    value={renewDiscountReason}
+                    onChange={(e) => setRenewDiscountReason(e.target.value)}
+                    className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+              )}
+
+              {renewPlanId && (() => {
+                const p = plans.find((x) => x.id === parseInt(renewPlanId, 10));
+                const basePrice = p ? Number(p.price) : 0;
+                const disc = parseFloat(renewDiscountAmount || '0') || 0;
+                const finalPrice = Math.max(0, basePrice - disc);
+                const paid = parseFloat(renewPaidAmount || '0') || 0;
+                const pendingDue = Math.max(0, finalPrice - paid);
+                if (pendingDue <= 0) return null;
+                return (
+                  <div>
+                    <label className="block text-slate-300 font-medium mb-1">
+                      Payment Due Date (बाकी देय तारीख) *
+                    </label>
+                    <input
+                      type="date"
+                      required
+                      value={renewPaymentDueDate}
+                      onChange={(e) => setRenewPaymentDueDate(e.target.value)}
+                      className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-red-500"
+                    />
+                  </div>
+                );
+              })()}
+
               <div>
                 <label className="block text-slate-300 font-medium mb-1">
                   {t('common.payment_mode', 'Payment Method')} *
@@ -1796,6 +1940,82 @@ export default function Members() {
                     </div>
                   </div>
 
+                  {/* Dynamic Registration Breakdown & Udhar Calculation */}
+                  {planId && (() => {
+                    const p = plans.find((x) => x.id === parseInt(planId, 10));
+                    const basePrice = p ? Number(p.price) : 0;
+                    const disc = parseFloat(discountAmount || '0') || 0;
+                    const finalPrice = Math.max(0, basePrice - disc);
+                    const paid = parseFloat(paidAmount || '0') || 0;
+                    const pendingDue = Math.max(0, finalPrice - paid);
+
+                    return (
+                      <div className="p-3 bg-slate-900/90 border border-slate-800 rounded-xl space-y-1.5 text-xs">
+                        <div className="flex justify-between text-slate-400">
+                          <span>Base Plan Fee:</span>
+                          <span className="font-mono text-white">₹{basePrice.toLocaleString('en-IN')}</span>
+                        </div>
+                        {disc > 0 && (
+                          <div className="flex justify-between text-emerald-400">
+                            <span>Discount:</span>
+                            <span className="font-mono font-bold">-₹{disc.toLocaleString('en-IN')}</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between font-bold text-slate-200 pt-1 border-t border-slate-800">
+                          <span>Final Net Payable:</span>
+                          <span className="font-mono text-white">₹{finalPrice.toLocaleString('en-IN')}</span>
+                        </div>
+                        <div className="flex justify-between text-emerald-400">
+                          <span>Collected Today:</span>
+                          <span className="font-mono font-bold">₹{paid.toLocaleString('en-IN')}</span>
+                        </div>
+                        <div className={`flex justify-between font-bold p-2 rounded-lg ${pendingDue > 0 ? 'bg-red-500/15 text-red-400 border border-red-500/30' : 'bg-emerald-500/15 text-emerald-400'}`}>
+                          <span>{pendingDue > 0 ? 'Pending Balance (बाकी रक्कम):' : 'Status:'}</span>
+                          <span className="font-mono text-sm">{pendingDue > 0 ? `₹${pendingDue.toLocaleString('en-IN')}` : 'PAID IN FULL'}</span>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {parseFloat(discountAmount || '0') > 0 && (
+                    <div>
+                      <label className="block text-slate-300 font-medium mb-1">
+                        Discount Reason (सूट देण्याचे कारण)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Student concession / Festival offer"
+                        value={discountReason}
+                        onChange={(e) => setDiscountReason(e.target.value)}
+                        className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+                  )}
+
+                  {planId && (() => {
+                    const p = plans.find((x) => x.id === parseInt(planId, 10));
+                    const basePrice = p ? Number(p.price) : 0;
+                    const disc = parseFloat(discountAmount || '0') || 0;
+                    const finalPrice = Math.max(0, basePrice - disc);
+                    const paid = parseFloat(paidAmount || '0') || 0;
+                    const pendingDue = Math.max(0, finalPrice - paid);
+                    if (pendingDue <= 0) return null;
+                    return (
+                      <div>
+                        <label className="block text-slate-300 font-medium mb-1">
+                          Payment Due Date (बाकी देय तारीख) *
+                        </label>
+                        <input
+                          type="date"
+                          required
+                          value={paymentDueDate}
+                          onChange={(e) => setPaymentDueDate(e.target.value)}
+                          className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-red-500"
+                        />
+                      </div>
+                    );
+                  })()}
+
                   <div>
                     <label className="block text-slate-300 font-medium mb-1">
                       {t('common.payment_mode', 'Payment Method')}
@@ -1955,6 +2175,151 @@ export default function Members() {
             >
               {t('common.close', 'Cancel')}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Drawer Collect Payment Modal */}
+      {collectModalOpen && selectedMember && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#0f172a] border border-slate-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+            <div className="flex justify-between items-center pb-3 border-b border-slate-800">
+              <h3 className="font-bold text-white text-base flex items-center gap-2">
+                <Receipt className="w-5 h-5 text-emerald-400" />
+                <span>Collect Due Payment / बाकी जमा करा</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setCollectModalOpen(false)}
+                className="text-slate-400 hover:text-white cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-xs space-y-1">
+              <span className="text-slate-400 block">Member:</span>
+              <span className="text-white font-bold text-sm">
+                {selectedMember.first_name} {selectedMember.last_name} ({selectedMember.member_code})
+              </span>
+              <div className="flex justify-between pt-1 font-mono">
+                <span className="text-red-300">Total Outstanding:</span>
+                <span className="text-red-400 font-bold text-sm">₹{Number(selectedMember.outstanding_balance || 0).toLocaleString('en-IN')}</span>
+              </div>
+            </div>
+
+            <form onSubmit={handleCollectMemberPayment} className="space-y-3.5 text-xs">
+              <div>
+                <label className="block text-slate-300 font-medium mb-1">
+                  Collection Amount (₹) *
+                </label>
+                <input
+                  type="number"
+                  required
+                  min="1"
+                  step="0.01"
+                  max={Number(selectedMember.outstanding_balance || 0)}
+                  value={collectAmount}
+                  onChange={(e) => setCollectAmount(e.target.value)}
+                  className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white font-mono text-sm font-bold focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              {/* Quick Preset Buttons */}
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setCollectAmount(String(selectedMember.outstanding_balance || ''))}
+                  className="px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-bold text-[11px] hover:bg-emerald-500/25 cursor-pointer"
+                >
+                  Full (₹{Number(selectedMember.outstanding_balance || 0).toLocaleString('en-IN')})
+                </button>
+                {Number(selectedMember.outstanding_balance || 0) > 1000 && (
+                  <button
+                    type="button"
+                    onClick={() => setCollectAmount(String(Math.round(Number(selectedMember.outstanding_balance || 0) / 2)))}
+                    className="px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 font-bold text-[11px] hover:bg-slate-700 cursor-pointer"
+                  >
+                    50% (₹{Math.round(Number(selectedMember.outstanding_balance || 0) / 2).toLocaleString('en-IN')})
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setCollectAmount('1000')}
+                  className="px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 font-bold text-[11px] hover:bg-slate-700 cursor-pointer"
+                >
+                  ₹1,000
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCollectAmount('2000')}
+                  className="px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 font-bold text-[11px] hover:bg-slate-700 cursor-pointer"
+                >
+                  ₹2,000
+                </button>
+              </div>
+
+              {/* Remaining balance preview */}
+              {(() => {
+                const paying = parseFloat(collectAmount || '0') || 0;
+                const totalDue = Number(selectedMember.outstanding_balance || 0);
+                const remaining = Math.max(0, totalDue - paying);
+                return (
+                  <div className="flex justify-between items-center p-2.5 rounded-xl bg-slate-900 border border-slate-800 font-mono text-[11px]">
+                    <span className="text-slate-400">Remaining After Collection:</span>
+                    <span className={`font-bold ${remaining > 0 ? 'text-amber-400' : 'text-emerald-400'}`}>
+                      ₹{remaining.toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                );
+              })()}
+
+              <div>
+                <label className="block text-slate-300 font-medium mb-1">
+                  Payment Mode *
+                </label>
+                <select
+                  value={collectMethod}
+                  onChange={(e) => setCollectMethod(e.target.value)}
+                  className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
+                >
+                  <option value="upi">UPI (GPay / PhonePe / Paytm)</option>
+                  <option value="cash">Cash (रोख)</option>
+                  <option value="card">Card / POS</option>
+                  <option value="bank_transfer">Net Banking / NEFT</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-slate-300 font-medium mb-1">
+                  Receipt / Collection Notes
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Installment collected at front desk"
+                  value={collectNotes}
+                  onChange={(e) => setCollectNotes(e.target.value)}
+                  className="w-full bg-[#131b2e] border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setCollectModalOpen(false)}
+                  className="px-4 py-2 text-slate-400 hover:text-white cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={collectingPayment || !collectAmount || parseFloat(collectAmount) <= 0}
+                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 font-bold text-white shadow-lg shadow-emerald-600/30 cursor-pointer disabled:opacity-50"
+                >
+                  {collectingPayment ? 'Recording...' : 'Record Payment & Update Balance'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

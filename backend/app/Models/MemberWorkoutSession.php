@@ -26,10 +26,17 @@ class MemberWorkoutSession extends Model
         'completed_at',
     ];
 
+    public function setSessionDateAttribute($value)
+    {
+        $this->attributes['session_date'] = $value instanceof \DateTimeInterface
+            ? $value->format('Y-m-d')
+            : substr((string) $value, 0, 10);
+    }
+
     protected function casts(): array
     {
         return [
-            'session_date' => 'date',
+            'session_date' => 'string',
             'duration_minutes' => 'integer',
             'set_logs' => 'array',
             'rating' => 'integer',
